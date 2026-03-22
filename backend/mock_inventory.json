@@ -1,0 +1,35 @@
+[
+    {
+        "id": 1,
+        "make": "Volkswagen",
+        "model": "Atlas",
+        "year": 2024,
+        "price": 54900,
+        "mileage": 15,
+        "type": "SUV",
+        "image": "https://images.unsplash.com/photo-1594976612316-401266a4cc44?auto=format&fit=crop&w=400&q=80",
+        "description": "2024 VW Atlas EXECLINE. Loaded with AWD, Panoramic Sunroof, and Leather."
+    },
+    {
+        "id": 2,
+        "make": "Mazda",
+        "model": "CX-5",
+        "year": 2023,
+        "price": 38500,
+        "mileage": 12400,
+        "type": "SUV",
+        "image": "https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=400&q=80",
+        "description": "Turbo AWD signature trim. Soul Red Crystal Metallic. One owner, local."
+    },
+    {
+        "id": 3,
+        "make": "Ford",
+        "model": "F-150",
+        "year": 2021,
+        "price": 46000,
+        "mileage": 45000,
+        "type": "Truck",
+        "image": "https://images.unsplash.com/photo-1591115765373-520b7a21f7cd?auto=format&fit=crop&w=400&q=80",
+        "description": "Lariat Sport Supercrew. 5.0L V8. Clean Carfax, Sherword Park driven."
+    }
+]
