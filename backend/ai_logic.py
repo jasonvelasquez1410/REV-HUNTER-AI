@@ -1,24 +1,44 @@
 import json
+import os
 
-def get_inventory():
+def get_tenant_config(tenant_id="filcan"):
+    config_path = os.path.join(os.path.dirname(__file__), "tenants.json")
     try:
-        with open("backend/mock_inventory.json", "r") as f:
+        with open(config_path, "r") as f:
+            configs = json.load(f)
+            return configs.get(tenant_id, configs.get("filcan"))
+    except FileNotFoundError:
+        # Fallback if file missing
+        return {
+            "name": "RevHunter AI",
+            "location": "Global",
+            "welcome_message": "Welcome to RevHunter AI! How can we help you today?",
+            "inventory_file": "mock_inventory.json"
+        }
+
+def get_inventory(tenant_id="filcan"):
+    tenant = get_tenant_config(tenant_id)
+    inventory_file = tenant.get("inventory_file", "mock_inventory.json")
+    inventory_path = os.path.join(os.path.dirname(__file__), inventory_file)
+    try:
+        with open(inventory_path, "r") as f:
             return json.load(f)
     except FileNotFoundError:
         return []
 
-def qualify_lead(message, context):
+def qualify_lead(message, context, tenant_id="filcan"):
     """
     Role-based 9-step Sales Process State Machine.
     Roles: Receptionist (0-2), Sales Agent (3-7), Lead Hunter (8-9)
     """
+    tenant = get_tenant_config(tenant_id)
     msg = message.lower()
     new_context = context or {"stage": "receptionist_greet", "role": "Receptionist"}
     stage = new_context.get("stage")
     
-    # 9-Step logic based on FilCan PDF
+    # 9-Step logic based on FilCan PDF / General Auto Best Practices
     if stage == "receptionist_greet":
-        resp = "👋 Welcome to FilCan Cars! I'm your digital receptionist. I'd love to help you find the perfect vehicle. What brings you in today—looking for an upgrade, or just browsing?"
+        resp = tenant.get("welcome_message")
         new_context["stage"] = "lifestyle_discovery"
     
     elif stage == "lifestyle_discovery":
@@ -36,7 +56,7 @@ def qualify_lead(message, context):
         new_context["stage"] = "trade_in"
     
     elif stage == "trade_in":
-        resp = "That helps a lot. Are you planning to trade that vehicle in? We're currently offering top-dollar appraisals for our Sherwood Park inventory."
+        resp = f"That helps a lot. Are you planning to trade that vehicle in? We're currently offering top-dollar appraisals for our {tenant.get('location')} inventory."
         new_context["stage"] = "finance_stakeholders"
     
     elif stage == "finance_stakeholders":
@@ -54,8 +74,9 @@ def qualify_lead(message, context):
 
     return resp, new_context
 
-def generate_ad_copy(prompt="FilCan Cars Special"):
-    return f"🔥 FLASH SALE at FilCan Cars Sherwood Park! 🔥\n\nLooking for a reliable ride? We've got fresh inventory arriving daily at 983 Fir Street.\n\n✅ $0 Down Options\n✅ All Credit Levels Approved\n✅ Top Dollar for Trade-ins\n\nDM us today to book a test drive! #FilCanCars #SherwoodParkCars"
+def generate_ad_copy(tenant_id="filcan"):
+    tenant = get_tenant_config(tenant_id)
+    return f"🔥 FLASH SALE at {tenant['name']} {tenant['location']}! 🔥\n\nLooking for a reliable ride? We've got fresh inventory arriving daily at {tenant.get('address', 'our lot')}.\n\n✅ $0 Down Options\n✅ All Credit Levels Approved\n✅ Top Dollar for Trade-ins\n\nDM us today to book a test drive! #{tenant['name'].replace(' ', '')} #{tenant['location'].replace(' ', '')}Cars"
 
 def get_simulated_quality_leads():
     """

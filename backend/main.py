@@ -1,10 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from models import UserMessage, Lead, AdApproval, Car
-from ai_logic import qualify_lead, get_inventory, generate_ad_copy
-from typing import List
+from ai_logic import qualify_lead, get_inventory, generate_ad_copy, get_tenant_config
+from typing import List, Optional
 
-app = FastAPI(title="FilCan AI Sales Engine API")
+app = FastAPI(title="RevHunter AI Sales Engine API")
 
 # Setup CORS
 app.add_middleware(
@@ -29,15 +29,22 @@ ads_db = [
 
 @app.get("/")
 async def root():
-    return {"message": "FilCan AI API is Running"}
+    return {"message": "RevHunter AI API is Running"}
+
+@app.get("/tenant-config")
+async def get_config(x_tenant_id: Optional[str] = Header(None)):
+    tenant_id = x_tenant_id or "filcan"
+    return get_tenant_config(tenant_id)
 
 @app.get("/inventory", response_model=List[Car])
-async def req_inventory():
-    return get_inventory()
+async def req_inventory(x_tenant_id: Optional[str] = Header(None)):
+    tenant_id = x_tenant_id or "filcan"
+    return get_inventory(tenant_id)
 
 @app.post("/chat")
-async def chat_endpoint(user_msg: UserMessage):
-    response, new_context = qualify_lead(user_msg.message, user_msg.context)
+async def chat_endpoint(user_msg: UserMessage, x_tenant_id: Optional[str] = Header(None)):
+    tenant_id = x_tenant_id or "filcan"
+    response, new_context = qualify_lead(user_msg.message, user_msg.context, tenant_id)
     return {"response": response, "context": new_context}
 
 @app.get("/leads", response_model=List[Lead])
@@ -59,11 +66,13 @@ async def charge_lead(lead_index: int):
     raise HTTPException(status_code=404, detail="Lead not found")
 
 @app.get("/daily-report")
-async def get_daily_report():
+async def get_daily_report(x_tenant_id: Optional[str] = Header(None)):
+    tenant_id = x_tenant_id or "filcan"
+    tenant = get_tenant_config(tenant_id)
     quality_leads = [lead for lead in leads_db if lead.is_reported]
     return {
         "date": "2026-03-22",
-        "client": "FilCan Cars Sherwood Park",
+        "client": f"{tenant['name']} {tenant['location']}",
         "leads": quality_leads[:10],
         "total_quality_leads": len(quality_leads),
         "total_billed": sum(1 for lead in quality_leads if lead.is_billed),
@@ -86,8 +95,9 @@ async def reactivate_lead(lead_index: int):
     raise HTTPException(status_code=404, detail="Lead not found")
 
 @app.post("/generate-ad")
-async def create_ad():
-    content = generate_ad_copy()
+async def create_ad(x_tenant_id: Optional[str] = Header(None)):
+    tenant_id = x_tenant_id or "filcan"
+    content = generate_ad_copy(tenant_id)
     new_ad = {"id": len(ads_db) + 1, "content": content, "platform": "Facebook", "status": "Pending"}
     ads_db.append(new_ad)
     return new_ad

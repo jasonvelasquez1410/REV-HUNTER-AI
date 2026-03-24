@@ -1,13 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTenant } from '../context/TenantContext';
 
 const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) => {
-    const [messages, setMessages] = useState([
-        { text: "👋 Welcome to FilCan Cars! I'm your digital receptionist. I'd love to help you find the perfect vehicle. What brings you in today?", isAi: true }
-    ]);
+    const { tenant } = useTenant();
+    const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isOpen, setIsOpen] = useState(defaultOpen);
     const [context, setContext] = useState({ stage: "receptionist_greet", role: "Receptionist" });
     const messagesEndRef = useRef(null);
+
+    // Initialize with tenant welcome message
+    useEffect(() => {
+        if (tenant && messages.length === 0) {
+            const timer = setTimeout(() => {
+                setMessages([{ text: tenant.welcome_message, isAi: true }]);
+            }, 0);
+            return () => clearTimeout(timer);
+        }
+    }, [tenant, messages.length]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -26,10 +36,13 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
         setInput('');
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || '/api';
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8001';
             const response = await fetch(`${apiUrl}/chat`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Tenant-Id': tenant.id 
+                },
                 body: JSON.stringify({ message: currentInput, context: context })
             });
             const data = await response.json();
@@ -38,7 +51,6 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
             setContext(data.context);
         } catch (error) {
             console.error("Chat error:", error);
-            // Fallback for demo if backend is down
             setMessages(prev => [...prev, { text: "I'm having trouble connecting, but I'm usually much faster! (Demo Mode)", isAi: true }]);
         }
     };
@@ -50,8 +62,9 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
                 style={{
                     position: 'fixed', bottom: '20px', right: '20px',
                     width: '60px', height: '60px', borderRadius: '50%',
-                    backgroundColor: '#0055a4', color: 'white', border: 'none',
-                    fontSize: '1.5rem', cursor: 'pointer', zIndex: '2001'
+                    backgroundColor: tenant.theme_color || '#0055a4', color: 'white', border: 'none',
+                    fontSize: '1.5rem', cursor: 'pointer', zIndex: '2001',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
                 }}
             >
                 {isOpen ? '✕' : '💬'}
@@ -59,9 +72,9 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
 
             {isOpen && (
                 <div className="chat-widget">
-                    <div className="chat-header" style={{ backgroundColor: '#D92027' }}>
+                    <div className="chat-header" style={{ backgroundColor: tenant.theme_color || '#D92027' }}>
                         <div>
-                            <div style={{ fontWeight: 'bold' }}>FilCan Omni Hunter</div>
+                            <div style={{ fontWeight: 'bold' }}>{tenant.name} Omni Hunter</div>
                             <div style={{ fontSize: '0.65rem', opacity: 0.9 }}>
                                 ● {context.role || 'Receptionist'} Mode
                             </div>
@@ -84,7 +97,7 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                         />
-                        <button onClick={handleSend}>Send</button>
+                        <button onClick={handleSend} style={{ backgroundColor: tenant.theme_color }}>Send</button>
                     </div>
                 </div>
             )}

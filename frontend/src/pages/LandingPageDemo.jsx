@@ -1,19 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import ChatWidget from '../components/ChatWidget';
+import { useTenant } from '../context/TenantContext';
 
 const LandingPageDemo = () => {
+    const { tenant } = useTenant();
     const [cars, setCars] = useState([]);
 
     useEffect(() => {
-        const apiUrl = import.meta.env.VITE_API_URL || '/api';
-        fetch(`${apiUrl}/cars`)
-            .then(res => res.json())
-            .then(data => setCars(data));
-    }, []);
+        const fetchCars = async () => {
+            try {
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+                const response = await fetch(`${apiUrl}/inventory`, {
+                    headers: { 'X-Tenant-Id': tenant.id }
+                });
+                const data = await response.json();
+                setCars(data);
+            } catch (error) {
+                console.error("Failed to fetch cars:", error);
+            }
+        };
+        if (tenant) fetchCars();
+    }, [tenant]);
 
     return (
         <div style={{ backgroundColor: '#fff', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
-            {/* FilCan Header */}
+            {/* Header */}
             <header style={{ 
                 backgroundColor: '#000', 
                 color: '#fff', 
@@ -27,11 +38,13 @@ const LandingPageDemo = () => {
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <div style={{ backgroundColor: '#fff', padding: '5px', borderRadius: '4px' }}>
-                        <span style={{ color: '#D92027', fontWeight: '900', fontSize: '1.2rem' }}>FCC</span>
+                        <span style={{ color: tenant.theme_color || '#D92027', fontWeight: '900', fontSize: '1.2rem' }}>
+                            {tenant.name.split(' ').map(w => w[0]).join('')}
+                        </span>
                     </div>
                     <div>
-                        <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>FILCAN CARS</div>
-                        <div style={{ fontSize: '0.6rem', color: '#aaa' }}>A DIVISION OF PARK MAZDA</div>
+                        <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{tenant.name.toUpperCase()}</div>
+                        <div style={{ fontSize: '0.6rem', color: '#aaa' }}>POWERED BY REVHUNTER AI</div>
                     </div>
                 </div>
                 <nav style={{ display: 'flex', gap: '25px', fontSize: '0.9rem', fontWeight: '600' }}>
@@ -40,7 +53,7 @@ const LandingPageDemo = () => {
                     <span>TRADE-IN</span>
                     <span>ABOUT</span>
                 </nav>
-                <div style={{ color: '#D92027', fontWeight: 'bold' }}>587.860.1770</div>
+                <div style={{ color: tenant.theme_color || '#D92027', fontWeight: 'bold' }}>587.860.1770</div>
             </header>
 
             {/* Hero Section */}
@@ -57,9 +70,9 @@ const LandingPageDemo = () => {
                 textAlign: 'center'
             }}>
                 <h1 style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '20px' }}>YOUR DRIVE, REIMAGINED.</h1>
-                <p style={{ fontSize: '1.2rem', maxWidth: '600px', marginBottom: '30px' }}>Premium pre-owned vehicles in Sherwood Park. Approved financing for every credit level.</p>
+                <p style={{ fontSize: '1.2rem', maxWidth: '600px', marginBottom: '30px' }}>Premium pre-owned vehicles in {tenant.location}. Approved financing for every credit level.</p>
                 <button style={{ 
-                    backgroundColor: '#D92027', 
+                    backgroundColor: tenant.theme_color || '#D92027', 
                     color: '#fff', 
                     border: 'none', 
                     padding: '15px 40px', 
@@ -75,16 +88,8 @@ const LandingPageDemo = () => {
                 {/* Search Bar & Filters */}
                 <aside>
                     <div style={{ marginBottom: '30px' }}>
-                        <h3 style={{ fontSize: '1rem', marginBottom: '15px', borderLeft: '4px solid #D92027', paddingLeft: '10px' }}>SEARCH</h3>
+                        <h3 style={{ fontSize: '1rem', marginBottom: '15px', borderLeft: `4px solid ${tenant.theme_color || '#D92027'}`, paddingLeft: '10px' }}>SEARCH</h3>
                         <input type="text" placeholder="Year, Make, Model..." style={{ width: '100%', padding: '10px', border: '1px solid #ddd' }} />
-                    </div>
-                    <div>
-                        <h3 style={{ fontSize: '1rem', marginBottom: '15px', borderLeft: '4px solid #D92027', paddingLeft: '10px' }}>BODY STYLE</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.9rem' }}>
-                            <label><input type="checkbox" /> SUV (12)</label>
-                            <label><input type="checkbox" /> Sedan (8)</label>
-                            <label><input type="checkbox" /> Truck (5)</label>
-                        </div>
                     </div>
                 </aside>
 
@@ -95,7 +100,7 @@ const LandingPageDemo = () => {
                             <div key={car.id} style={{ border: '1px solid #eee', transition: 'box-shadow 0.3s' }} className="car-card">
                                 <img src={car.image} alt={car.model} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
                                 <div style={{ padding: '20px' }}>
-                                    <div style={{ fontSize: '0.8rem', color: '#D92027', fontWeight: 'bold' }}>{car.year}</div>
+                                    <div style={{ fontSize: '0.8rem', color: tenant.theme_color || '#D92027', fontWeight: 'bold' }}>{car.year}</div>
                                     <h3 style={{ margin: '5px 0', fontSize: '1.2rem' }}>{car.make} {car.model}</h3>
                                     <div style={{ fontSize: '1.4rem', fontWeight: '900', margin: '15px 0' }}>${car.price.toLocaleString()}</div>
                                     <button style={{ width: '100%', padding: '12px', background: '#000', color: '#fff', border: 'none', fontWeight: 'bold' }}>VIEW DETAILS</button>

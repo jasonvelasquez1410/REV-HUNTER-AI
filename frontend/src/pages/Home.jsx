@@ -1,48 +1,78 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useTenant } from '../context/TenantContext';
 
 const Home = () => {
-    const [inventory, setInventory] = useState([]);
-
-    useEffect(() => {
-        // In a real app, this would fetch from http://localhost:8000/inventory
-        // For the demo, we'll mock it here or use the mock data
-        setInventory([
-            { id: 1, make: "Toyota", model: "RAV4", year: 2022, price: 35000, mileage: 15000, image: "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&q=80&w=400", type: "SUV" },
-            { id: 2, make: "Honda", model: "Civic", year: 2020, price: 22000, mileage: 45000, image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=400", type: "Sedan" },
-            { id: 3, make: "Ford", model: "F-150", year: 2021, price: 48000, mileage: 30000, image: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&q=80&w=400", type: "Truck" },
-            { id: 4, make: "Hyundai", model: "Tucson", year: 2023, price: 32000, mileage: 5000, image: "https://images.unsplash.com/photo-1631630259742-c0f0b17c6c10?auto=format&fit=crop&q=80&w=400", type: "SUV" },
-        ]);
-    }, []);
+    const { tenant } = useTenant();
 
     return (
-        <div>
-            <section className="hero">
+        <div className="home-container">
+            <section className="hero" style={{ 
+                background: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1550355291-bbee04a92027?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                color: 'white',
+                padding: '120px 0',
+                textAlign: 'center'
+            }}>
                 <div className="container">
-                    <h1>Sherwood Park's Quality Used Cars</h1>
-                    <p>Trust, Transparency, and the Best Value in Alberta. Find your next vehicle at FilCan Cars.</p>
-                    <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-                        <a href="#inventory" className="btn btn-primary">Browse Inventory</a>
-                        <a href="#" className="btn btn-secondary">Get Pre-Approved</a>
+                    <h1 style={{ fontSize: '3.5rem', marginBottom: '20px', fontWeight: '900' }}>
+                        {tenant.name.toUpperCase()}
+                    </h1>
+                    <p style={{ fontSize: '1.5rem', marginBottom: '40px', opacity: 0.9 }}>
+                        {tenant.location}'s Premier Destination for Quality Pre-Owned Vehicles.
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+                        <button className="btn btn-primary" style={{ backgroundColor: tenant.theme_color }}>Browse Inventory</button>
+                        <button className="btn btn-outline" style={{ borderColor: 'white', color: 'white' }}>Get Trade-In Value</button>
                     </div>
                 </div>
             </section>
 
-            <section id="inventory" className="inventory">
+            <section className="inventory-preview" style={{ padding: '80px 0' }}>
                 <div className="container">
-                    <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Featured Inventory</h2>
-                    <div className="inventory-grid">
-                        {inventory.map(car => (
-                            <div key={car.id} className="car-card">
-                                <img src={car.image} alt={`${car.make} ${car.model}`} className="car-image" />
-                                <div className="car-info">
-                                    <div style={{ fontSize: '0.8rem', color: '#666' }}>{car.year} {car.type}</div>
-                                    <h3 style={{ margin: '5px 0' }}>{car.make} {car.model}</h3>
-                                    <div className="car-price">${car.price.toLocaleString()}</div>
-                                    <div style={{ fontSize: '0.9rem', color: '#444' }}>{car.mileage.toLocaleString()} KM</div>
-                                    <button className="btn btn-primary" style={{ width: '100%', marginTop: '15px', fontSize: '0.9rem' }}>View Details</button>
+                    <h2 style={{ textAlign: 'center', marginBottom: '50px', fontSize: '2.5rem' }}>Featured Inventory</h2>
+                    <div className="inventory-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
+                        {[
+                            { name: "2021 Ford F-150 Lariat", price: "$54,900", image: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" },
+                            { name: "2020 Honda CR-V Hybrid", price: "$32,500", image: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" },
+                            { name: "2019 Tesla Model 3 Long Range", price: "$38,900", image: "https://images.unsplash.com/photo-1536700503339-1e4b06520771?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" }
+                        ].map((car, idx) => (
+                            <div key={idx} className="car-card" style={{ background: 'white', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 20px rgba(0,0,0,0.05)' }}>
+                                <div style={{ height: '200px', backgroundImage: `url(${car.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+                                <div style={{ padding: '20px' }}>
+                                    <h3 style={{ marginBottom: '10px' }}>{car.name}</h3>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: tenant.theme_color }}>{car.price}</span>
+                                        <button style={{ padding: '8px 15px', borderRadius: '8px', border: 'none', background: '#eee', cursor: 'pointer' }}>View Details</button>
+                                    </div>
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </div>
+            </section>
+
+            <section className="about" style={{ padding: '80px 0', backgroundColor: '#f9f9f9' }}>
+                <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '50px' }}>
+                    <div style={{ flex: 1 }}>
+                        <h2 style={{ fontSize: '2.5rem', marginBottom: '20px' }}>Why Choose {tenant.name}?</h2>
+                        <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: '#666', marginBottom: '30px' }}>
+                            At {tenant.name}, we believe in transparency and community. Serving the {tenant.location} area for years, we've built our reputation on providing high-quality vehicles and exceptional customer service.
+                        </p>
+                        <ul style={{ listStyle: 'none', padding: 0 }}>
+                            <li style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ color: '#00b894', fontWeight: 'bold' }}>✓</span> Fully Inspected Vehicles
+                            </li>
+                            <li style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ color: '#00b894', fontWeight: 'bold' }}>✓</span> $0 Down Financing Options
+                            </li>
+                            <li style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ color: '#00b894', fontWeight: 'bold' }}>✓</span> Top Dollar for Your Trade-In
+                            </li>
+                        </ul>
+                    </div>
+                    <div style={{ flex: 1, height: '400px', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+                        <img src="https://images.unsplash.com/photo-1562519819-016930ada31b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" alt="Dealership" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                 </div>
             </section>

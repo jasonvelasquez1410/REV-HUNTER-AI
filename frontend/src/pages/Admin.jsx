@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import LeadReportCard from '../components/LeadReportCard';
+import { useTenant } from '../context/TenantContext';
 
 const Admin = () => {
+    const { tenant } = useTenant();
     const [leads, setLeads] = useState([
         { id: 0, name: "John Doe", email: "john@example.com", phone: "555-0199", credit: "Excellent", budget: "$500/mo", trade: "2015 Honda Civic", status: "Qualified", is_reported: true, is_billed: false, quality_score: 95, follow_up_streak: 15, last_action_time: "Sat 9:00 PM" },
         { id: 1, name: "Sarah Smith", email: "sarah@gmail.com", phone: "555-0123", credit: "Fair", budget: "$400/mo", trade: "None", status: "Pending", is_reported: false, is_billed: false, quality_score: 60, follow_up_streak: 5, last_action_time: "Fri 2:00 PM" },
@@ -15,7 +17,7 @@ const Admin = () => {
     ]);
 
     const [auditLogs, setAuditLogs] = useState([
-        { id: 1, time: "Sat 9:02 PM", action: "AI responded to John Doe", type: "AI" },
+        { id: 1, time: "Sat 9:02 PM", action: `AI responded to John Doe`, type: "AI" },
         { id: 2, time: "Sat 9:05 PM", action: "Task sent to Rjay's phone", type: "REP" },
         { id: 3, time: "Sat 10:00 PM", action: "90-Day Follow-up sent to Sarah", type: "AI" }
     ]);
@@ -24,8 +26,8 @@ const Admin = () => {
     const [presentationStep, setPresentationStep] = useState(0);
 
     const [marketingDrafts, setMarketingDrafts] = useState([
-        { id: 1, text: "🔥 Fresh Inventory! 2024 VW Atlas just landed. $0 down options available. #FilCanCars", type: "Facebook Post", status: "Pending Approval" },
-        { id: 2, text: "Need a trade-in value? We're paying TOP DOLLAR this weekend in Sherwood Park! 🚗💰", type: "Ad Campaign", status: "Pending Approval" }
+        { id: 1, text: `🔥 Fresh Inventory! 2024 VW Atlas just landed. $0 down options available. #${tenant.name.replace(/\s/g, '')}`, type: "Facebook Post", status: "Pending Approval" },
+        { id: 2, text: `Need a trade-in value? We're paying TOP DOLLAR this weekend in ${tenant.location}! 🚗💰`, type: "Ad Campaign", status: "Pending Approval" }
     ]);
 
     const dailyLeads = leads.filter(l => l.is_reported);
@@ -49,7 +51,7 @@ const Admin = () => {
     const handleCharge = (lead) => {
         const newLeads = leads.map(l => l.id === lead.id ? { ...l, is_billed: true } : l);
         setLeads(newLeads);
-        setAuditLogs([{ id: Date.now(), time: "Now", action: `Charged FilCan for ${lead.name}`, type: "BILL" }, ...auditLogs]);
+        setAuditLogs([{ id: Date.now(), time: "Now", action: `Charged ${tenant.name} for ${lead.name}`, type: "BILL" }, ...auditLogs]);
         alert(`Successfully charged for lead: ${lead.name}`);
     };
 
@@ -86,7 +88,10 @@ const Admin = () => {
     return (
         <div className="container admin-container">
             <h1 style={{ marginBottom: '30px', color: '#003366', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                Marketing Command Center
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <span style={{ background: '#003366', color: 'white', padding: '5px 12px', borderRadius: '8px', fontSize: '1rem' }}>REVHUNTER AI</span>
+                    Marketing Command Center
+                </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <button 
                         onClick={() => setShowPresentation(true)}
@@ -200,16 +205,16 @@ const Admin = () => {
                     background: 'white', 
                     padding: '25px', 
                     borderRadius: '15px', 
-                    border: '2px solid #003366',
+                    border: `2px solid ${tenant.theme_color || '#003366'}`,
                     boxShadow: '0 15px 35px rgba(0,51,102,0.1)'
                 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                         <div>
-                            <h2 style={{ margin: 0, fontSize: '1.2rem', color: '#003366' }}>Daily Quality Report</h2>
+                            <h2 style={{ margin: 0, fontSize: '1.2rem', color: tenant.theme_color || '#003366' }}>Daily Quality Report</h2>
                             <span style={{ fontSize: '0.75rem', color: '#666' }}>Target: 10 High-Value Leads</span>
                         </div>
-                        <button className="btn btn-primary" style={{ padding: '8px 20px', borderRadius: '30px', fontWeight: '600' }}>
-                            Send to FilCan
+                        <button className="btn btn-primary" style={{ padding: '8px 20px', borderRadius: '30px', fontWeight: '600', backgroundColor: tenant.theme_color }}>
+                            Send to {tenant.name}
                         </button>
                     </div>
                     
@@ -226,7 +231,7 @@ const Admin = () => {
                             <div style={{ textAlign: 'center', padding: '60px 20px', color: '#999' }}>
                                 <div style={{ fontSize: '3rem', marginBottom: '10px opacity: 0.3' }}>📊</div>
                                 <p style={{ margin: 0, fontWeight: '500' }}>Report is currently empty</p>
-                                <p style={{ fontSize: '0.8rem' }}>Move quality leads from the inbox to start building today's report for FilCan.</p>
+                                <p style={{ fontSize: '0.8rem' }}>Move quality leads from the inbox to start building today's report for {tenant.name}.</p>
                             </div>
                         )}
                     </div>
@@ -237,11 +242,11 @@ const Admin = () => {
                             padding: '15px', 
                             background: '#f0f4f8', 
                             borderRadius: '10px',
-                            borderLeft: '4px solid #003366'
+                            borderLeft: `4px solid ${tenant.theme_color || '#003366'}`
                         }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ color: '#444', fontWeight: '500' }}>Pot. Revenue (Est.):</span>
-                                <span style={{ color: '#003366', fontWeight: '800', fontSize: '1.2rem' }}>$45,000</span>
+                                <span style={{ color: tenant.theme_color || '#003366', fontWeight: '800', fontSize: '1.2rem' }}>$45,000</span>
                             </div>
                             <div style={{ fontSize: '0.7rem', color: '#666', textAlign: 'right' }}>
                                 Based on current lead quality scores
@@ -258,7 +263,7 @@ const Admin = () => {
                         Dead-Lead Miner
                         <span style={{ fontSize: '0.7rem', background: '#f1c40f', color: '#000', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>RECOVERY MODE</span>
                     </h2>
-                    <p style={{ fontSize: '0.8rem', color: '#aaa', marginBottom: '20px' }}>Aged leads you wrote off months ago. Relentless AI is bringing them back to life.</p>
+                    <p style={{ fontSize: '0.8rem', color: '#aaa', marginBottom: '20px' }}>Aged leads you wrote off months ago. Relentless AI is bringing them back to life at {tenant.name}.</p>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr style={{ borderBottom: '1px solid #444', textAlign: 'left' }}>
@@ -365,8 +370,8 @@ const Admin = () => {
                     <div style={{ maxWidth: '800px', margin: 'auto', textAlign: 'center' }}>
                         {presentationStep === 0 && (
                             <div className="slide animate-in">
-                                <h2 style={{ color: '#D92027', fontSize: '3rem', fontWeight: '900', marginBottom: '10px' }}>OMNI HUNTER</h2>
-                                <h3 style={{ fontSize: '1.5rem', fontWeight: '300', color: '#aaa', marginBottom: '40px' }}>The Relentless Automotive Sales Force</h3>
+                                <h2 style={{ color: '#D92027', fontSize: '3rem', fontWeight: '900', marginBottom: '10px' }}>REVHUNTER AI</h2>
+                                <h3 style={{ fontSize: '1.5rem', fontWeight: '300', color: '#aaa', marginBottom: '40px' }}>The Relentless Sales Force for {tenant.name}</h3>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '40px' }}>
                                     <div style={{ padding: '20px', border: '1px solid #444', borderRadius: '15px' }}>
                                         <div style={{ fontSize: '2rem' }}>👋</div>
@@ -397,13 +402,13 @@ const Admin = () => {
                             <div className="slide animate-in">
                                 <h2 style={{ fontSize: '2rem', marginBottom: '30px' }}>Role #3: Marketing Manager (Human-in-the-Loop)</h2>
                                 <p style={{ fontSize: '1.1rem', color: '#aaa', marginBottom: '40px' }}>
-                                    Omni Hunter generates high-converting content for Facebook & Instagram, but stays under your control. 
+                                    RevHunter AI generates high-converting content for Facebook & Instagram, but stays under your control. 
                                     Nothing goes live without your "Approve & Post" confirmation.
                                 </p>
                                 <div style={{ display: 'flex', justifyContent: 'center', gap: '30px' }}>
                                     <div style={{ textAlign: 'left' }}>
                                         <div style={{ color: '#00b894', fontWeight: 'bold' }}>✓ AI Drafts Content</div>
-                                        <div style={{ color: '#00b894', fontWeight: 'bold' }}>✓ Targets Sherwood Park</div>
+                                        <div style={{ color: '#00b894', fontWeight: 'bold' }}>✓ Targets {tenant.location}</div>
                                         <div style={{ color: '#00b894', fontWeight: 'bold' }}>✓ Highlights Inventory</div>
                                     </div>
                                     <div style={{ borderLeft: '1px solid #444', paddingLeft: '30px' }}>
