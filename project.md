@@ -16,24 +16,23 @@ This file serves as a persistent record of the project's state to help future se
   - `backend/tenants.json`: Configuration for multi-tenancy.
   - `backend/main.py`: Main API entry point.
 
+## Core Features
+- **AI Demo Pitch Mode**: A built-in presentation in the Admin Portal (`Admin.jsx`) designed to pitch RevHunter AI to dealership owners. It covers the roles of the AI: Receptionist, Sales Agent, and Marketing Manager.
+- **9-Step Lead Qualification**: A role-based state machine (`ai_logic.py`) that guides leads from initial greeting to "closing" (presenting inventory matches and booking test drives).
+- **Multi-Tenant Architecture**: Supports multiple dealerships (e.g., FilCan Cars) via `tenants.json`, with dynamic branding and inventory.
+
 ## Deployment Status
 - **GitHub**: Pushed to `jasonvelasquez1410/REV-HUNTER-AI`.
 - **Vercel**: Configured for monorepo. 
   - API is routed via `/api`.
   - Frontend defaults to `/api` for the backend URL.
-  - **PENDING**: Initial import and deployment on the Vercel Dashboard by the user.
-
-## Recent Milestones
-- [x] Initial monorepo setup.
-- [x] Rebranded to RevHunter AI.
-- [x] Implemented multi-tenant logic (`tenants.json`).
-- [x] Configured `vercel.json` for monorepo routing.
-- [x] Set `/api` as the default API endpoint in the frontend.
+  - **Goal**: Transition to a fully scalable SaaS model.
 
 ## Next Topic / Pending Tasks
-1. **Vercel Deployment**: Verify the live deployment and ensure environment variables (`OPENAI_API_KEY`) are set.
-2. **Lead Engagement Integration**: Finalize the "Omni-Hunter" control center in the Admin Hub.
-3. **Facebook Integration**: Ensure webhooks are correctly handling lead events from the live production site.
+1. **SaaS Deployment**: Verify the live deployment on Vercel and ensure environment variables (`OPENAI_API_KEY`) are set for multi-tenant production.
+2. **Database Integration**: Move from in-memory/JSON storage to a persistent database (e.g., PostgreSQL) to support multiple SaaS clients.
+3. **Omni-Hunter Control Center**: Finalize one-click lead engagement and real-time monitoring.
 
 ## Memory Log
-- **2026-03-24**: Finalized Vercel configuration. Code now uses relative path `/api` for backend communication. Pushed to GitHub. Created this `project.md` for persistence.
+- **2026-03-24**: Finalized Vercel configuration. Created `project.md`.
+- **2026-03-25**: Documented the "AI Presentation" logic (Demo Pitch Mode and 9-Step Lead Hunter flow). Shifted focus toward SaaS deployment and persistent database integration.

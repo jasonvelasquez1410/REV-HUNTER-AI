@@ -3,5 +3,7 @@ uvicorn
 openai
 pydantic
 python-dotenv
-cors
 python-multipart
+sqlalchemy
+databases[postgresql]
+psycopg2-binary

@@ -1,30 +1,10 @@
-import json
-import os
+from storage import db
 
 def get_tenant_config(tenant_id="filcan"):
-    config_path = os.path.join(os.path.dirname(__file__), "tenants.json")
-    try:
-        with open(config_path, "r") as f:
-            configs = json.load(f)
-            return configs.get(tenant_id, configs.get("filcan"))
-    except FileNotFoundError:
-        # Fallback if file missing
-        return {
-            "name": "RevHunter AI",
-            "location": "Global",
-            "welcome_message": "Welcome to RevHunter AI! How can we help you today?",
-            "inventory_file": "mock_inventory.json"
-        }
+    return db.get_tenant_config(tenant_id)
 
 def get_inventory(tenant_id="filcan"):
-    tenant = get_tenant_config(tenant_id)
-    inventory_file = tenant.get("inventory_file", "mock_inventory.json")
-    inventory_path = os.path.join(os.path.dirname(__file__), inventory_file)
-    try:
-        with open(inventory_path, "r") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return []
+    return db.get_inventory(tenant_id)
 
 def qualify_lead(message, context, tenant_id="filcan"):
     """

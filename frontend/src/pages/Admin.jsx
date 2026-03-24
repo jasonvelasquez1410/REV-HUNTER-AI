@@ -1,20 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LeadReportCard from '../components/LeadReportCard';
 import { useTenant } from '../context/TenantContext';
 
 const Admin = () => {
     const { tenant } = useTenant();
-    const [leads, setLeads] = useState([
-        { id: 0, name: "John Doe", email: "john@example.com", phone: "555-0199", credit: "Excellent", budget: "$500/mo", trade: "2015 Honda Civic", status: "Qualified", is_reported: true, is_billed: false, quality_score: 95, follow_up_streak: 15, last_action_time: "Sat 9:00 PM" },
-        { id: 1, name: "Sarah Smith", email: "sarah@gmail.com", phone: "555-0123", credit: "Fair", budget: "$400/mo", trade: "None", status: "Pending", is_reported: false, is_billed: false, quality_score: 60, follow_up_streak: 5, last_action_time: "Fri 2:00 PM" },
-        { id: 2, name: "Mike Johnson", email: "mike@icloud.com", phone: "555-9876", credit: "Good", budget: "$600/mo", trade: "2018 Ford Escape", status: "Hot", is_reported: true, is_billed: true, quality_score: 98, follow_up_streak: 45, last_action_time: "Thu 10:00 AM" }
-    ]);
-
-    const [ageOffset, setAgeOffset] = useState(10);
-
-    const [agedLeads, setAgedLeads] = useState([
-        { id: 103, name: "Old Prospect", email: "old@demo.com", budget: "$300/mo", lastSeen: "Oct 2025", status: "Aged" }
-    ]);
+    const [leads, setLeads] = useState([]);
+    const [agedLeads, setAgedLeads] = useState([]);
 
     const [auditLogs, setAuditLogs] = useState([
         { id: 1, time: "Sat 9:02 PM", action: `AI responded to John Doe`, type: "AI" },
@@ -31,41 +22,72 @@ const Admin = () => {
     ]);
 
     const dailyLeads = leads.filter(l => l.is_reported);
+    const apiUrl = import.meta.env.VITE_API_URL || '/api';
 
-    const handleReport = (index) => {
-        setLeads(prev => {
-            const next = [...prev];
-            next[index] = { 
-                ...next[index], 
-                is_reported: true, 
-                quality_score: 90 + Math.floor(Math.random() * 10) 
-            };
-            return next;
-        });
-        setAuditLogs(prev => [
-            { id: `log-${Date.now()}`, time: "Now", action: `AI promoted lead to Quality Report`, type: "AI" },
-            ...prev
-        ]);
+    useEffect(() => {
+        const fetchAllLeads = async () => {
+            try {
+                const [leadsRes, agedRes] = await Promise.all([
+                    fetch(`${apiUrl}/leads`, { headers: { 'X-Tenant-Id': tenant.id } }),
+                    fetch(`${apiUrl}/leads/aged`, { headers: { 'X-Tenant-Id': tenant.id } })
+                ]);
+                const leadsData = await leadsRes.json();
+                const agedData = await agedRes.json();
+                setLeads(leadsData);
+                setAgedLeads(agedData);
+            } catch (err) {
+                console.error("Failed to fetch leads:", err);
+            }
+        };
+        if (tenant.id) fetchAllLeads();
+    }, [tenant.id, apiUrl]);
+
+    const handleReport = async (leadId) => {
+        try {
+            await fetch(`${apiUrl}/leads/${leadId}/report`, { 
+                method: 'POST',
+                headers: { 'X-Tenant-Id': tenant.id }
+            });
+            setLeads(prev => prev.map(l => l.id === leadId ? { ...l, is_reported: true } : l));
+            setAuditLogs(prev => [
+                { id: `log-${Date.now()}`, time: "Now", action: `AI promoted lead to Quality Report`, type: "AI" },
+                ...prev
+            ]);
+        } catch (err) {
+            console.error("Report failed:", err);
+        }
     };
 
-    const handleCharge = (lead) => {
-        const newLeads = leads.map(l => l.id === lead.id ? { ...l, is_billed: true } : l);
-        setLeads(newLeads);
-        setAuditLogs([{ id: Date.now(), time: "Now", action: `Charged ${tenant.name} for ${lead.name}`, type: "BILL" }, ...auditLogs]);
-        alert(`Successfully charged for lead: ${lead.name}`);
+    const handleCharge = async (lead) => {
+        try {
+            await fetch(`${apiUrl}/leads/${lead.id}/charge`, { 
+                method: 'POST',
+                headers: { 'X-Tenant-Id': tenant.id }
+            });
+            setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, is_billed: true } : l));
+            setAuditLogs([{ id: Date.now(), time: "Now", action: `Charged ${tenant.name} for ${lead.name}`, type: "BILL" }, ...auditLogs]);
+            alert(`Successfully charged for lead: ${lead.name}`);
+        } catch (err) {
+            console.error("Charge failed:", err);
+        }
     };
 
-    const handleReactivate = (lead) => {
-        setLeads(prev => [
-            ...prev, 
-            { ...lead, id: prev.length + ageOffset, status: "Qualified", is_reported: false, is_billed: false, quality_score: 85, follow_up_streak: 1, last_action_time: "Just Now" }
-        ]);
-        setAgedLeads(prev => prev.filter(l => l.id !== lead.id));
-        setAuditLogs(prev => [
-            { id: `log-${Date.now()}`, time: "Now", action: `REACTIVATED: ${lead.name} (Dead to Life)`, type: "AI" },
-            ...prev
-        ]);
-        setAgeOffset(prev => prev + 1);
+    const handleReactivate = async (lead) => {
+        try {
+            await fetch(`${apiUrl}/leads/${lead.id}/reactivate`, { 
+                method: 'POST',
+                headers: { 'X-Tenant-Id': tenant.id }
+            });
+            const updatedLead = { ...lead, is_aged: false, status: "Qualified", is_reported: false, is_billed: false, quality_score: 85, follow_up_streak: 1, last_action_time: "Just Now" };
+            setLeads(prev => [...prev, updatedLead]);
+            setAgedLeads(prev => prev.filter(l => l.id !== lead.id));
+            setAuditLogs(prev => [
+                { id: `log-${Date.now()}`, time: "Now", action: `REACTIVATED: ${lead.name} (Dead to Life)`, type: "AI" },
+                ...prev
+            ]);
+        } catch (err) {
+            console.error("Reactivate failed:", err);
+        }
     };
 
     const handleApproveMarketing = (id) => {
@@ -180,7 +202,7 @@ const Admin = () => {
                                         <td style={{ padding: '12px', textAlign: 'right' }}>
                                             {!lead.is_reported ? (
                                                 <button 
-                                                    onClick={() => handleReport(i)}
+                                                    onClick={() => handleReport(lead.id)}
                                                     className="btn-action" 
                                                     style={{ 
                                                         padding: '6px 12px', fontSize: '0.7rem', backgroundColor: '#003366', color: 'white', 

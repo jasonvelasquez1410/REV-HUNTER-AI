@@ -18,10 +18,13 @@ export const TenantProvider = ({ children }) => {
         const fetchConfig = async () => {
             try {
                 const apiUrl = import.meta.env.VITE_API_URL || '/api';
-                // You could detect tenant from URL subdomain or a query param
-                // For now, we default to 'filcan' but we could make it dynamic
+                
+                // SaaS logic: Detect tenant from URL params (e.g. ?tenant=filcan)
+                const params = new URLSearchParams(window.location.search);
+                const tenantId = params.get('tenant') || 'filcan';
+                
                 const response = await fetch(`${apiUrl}/tenant-config`, {
-                    headers: { 'X-Tenant-Id': 'filcan' }
+                    headers: { 'X-Tenant-Id': tenantId }
                 });
                 const data = await response.json();
                 setTenant(data);
