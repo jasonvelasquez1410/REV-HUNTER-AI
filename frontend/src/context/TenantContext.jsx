@@ -17,7 +17,7 @@ export const TenantProvider = ({ children }) => {
     useEffect(() => {
         const fetchConfig = async () => {
             try {
-                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+                const apiUrl = import.meta.env.VITE_API_URL || '/api';
                 // You could detect tenant from URL subdomain or a query param
                 // For now, we default to 'filcan' but we could make it dynamic
                 const response = await fetch(`${apiUrl}/tenant-config`, {
