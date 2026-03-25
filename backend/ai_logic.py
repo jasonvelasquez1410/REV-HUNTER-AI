@@ -1,4 +1,11 @@
+import os
+import google.generativeai as genai
 from storage import db
+
+# Initialize Gemini
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+if GOOGLE_API_KEY:
+    genai.configure(api_key=GOOGLE_API_KEY)
 
 def get_tenant_config(tenant_id="filcan"):
     return db.get_tenant_config(tenant_id)
@@ -8,51 +15,62 @@ def get_inventory(tenant_id="filcan"):
 
 def qualify_lead(message, context, tenant_id="filcan"):
     """
-    Role-based 9-step Sales Process State Machine.
-    Roles: Receptionist (0-2), Sales Agent (3-7), Lead Hunter (8-9)
+    Real-time AI Lead Qualification using Gemini 1.5 Flash.
+    Enforces the 'Relentless 9-Step Sales Process'.
     """
     tenant = get_tenant_config(tenant_id)
-    msg = message.lower()
-    new_context = context or {"stage": "receptionist_greet", "role": "Receptionist"}
-    stage = new_context.get("stage")
+    inventory = get_inventory(tenant_id)
     
-    # 9-Step logic based on FilCan PDF / General Auto Best Practices
-    if stage == "receptionist_greet":
-        resp = tenant.get("welcome_message")
-        new_context["stage"] = "lifestyle_discovery"
+    # Format inventory for the prompt
+    inventory_str = "\n".join([f"- {c['year']} {c['make']} {c['model']} (${c['price']})" for c in inventory])
     
-    elif stage == "lifestyle_discovery":
-        # Role Transitions to Sales Agent
-        new_context["role"] = "Sales Agent"
-        resp = "That's exciting! 🚗 To help narrow things down: What's your typical drive like? Mostly city commuting, or do you do a lot of weekend highway trips?"
-        new_context["stage"] = "must_haves"
+    # System Prompt for the Relentless Hunter
+    system_prompt = f"""
+    You are the 'RevHunter AI' for {tenant['name']} in {tenant['location']}.
+    Your goal is to be a RELENTLESS sales agent that follows a 9-Step Lead Qualification process.
     
-    elif stage == "must_haves":
-        resp = "Understood. Efficiency vs Power is key. Are there any 'must-have' features for your next ride? (AWD, Heated Seats, Android Auto/CarPlay, etc.)"
-        new_context["stage"] = "current_car"
+    Current Inventory for {tenant['name']}:
+    {inventory_str}
     
-    elif stage == "current_car":
-        resp = "Great choices. And what are you driving now? Is there anything you absolute HATE about your current car that we MUST avoid in the next one?"
-        new_context["stage"] = "trade_in"
+    The 9-Step Process:
+    1. Greeting (Friendly & professional)
+    2. Discovery (What are they looking for?)
+    3. Lifestyle (City commuting vs highway?)
+    4. Must-Haves (AWD, features?)
+    5. Current Car (What are they driving now?)
+    6. Trade-in (Do they want to trade it in?)
+    7. Finance/Paperwork (Deciding stakeholders?)
+    8. Show Inventory (Match their needs to the inventory above)
+    9. Closing/VIP Appointment (Book a test drive)
     
-    elif stage == "trade_in":
-        resp = f"That helps a lot. Are you planning to trade that vehicle in? We're currently offering top-dollar appraisals for our {tenant.get('location')} inventory."
-        new_context["stage"] = "finance_stakeholders"
+    Guidelines:
+    - Never be pushy, but always be DRIVING toward the next step.
+    - If the user is just browsing, be the friendly 'Receptionist'.
+    - If they show intent, transition to 'Sales Agent'.
+    - Mention that {tenant['name']} offers top-dollar for trade-ins.
+    - Keep responses concise and formatted for a chat widget.
     
-    elif stage == "finance_stakeholders":
-        resp = "Perfect. Last couple of things: Besides yourself, is there anyone else who needs to see the car before you decide? And how would you prefer to handle the paperwork—financing or outright?"
-        new_context["stage"] = "closing_hunter"
+    Current Context: {context}
+    """
     
-    elif stage == "closing_hunter":
-        new_context["role"] = "Lead Hunter"
-        resp = "I have 3 matches currently in stock (and 2 coming in next week!) that fit you perfectly. Would you like me to send the details to your phone so you can book a VIP test drive?"
-        new_context["stage"] = "completed"
-    
-    else:
-        resp = "I'm here to help! Would you like to check our latest inventory or get a trade-in value?"
-        new_context["stage"] = "receptionist_greet"
+    if not GOOGLE_API_KEY:
+        return "System Note: GOOGLE_API_KEY is not configured. (Demo Mode Active)", context
 
-    return resp, new_context
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_prompt)
+        chat = model.start_chat(history=[])
+        
+        # We'll use the prompt directly for now to keep it simple & stateless for the demo
+        response = chat.send_message(message)
+        
+        # Simple stage tracking (can be improved)
+        new_context = context or {}
+        new_context["last_msg"] = message
+        
+        return response.text, new_context
+    except Exception as e:
+        print(f"Gemini Error: {e}")
+        return f"Hi! I'm the AI for {tenant['name']}. I'd love to help you find a car. What are you looking for today?", context
 
 def generate_ad_copy(tenant_id="filcan"):
     tenant = get_tenant_config(tenant_id)
