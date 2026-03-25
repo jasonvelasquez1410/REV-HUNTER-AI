@@ -36,6 +36,8 @@ if not GOOGLE_API_KEY:
 
 @app.get("/")
 async def root():
+    # RevHunter AI - FastAPI Backend
+    # Triggering redeploy for updated environment variables.
     return {"message": "RevHunter AI API is Running"}
 
 @app.get("/tenant-config")
