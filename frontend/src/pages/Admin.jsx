@@ -13,6 +13,8 @@ const Admin = () => {
         { id: 3, time: "Sat 10:00 PM", action: "90-Day Follow-up sent to Sarah", type: "AI" }
     ]);
 
+    const [apiStatus, setApiStatus] = useState('Checking...');
+
     const [showPresentation, setShowPresentation] = useState(false);
     const [presentationStep, setPresentationStep] = useState(0);
 
@@ -25,6 +27,16 @@ const Admin = () => {
     const apiUrl = import.meta.env.VITE_API_URL || '/api';
 
     useEffect(() => {
+        const checkStatus = async () => {
+            try {
+                const res = await fetch(`${apiUrl}/`);
+                if (res.ok) setApiStatus('CONNECTED');
+                else setApiStatus('ERROR');
+            } catch {
+                setApiStatus('OFFLINE');
+            }
+        };
+
         const fetchAllLeads = async () => {
             try {
                 const [leadsRes, agedRes] = await Promise.all([
@@ -39,6 +51,8 @@ const Admin = () => {
                 console.error("Failed to fetch leads:", err);
             }
         };
+        
+        checkStatus();
         if (tenant.id) fetchAllLeads();
     }, [tenant.id, apiUrl]);
 
@@ -163,7 +177,7 @@ const Admin = () => {
                     </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.8rem', color: '#888' }}>Accountability Audit Log</div>
+                    <div style={{ fontSize: '0.8rem', color: '#888' }}>API Status: <span style={{ color: apiStatus === 'CONNECTED' ? '#00b894' : '#e17055', fontWeight: 'bold' }}>{apiStatus}</span></div>
                     <div style={{ fontSize: '0.7rem', color: '#00b894' }}>All actions time-stamped & verified</div>
                 </div>
             </section>

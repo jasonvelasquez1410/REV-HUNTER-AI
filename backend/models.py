@@ -5,6 +5,15 @@ class UserMessage(BaseModel):
     message: str
     context: Optional[dict] = None
 
+class Tenant(BaseModel):
+    id: str
+    name: str
+    location: str
+    address: Optional[str] = None
+    welcome_message: str
+    theme_color: str
+    inventory_file: Optional[str] = None
+
 class Car(BaseModel):
     id: int
     make: str

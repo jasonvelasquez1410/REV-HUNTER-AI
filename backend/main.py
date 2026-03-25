@@ -2,7 +2,11 @@ from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from models import UserMessage, Lead, AdApproval, Car
 from ai_logic import qualify_lead, get_inventory, generate_ad_copy, get_tenant_config
-from typing import List, Optional
+from typing import List, Optional, Annotated
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(title="RevHunter AI Sales Engine API")
 
@@ -19,20 +23,14 @@ from storage import db
 from typing import List, Optional, Annotated
 from fastapi import Depends
 
-app = FastAPI(title="RevHunter AI Sales Engine API")
-
-# Setup CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 async def get_tenant_id(x_tenant_id: Annotated[Optional[str], Header()] = None) -> str:
     """Dependency to resolve tenant_id from headers/domain."""
     return x_tenant_id or "filcan"
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    # We'll allow it to run for now but warn, as per project.md requirements
+    print("WARNING: OPENAI_API_KEY not set. AI features may be limited.")
 
 @app.get("/")
 async def root():
