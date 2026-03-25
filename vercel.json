@@ -11,14 +11,24 @@
       "use": "@vercel/python"
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "backend/main.py"
+      "src": "/api/(.*)",
+      "dest": "backend/main.py"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/assets/(.*)",
+      "dest": "/frontend/assets/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1",
+      "continue": true
+    },
+    {
+      "src": "/(.*)",
+      "status": 200,
+      "dest": "/frontend/index.html"
     }
   ]
 }

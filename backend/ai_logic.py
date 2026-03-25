@@ -5,7 +5,10 @@ from storage import db
 # Initialize Gemini
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 if GOOGLE_API_KEY:
-    genai.configure(api_key=GOOGLE_API_KEY)
+    try:
+        genai.configure(api_key=GOOGLE_API_KEY)
+    except Exception as e:
+        print(f"Gemini Config Error: {e}")
 
 def get_tenant_config(tenant_id="filcan"):
     return db.get_tenant_config(tenant_id)
