@@ -27,10 +27,11 @@ This file serves as a persistent record of the project's state to help future se
 ## Deployment Status
 
 - **GitHub**: Pushed to `jasonvelasquez1410/REV-HUNTER-AI`.
-- **Vercel**: Configured for monorepo. 
-  - API is routed via `/api`.
-  - Frontend defaults to `/api` for the backend URL.
-  - **Goal**: Transition to a fully scalable SaaS model.
+- **Vercel**: Live at `https://rev-hunter-ai.vercel.app/`.
+- **Environment Variables Required**:
+  - `GEMINI_API_KEY`: Google AI Studio key (Free tier).
+  - `DATABASE_URL`: Supabase connection string (Ensure `[YOUR-PASSWORD]` is replaced with `FOwELeUtVHXxm1Gm`).
+- **How to Redeploy**: Push any change to GitHub (e.g., a comment in `backend/main.py`). Vercel auto-deploys on every push.
 
 ## Next Topic / Pending Tasks
 
@@ -41,4 +42,5 @@ This file serves as a persistent record of the project's state to help future se
 ## Memory Log
 
 - **2026-03-24**: Finalized Vercel configuration. Created `project.md`.
-- **2026-03-25**: Finalized SaaS deployment configuration. Improved Vercel routing, enforced environment variables for DB/OpenAI, and added a live API health check to the Admin Hub. Pushed latest changes to GitHub for Vercel auto-deployment.
+- **2026-03-25**: Finalized SaaS deployment configuration. Improved Vercel routing, enforced environment variables for DB/OpenAI, and added a live API health check to the Admin Hub.
+- **2026-03-26 (Latest)**: Transitioned from OpenAI to **Google Gemini 1.5 Flash** (Free Tier). Refined `vercel.json` for monorepo routing. Fixed 404/500 errors by supporting `GEMINI_API_KEY` alias and correcting the `DATABASE_URL` password. Site is now deployment-ready for the FilCan Cars presentation.
