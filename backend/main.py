@@ -28,11 +28,11 @@ async def get_tenant_id(x_tenant_id: Annotated[Optional[str], Header()] = None) 
     return x_tenant_id or "filcan"
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") # Deprecated
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
 
 if not GOOGLE_API_KEY:
     # We'll allow it to run for now but warn, as per project.md requirements
-    print("WARNING: GOOGLE_API_KEY not set. Gemini AI features may be limited.")
+    print("WARNING: GOOGLE_API_KEY/GEMINI_API_KEY not set. Gemini AI features may be limited.")
 
 @app.get("/")
 async def root():
