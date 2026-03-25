@@ -7,22 +7,36 @@ from sqlalchemy.orm import sessionmaker, Session
 from models import Lead as PydanticLead, Car, AdApproval
 
 # Database Setup
-# Use environment variable for production, fallback to user's URI for now
-DEFAULT_DB_URL = "postgresql://postgres:FOwELeUtVHXxm1Gm@db.llvucxbbvsfzkkhyqeuv.supabase.co:5432/postgres"
-DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DB_URL)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL not set in environment")
-
-# Supabase requires some pooling adjustments for serverless
-engine = create_engine(
-    DATABASE_URL, 
-    pool_size=10, 
-    max_overflow=20,
-    pool_pre_ping=True
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Late initialization to prevent crash on import
+engine = None
+SessionLocal = None
 Base = declarative_base()
+
+def init_db():
+    global engine, SessionLocal
+    if engine is None:
+        if not DATABASE_URL:
+            print("WARNING: DATABASE_URL not set. Falling back to in-memory for safety.")
+            db_url = "sqlite:///./test.db"
+        else:
+            db_url = DATABASE_URL
+            
+        try:
+            # Supabase requires some pooling adjustments for serverless
+            engine = create_engine(
+                db_url, 
+                pool_size=5, 
+                max_overflow=10,
+                pool_pre_ping=True
+            )
+            SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+            # Create tables if they don't exist
+            Base.metadata.create_all(bind=engine)
+        except Exception as e:
+            print(f"Database Initialization Error: {e}")
+            raise e
 
 # SQLAlchemy Models
 class TenantTable(Base):
@@ -73,16 +87,19 @@ class AdTable(Base):
     platform = Column(String)
     status = Column(String, default="Pending")
 
-# Create tables
-Base.metadata.create_all(bind=engine)
+# Note: metadata.create_all is moved to init_db()
 
 # Default configuration path
 TENANTS_FILE = os.path.join(os.path.dirname(__file__), "tenants.json")
 
 class Storage:
     def __init__(self):
+        init_db()
         self.session_factory = SessionLocal
-        self._seed_data_if_empty()
+        try:
+            self._seed_data_if_empty()
+        except Exception as e:
+            print(f"Seeding Error: {e}")
 
     def _seed_data_if_empty(self):
         with self.session_factory() as session:
