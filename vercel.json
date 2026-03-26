@@ -17,18 +17,6 @@
       "destination": "backend/main.py"
     },
     {
-      "source": "/admin",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/landing",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/facebook",
-      "destination": "/index.html"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
