@@ -58,8 +58,9 @@ This file serves as a persistent record of the project's state to help future se
   - Enhanced `LeadTable` and `main.py` to track conversation steps and summaries.
   - Updated Admin Hub UI with real-time "Qualification Step" and "Progress" monitoring.
   - Hardened FB Webhook to route messages through the stateful AI engine.
-- **2026-03-26 (V11.1)**: **DEPLOYMENT & ROUTING PATCH**.
-  - Fixed `/admin` 404 by hardening `vercel.json` rewrites.
+- **2026-03-27 (V11.1)**: **DEPLOYMENT & ROUTING PATCH**.
+  - Fixed persistent 404 on `/admin` and root by adding a **Root `package.json`** for monorepo detection.
+  - Refined `vercel.json` with robust rewrites and negative lookaheads to protect static assets.
   - Added Dual-Mode Routing (Path/Hash) to `App.jsx` as a deployment fallback.
   - Added `v11.1` versioning to `ChatWidget` to verify live updates.
   - Enhanced error diagnostics for chat connection failures.
