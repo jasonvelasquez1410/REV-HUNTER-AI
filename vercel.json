@@ -14,11 +14,23 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "backend/main.py"
+      "destination": "/api/$1"
     },
     {
-      "source": "/(.*)",
-      "destination": "/frontend/$1"
+      "source": "/admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/landing",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/facebook",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ]
 }

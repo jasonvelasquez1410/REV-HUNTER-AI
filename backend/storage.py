@@ -34,9 +34,11 @@ def init_db():
             SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
             # Create tables if they don't exist
             Base.metadata.create_all(bind=engine)
+            print("Database initialized successfully.")
         except Exception as e:
             print(f"Database Initialization Error: {e}")
-            raise e
+            # We don't raise here to allow the app to start in 'Degraded' mode
+            # Endpoints will handle the lack of engine/SessionLocal gracefully
 
 # SQLAlchemy Models
 class TenantTable(Base):
@@ -78,6 +80,8 @@ class LeadTable(Base):
     follow_up_streak = Column(Integer, default=0)
     last_action_time = Column(String, default="Just Now")
     is_aged = Column(Boolean, default=False)
+    conversation_state = Column(Text, default="{}")  # JSON string of the current qualification state
+    conversation_summary = Column(Text, default="New Lead - Discovery Phase")
 
 class AdTable(Base):
     __tablename__ = "ads"
@@ -160,6 +164,16 @@ class Storage:
                 session.commit()
 
     def get_tenant_config(self, tenant_id: str = "filcan") -> Dict:
+        if not self.session_factory:
+            # Revert to hardcoded/local logic if DB is down
+            return {
+                "id": tenant_id,
+                "name": "FilCan Cars" if tenant_id == "filcan" else "Demo Motors",
+                "location": "Sherwood Park" if tenant_id == "filcan" else "Digital",
+                "address": "983 Fir Street" if tenant_id == "filcan" else "123 AI Avenue",
+                "welcome_message": "Welcome to FilCan Cars! (Local Backup Active)",
+                "theme_color": "#003366"
+            }
         with self.session_factory() as session:
             tenant = session.query(TenantTable).filter(TenantTable.id == tenant_id).first()
             if tenant:
@@ -174,6 +188,10 @@ class Storage:
             return {"name": "RevHunter AI", "location": "Global", "theme_color": "#003366"}
 
     def get_inventory(self, tenant_id: str = "filcan") -> List[Dict]:
+        if not self.session_factory:
+            return [
+                {"id": 1, "make": "Volkswagen", "model": "Atlas", "year": 2024, "price": 54900, "mileage": 15, "type": "SUV", "image": "", "description": "Local Backup Inventory"}
+            ]
         with self.session_factory() as session:
             cars = session.query(CarTable).filter(CarTable.tenant_id == tenant_id).all()
             return [
@@ -191,6 +209,8 @@ class Storage:
             ]
 
     def get_leads(self, tenant_id: str = "filcan") -> List[PydanticLead]:
+        if not self.session_factory:
+            return [PydanticLead(name="Local Lead", email="local@backup.com", phone="555-0000", status="Hot")]
         with self.session_factory() as session:
             leads = session.query(LeadTable).filter(LeadTable.tenant_id == tenant_id).all()
             return [PydanticLead(**l.__dict__) for l in leads]
@@ -224,6 +244,35 @@ class Storage:
                 return True
             return False
 
+    def update_lead_state(self, lead_id: int, state: Dict, summary: str) -> bool:
+        with self.session_factory() as session:
+            lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
+            if lead:
+                lead.conversation_state = json.dumps(state)
+                lead.conversation_summary = summary
+                lead.last_action_time = "Just Now"
+                session.commit()
+                return True
+            return False
+
+    def get_or_create_lead(self, tenant_id: str, name: str, phone: str = None) -> LeadTable:
+        with self.session_factory() as session:
+            lead = session.query(LeadTable).filter(
+                LeadTable.tenant_id == tenant_id,
+                LeadTable.name == name
+            ).first()
+            if not lead:
+                lead = LeadTable(
+                    tenant_id=tenant_id,
+                    name=name,
+                    phone=phone,
+                    status="Discovery"
+                )
+                session.add(lead)
+                session.commit()
+                session.refresh(lead)
+            return lead
+
     def add_ad(self, ad_data: Dict, tenant_id: str = "filcan"):
         with self.session_factory() as session:
             new_ad = AdTable(
@@ -236,6 +285,8 @@ class Storage:
             session.commit()
 
     def get_ads(self) -> List[Dict]:
+        if not self.session_factory:
+            return [{"id": 0, "content": "Ad system is currently offline (DB Connection Issue)", "platform": "N/A", "status": "Error", "tenant_id": "all"}]
         with self.session_factory() as session:
             ads = session.query(AdTable).all()
             return [{"id": a.id, "content": a.content, "platform": a.platform, "status": a.status, "tenant_id": a.tenant_id} for a in ads]

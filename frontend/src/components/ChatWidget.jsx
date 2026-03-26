@@ -45,13 +45,21 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
                 },
                 body: JSON.stringify({ message: currentInput, context: context })
             });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server Error (${response.status}): ${errorText.substring(0, 50)}`);
+            }
+
             const data = await response.json();
-            
             setMessages(prev => [...prev, { text: data.response, isAi: true }]);
             setContext(data.context);
         } catch (error) {
             console.error("Chat error:", error);
-            setMessages(prev => [...prev, { text: "I'm having trouble connecting, but I'm usually much faster! (Demo Mode)", isAi: true }]);
+            setMessages(prev => [...prev, { 
+                text: `[Relentless Engine Error]: I'm having trouble reaching the AI. Please verify the Vercel deployment logs. (Error: ${error.message})`, 
+                isAi: true 
+            }]);
         }
     };
 
@@ -76,7 +84,7 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
                         <div>
                             <div style={{ fontWeight: 'bold' }}>{tenant.name} Omni Hunter</div>
                             <div style={{ fontSize: '0.65rem', opacity: 0.9 }}>
-                                ● {context.role || 'Receptionist'} Mode
+                                ● {context.role || 'Receptionist'} Mode | v11.1
                             </div>
                         </div>
                         <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>✕</button>

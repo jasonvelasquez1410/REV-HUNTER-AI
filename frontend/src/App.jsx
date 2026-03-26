@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ChatWidget from './components/ChatWidget';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
@@ -9,6 +9,20 @@ import { TenantProvider, useTenant } from './context/TenantContext';
 function AppContent() {
   const [currentPage, setCurrentPage] = useState('home');
   const { tenant } = useTenant();
+
+  useEffect(() => {
+    const path = window.location.pathname;
+    const hash = window.location.hash.replace('#', '');
+    const activeRoute = hash || path;
+
+    if (activeRoute === '/admin' || activeRoute === 'admin') {
+      setCurrentPage('admin');
+    } else if (activeRoute === '/landing' || activeRoute === 'landing') {
+      setCurrentPage('landing');
+    } else if (activeRoute === '/facebook' || activeRoute === 'facebook') {
+      setCurrentPage('facebook');
+    }
+  }, []);
 
   return (
     <div className="App">

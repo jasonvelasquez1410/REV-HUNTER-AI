@@ -40,6 +40,9 @@ class Lead(BaseModel):
     last_action_time: str = "Saturday 9:00 PM"  # Mock for demo
     is_aged: bool = False
     assigned_rep: str = "User/Rjay"
+    conversation_state: Optional[str] = "{}"
+    conversation_summary: Optional[str] = "New Lead"
+    id: Optional[int] = None
 
 class AdApproval(BaseModel):
     id: int

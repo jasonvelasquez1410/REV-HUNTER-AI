@@ -23,6 +23,9 @@ const Admin = () => {
         { id: 2, text: `Need a trade-in value? We're paying TOP DOLLAR this weekend in ${tenant.location}! 🚗💰`, type: "Ad Campaign", status: "Pending Approval" }
     ]);
 
+    const [isGeneratingAd, setIsGeneratingAd] = useState(false);
+    const [selectedPillar, setSelectedPillar] = useState('tactical');
+
     const dailyLeads = leads.filter(l => l.is_reported);
     const apiUrl = import.meta.env.VITE_API_URL || '/api';
 
@@ -112,6 +115,53 @@ const Admin = () => {
         ]);
     };
 
+    const handleGenerateAd = async () => {
+        setIsGeneratingAd(true);
+        try {
+            const res = await fetch(`${apiUrl}/generate-ad`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Tenant-Id': tenant.id 
+                },
+                body: JSON.stringify({ context: selectedPillar })
+            });
+            const data = await res.json();
+            setMarketingDrafts(prev => [
+                { id: Date.now(), text: data.content, type: "AI Draft", status: "Pending Approval" },
+                ...prev
+            ]);
+            setAuditLogs(prev => [
+                { id: `log-${Date.now()}`, time: "Now", action: `AI Marketing Manager drafted new ${selectedPillar} post`, type: "AI" },
+                ...prev
+            ]);
+        } catch (err) {
+            console.error("Ad gen failed:", err);
+        } finally {
+            setIsGeneratingAd(false);
+        }
+    };
+
+    const handleManualReply = async (lead) => {
+        const message = prompt(`Enter manual reply for ${lead.name}:`);
+        if (!message) return;
+
+        try {
+            await fetch(`${apiUrl}/admin/manual-reply`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipient_id: lead.id, message: message })
+            });
+            setAuditLogs(prev => [
+                { id: `log-${Date.now()}`, time: "Now", action: `Manual Reply sent to ${lead.name}`, type: "REP" },
+                ...prev
+            ]);
+            alert("Reply sent via Relentless AI!");
+        } catch (err) {
+            console.error("Reply failed:", err);
+        }
+    };
+
     const stats = {
         published: 12,
         pending: 4,
@@ -194,6 +244,8 @@ const Admin = () => {
                             <thead>
                                 <tr style={{ borderBottom: '2px solid #f0f0f0', textAlign: 'left' }}>
                                     <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>CUSTOMER</th>
+                                    <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>STEP</th>
+                                    <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>PROGRESS</th>
                                     <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>INTENT</th>
                                     <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem', textAlign: 'right' }}>ACTION</th>
                                 </tr>
@@ -206,14 +258,33 @@ const Admin = () => {
                                             <div style={{ fontSize: '0.75rem', color: '#888' }}>{lead.budget}</div>
                                         </td>
                                         <td style={{ padding: '12px' }}>
-                                            <span style={{ 
-                                                padding: '4px 10px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: '600',
-                                                backgroundColor: lead.status === 'Hot' ? '#fff0f0' : lead.status === 'Qualified' ? '#f0fff4' : '#fff9eb',
-                                                color: lead.status === 'Hot' ? '#ff4d4d' : lead.status === 'Qualified' ? '#27ae60' : '#f39c12',
-                                                border: `1px solid ${lead.status === 'Hot' ? '#ffcccc' : lead.status === 'Qualified' ? '#c3e6cb' : '#ffeeba'}`
-                                            }}>{lead.status}</span>
+                                            <div style={{ fontWeight: '600', color: tenant.theme_color }}>
+                                                STEP {JSON.parse(lead.conversation_state || '{}').step || 1}
+                                            </div>
                                         </td>
-                                        <td style={{ padding: '12px', textAlign: 'right' }}>
+                                        <td style={{ padding: '12px' }}>
+                                            <div style={{ fontSize: '0.75rem', color: '#444', maxWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={lead.conversation_summary}>
+                                                {lead.conversation_summary || "Starting Discovery..."}
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '12px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ 
+                                                    padding: '4px 10px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: '600',
+                                                    backgroundColor: lead.status === 'Hot' ? '#fff0f0' : lead.status === 'Qualified' ? '#f0fff4' : '#fff9eb',
+                                                    color: lead.status === 'Hot' ? '#ff4d4d' : lead.status === 'Qualified' ? '#27ae60' : '#f39c12',
+                                                    border: `1px solid ${lead.status === 'Hot' ? '#ffcccc' : lead.status === 'Qualified' ? '#c3e6cb' : '#ffeeba'}`
+                                                }}>{lead.status}</span>
+                                                <span style={{ fontSize: '0.6rem', color: '#999' }}>FB MSG</span>
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '12px', textAlign: 'right', display: 'flex', gap: '5px', justifyContent: 'flex-end' }}>
+                                            <button 
+                                                onClick={() => handleManualReply(lead)}
+                                                style={{ padding: '6px 12px', fontSize: '0.7rem', backgroundColor: '#eee', color: '#333', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                                            >
+                                                📩 Reply
+                                            </button>
                                             {!lead.is_reported ? (
                                                 <button 
                                                     onClick={() => handleReport(lead.id)}
@@ -223,7 +294,7 @@ const Admin = () => {
                                                         border: 'none', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s'
                                                     }}
                                                 >
-                                                    Select for Report
+                                                    Add to Report
                                                 </button>
                                             ) : (
                                                 <span style={{ fontSize: '0.8rem', color: '#27ae60', fontWeight: '600' }}>✓ Added</span>
@@ -353,6 +424,44 @@ const Admin = () => {
                     </div>
                 </section>
             </div>
+            {/* Marketing Strategy Hub (The Marketing Manager Role) */}
+            <section style={{ marginBottom: '30px', background: 'linear-gradient(135deg, #003366 0%, #001f3f 100%)', color: 'white', padding: '25px', borderRadius: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <div>
+                        <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'white' }}>Marketing Strategy Hub</h2>
+                        <p style={{ margin: '5px 0 0', fontSize: '0.8rem', color: '#aaa' }}>Command your AI Marketing Manager to generate high-performing content.</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <select 
+                            value={selectedPillar} 
+                            onChange={(e) => setSelectedPillar(e.target.value)}
+                            style={{ padding: '8px 15px', borderRadius: '8px', border: '1px solid #444', background: '#1a1a1a', color: 'white', fontSize: '0.8rem' }}
+                        >
+                            <option value="tactical">Inventory Sprint (Tactical)</option>
+                            <option value="strategic">Brand & Finance (Strategic)</option>
+                            <option value="seasonal">Seasonal Clearance</option>
+                        </select>
+                        <button 
+                            disabled={isGeneratingAd}
+                            onClick={handleGenerateAd}
+                            style={{ 
+                                padding: '8px 25px', background: '#00b894', color: 'white', border: 'none', borderRadius: '8px', 
+                                fontWeight: 'bold', cursor: 'pointer', opacity: isGeneratingAd ? 0.7 : 1 
+                            }}
+                        >
+                            {isGeneratingAd ? "🤖 Drafting..." : "🚀 Generate Contextual Ad"}
+                        </button>
+                    </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
+                    {['Inventory Focus', 'Finance Deals', 'Trade-In Promo', 'Brand Story'].map(label => (
+                        <div key={label} style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+                            <div style={{ fontSize: '1.2rem', marginBottom: '5px' }}>{label === 'Inventory Focus' ? '🚗' : label === 'Finance Deals' ? '🏦' : label === 'Trade-In Promo' ? '💰' : '📖'}</div>
+                            <div style={{ fontSize: '0.7rem', fontWeight: '600' }}>{label}</div>
+                        </div>
+                    ))}
+                </div>
+            </section>
 
             {/* Marketing Manager Approval Workflow Section */}
             <section style={{ marginTop: '30px', background: 'white', padding: '25px', borderRadius: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}>
