@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import LeadReportCard from '../components/LeadReportCard';
 import { useTenant } from '../context/TenantContext';
 
+const MOCK_FALLBACK_LEADS = [
+    { id: 101, name: "Marvin Raymundo", status: "Hot", quality_score: 98, follow_up_streak: 2, conversation_state: '{"step": 5}', conversation_summary: "Interested in VW Atlas. Trade-in: 2018 RAV4.", last_action_time: "Today 10:45 AM" },
+    { id: 102, name: "Jessica Chen", status: "Qualified", quality_score: 85, follow_up_streak: 1, conversation_state: '{"step": 3}', conversation_summary: "Looking for family SUV. CX-5 vs Atlas.", last_action_time: "Today 9:15 AM" }
+];
+
 const Admin = () => {
     const { tenant } = useTenant();
     const [leads, setLeads] = useState([]);
@@ -22,12 +27,8 @@ const Admin = () => {
         { id: 2, type: 'Ad', text: 'Looking to upgrade? We offer the best trade-in values for your current car. Get an instant quote!', status: 'Published' }
     ]);
 
-    const MOCK_FALLBACK_LEADS = [
-        { id: 101, name: "Marvin Raymundo", status: "Hot", quality_score: 98, follow_up_streak: 2, conversation_state: '{"step": 5}', conversation_summary: "Interested in VW Atlas. Trade-in: 2018 RAV4.", last_action_time: "Today 10:45 AM" },
-        { id: 102, name: "Jessica Chen", status: "Qualified", quality_score: 85, follow_up_streak: 1, conversation_state: '{"step": 3}', conversation_summary: "Looking for family SUV. CX-5 vs Atlas.", last_action_time: "Today 9:15 AM" }
-    ];
-
     const [isGeneratingAd, setIsGeneratingAd] = useState(false);
+    const [isSyncingCRM, setIsSyncingCRM] = useState(null); 
     const [selectedPillar, setSelectedPillar] = useState('tactical');
 
     const dailyLeads = leads.filter(l => l.is_reported);
@@ -45,7 +46,7 @@ const Admin = () => {
                 // Fail-safe: Use mock leads if DB is empty/disconnected
                 setLeads(MOCK_FALLBACK_LEADS);
             }
-        } catch (err) {
+        } catch {
             console.warn("Using Pitch Fail-safe (Offline Mode)");
             setLeads(MOCK_FALLBACK_LEADS);
         }
@@ -67,8 +68,8 @@ const Admin = () => {
                     setLeads(MOCK_FALLBACK_LEADS);
                 }
                 setAgedLeads(agedData);
-            } catch (err) {
-                console.error("Failed to fetch leads:", err);
+            } catch (_err) {
+                console.error("Failed to fetch leads:", _err);
                 console.warn("Using Pitch Fail-safe (Offline Mode)");
                 setLeads(MOCK_FALLBACK_LEADS);
             }
@@ -88,8 +89,8 @@ const Admin = () => {
                 { id: `log-${Date.now()}`, time: "Now", action: `AI promoted lead to Quality Report`, type: "AI" },
                 ...prev
             ]);
-        } catch (err) {
-            console.error("Report failed:", err);
+        } catch {
+            console.error("Report failed");
         }
     };
 
@@ -102,8 +103,8 @@ const Admin = () => {
             setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, is_billed: true } : l));
             setAuditLogs([{ id: Date.now(), time: "Now", action: `Charged ${tenant.name} for ${lead.name}`, type: "BILL" }, ...auditLogs]);
             alert(`Successfully charged for lead: ${lead.name}`);
-        } catch (err) {
-            console.error("Charge failed:", err);
+        } catch {
+            console.error("Charge failed");
         }
     };
 
@@ -120,8 +121,8 @@ const Admin = () => {
                 { id: `log-${Date.now()}`, time: "Now", action: `REACTIVATED: ${lead.name} (Dead to Life)`, type: "AI" },
                 ...prev
             ]);
-        } catch (err) {
-            console.error("Reactivate failed:", err);
+        } catch {
+            console.error("Reactivate failed");
         }
     };
 
@@ -178,6 +179,20 @@ const Admin = () => {
         } catch (err) {
             console.error("Reply failed:", err);
         }
+    };
+
+    const handleSyncCRM = async (lead) => {
+        setIsSyncingCRM(lead.id);
+        
+        // Professional simulation delay
+        setTimeout(() => {
+            setAuditLogs(prev => [
+                { id: `crm-${Date.now()}`, time: "Now", action: `CRM: Lead '${lead.name}' successfully exported to CDK Drive (ID: ${Math.floor(Math.random() * 90000) + 10000})`, type: "REP" },
+                ...prev
+            ]);
+            setIsSyncingCRM(null);
+            alert(`✅ ${lead.name} synced to FilCan CRM (CDK Drive)`);
+        }, 2000);
     };
 
     const handleAutoNudge = async (leadId) => {
@@ -239,10 +254,10 @@ const Admin = () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
-            }).catch(e => console.log("Silent fallback in pitch mode"));
+            }).catch(() => console.log("Silent fallback in pitch mode"));
 
-        } catch (err) {
-            console.error("Injection failed:", err);
+        } catch {
+            console.error("Injection failed");
         }
     };
 
@@ -312,6 +327,7 @@ const Admin = () => {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '0.8rem', color: '#00b894' }}>PITCH MODE: <span style={{ fontWeight: 'bold' }}>ACTIVE (SIMULATED)</span></div>
+                    <div style={{ fontSize: '0.7rem', color: '#aaa', marginTop: '2px' }}>CRM Connection: <span style={{ color: '#00b894', fontWeight: 'bold' }}>ACTIVE (CDK DRIVE)</span></div>
                     <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end', marginTop: '5px' }}>
                         <button 
                             onClick={handleInjectLead}
@@ -396,6 +412,13 @@ const Admin = () => {
                                                 style={{ padding: '6px 12px', fontSize: '0.7rem', backgroundColor: '#eee', color: '#333', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
                                             >
                                                 📩 Reply
+                                            </button>
+                                            <button 
+                                                disabled={isSyncingCRM === lead.id}
+                                                onClick={() => handleSyncCRM(lead)}
+                                                style={{ padding: '6px 12px', fontSize: '0.7rem', backgroundColor: '#00b894', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', opacity: isSyncingCRM === lead.id ? 0.7 : 1 }}
+                                            >
+                                                {isSyncingCRM === lead.id ? "⏳..." : "🔄 CRM"}
                                             </button>
                                             {!lead.is_reported ? (
                                                 <button 
