@@ -18,13 +18,16 @@ def init_db():
     global engine, SessionLocal
     if engine is None:
         if not DATABASE_URL:
-            print("WARNING: DATABASE_URL not set. Falling back to in-memory for safety.")
-            db_url = "sqlite:///./test.db"
+            # Vercel Serverless: Only /tmp is writable
+            print("WARNING: DATABASE_URL not set. Falling back to /tmp/test.db for Vercel safety.")
+            db_url = "sqlite:////tmp/test_revhunter.db"
         else:
-            # Fix postgres:// to postgresql:// for SQLAlchemy 1.4+
+            # Fix postgres:// to postgresql:// and use pure-python pg8000 for Vercel
             db_url = DATABASE_URL
             if db_url.startswith("postgres://"):
-                db_url = db_url.replace("postgres://", "postgresql://", 1)
+                db_url = db_url.replace("postgres://", "postgresql+pg8000://", 1)
+            elif db_url.startswith("postgresql://"):
+                db_url = db_url.replace("postgresql://", "postgresql+pg8000://", 1)
             
         try:
             # Supabase requires some pooling adjustments for serverless
