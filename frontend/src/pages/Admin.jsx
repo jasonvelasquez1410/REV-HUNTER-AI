@@ -78,6 +78,7 @@ const Admin = () => {
     const [isSyncingCRM, setIsSyncingCRM] = useState(null); 
     const [selectedLeadChat, setSelectedLeadChat] = useState(null);
     const [isCalling, setIsCalling] = useState(null);
+    const [isVoiceDemoPlaying, setIsVoiceDemoPlaying] = useState(false);
     const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' or 'showroom'
     const [selectedPillar, setSelectedPillar] = useState('tactical');
 
@@ -262,6 +263,50 @@ const Admin = () => {
             { id: `voice-${Date.now()}`, time: "Now", action: `📞 VAPI: Initiated human-grade AI voice call to ${lead.name}`, type: "AI" },
             ...prev
         ]);
+    };
+
+    const handleVoiceDemo = () => {
+        if (isVoiceDemoPlaying) return;
+        setIsVoiceDemoPlaying(true);
+        
+        const script = [
+            { speaker: 'Customer', text: "Hi, I'm interested in the 2024 VW Atlas. Do you have one available for a test drive tomorrow?", voice: { pitch: 0.9, rate: 0.9 } },
+            { speaker: 'Riley (AI)', text: "Hi! This is Riley from FilCan Cars. Yes, we have two Atlas units in stock—Platinum Grey and Aurora Red. Would 2:00 PM tomorrow work for you?", voice: { pitch: 1.2, rate: 1.0 } },
+            { speaker: 'Customer', text: "2:00 PM sounds perfect. Also, do you guys accept trade-ins? I have a 2018 RAV4.", voice: { pitch: 0.9, rate: 0.9 } },
+            { speaker: 'Riley (AI)', text: "Absolutely! We love RAV4s. Bring it with you, and I'll have our appraisal team give you a top-market value while you're out on your test drive. See you then!", voice: { pitch: 1.2, rate: 1.0 } }
+        ];
+
+        let currentLine = 0;
+
+        const speakNext = () => {
+            if (currentLine >= script.length) {
+                setIsVoiceDemoPlaying(false);
+                setAuditLogs(prev => [
+                    { id: `demo-${Date.now()}`, time: "Now", action: "🎧 AUDIO CASE STUDY: Completed full customer-agent voice simulation", type: "AI" },
+                    ...prev
+                ]);
+                return;
+            }
+
+            const line = script[currentLine];
+            const utterance = new SpeechSynthesisUtterance(line.text);
+            utterance.pitch = line.voice.pitch;
+            utterance.rate = line.voice.rate;
+            
+            // Highlight the current speaker in the UI (implied via state)
+            utterance.onstart = () => {
+                console.log(`Speaking as ${line.speaker}: ${line.text}`);
+            };
+
+            utterance.onend = () => {
+                currentLine++;
+                setTimeout(speakNext, 800); // Natural pause between speakers
+            };
+
+            window.speechSynthesis.speak(utterance);
+        };
+
+        speakNext();
     };
 
     const handleAutoNudge = async (leadId) => {
@@ -548,9 +593,22 @@ const Admin = () => {
                             </tbody>
                         </table>
                     </div>
-                ) : (
-                    <div style={{ padding: '20px' }}>
-                        <h3 style={{ marginBottom: '20px', color: '#00b894' }}>Upcoming Showroom Appointments</h3>
+                    ) : (
+                        <div style={{ padding: '20px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                                <h3 style={{ margin: 0, color: '#00b894' }}>Upcoming Showroom Appointments</h3>
+                                <button 
+                                    onClick={handleVoiceDemo}
+                                    disabled={isVoiceDemoPlaying}
+                                    style={{ 
+                                        padding: '12px 25px', background: isVoiceDemoPlaying ? '#ccc' : '#D92027', 
+                                        color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', 
+                                        cursor: 'pointer', boxShadow: '0 8px 20px rgba(217,32,39,0.3)', transition: 'all 0.2s'
+                                    }}
+                                >
+                                    {isVoiceDemoPlaying ? "🎧 DEMO IN PROGRESS" : "🎧 PLAY AUDIO CASE STUDY"}
+                                </button>
+                            </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
                             {MOCK_APPOINTMENTS.map(app => (
                                 <div key={app.id} style={{ background: '#f8f9fa', padding: '20px', borderRadius: '15px', borderLeft: `5px solid ${app.status === 'CONFIRMED' ? '#00b894' : '#fdcb6e'}` }}>
@@ -567,12 +625,9 @@ const Admin = () => {
                                 </div>
                             ))}
                         </div>
-                        <div style={{ marginTop: '30px', padding: '15px', background: 'rgba(0,184,148,0.1)', borderRadius: '10px', fontSize: '0.85rem', color: '#00b894', border: '1px dashed #00b894' }}>
-                            💡 All appointments above were **fully booked by RevHunter AI** without any human intervention.
                         </div>
-                    </div>
-                )}
-            </section>
+                    )}
+                </section>
 
             {/* AI Calling Overlay */}
             {isCalling && (
@@ -618,6 +673,26 @@ const Admin = () => {
                     
                     <div style={{ position: 'absolute', bottom: '40px', color: '#444', fontSize: '0.7rem' }}>
                         RevHunter Voice Engine V20.1 | Low Latency Mode Active
+                    </div>
+                </div>
+            )}
+
+            {/* Voice Case Study Overlay */}
+            {isVoiceDemoPlaying && (
+                <div style={{
+                    position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
+                    width: '90%', maxWidth: '600px', background: '#1a1a1a', border: '2px solid #D92027',
+                    padding: '25px', borderRadius: '20px', zIndex: 10000, color: 'white',
+                    display: 'flex', alignItems: 'center', gap: '20px', boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                    animation: 'fadeIn 0.5s ease-out'
+                }}>
+                    <div style={{ width: '60px', height: '60px', background: '#D92027', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+                        🎧
+                    </div>
+                    <div>
+                        <div style={{ fontSize: '0.7rem', color: '#D92027', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '5px' }}>Live Audio Case Study</div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: '600' }}>Marcus (Customer) ⟷ Riley (AI Sales Agent)</div>
+                        <div style={{ fontSize: '0.85rem', color: '#aaa', marginTop: '5px' }}>Demonstrating full showroom booking interaction...</div>
                     </div>
                 </div>
             )}
