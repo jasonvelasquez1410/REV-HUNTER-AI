@@ -64,8 +64,7 @@ This file serves as a persistent record of the project's state to help future se
   - Added Dual-Mode Routing (Path/Hash) to `App.jsx` as a deployment fallback.
   - Added `v11.1` versioning to `ChatWidget` to verify live updates.
   - Enhanced error diagnostics for chat connection failures.
-- **2026-03-27 (V13.0)**: **RELENTLESS FOLLOW-UP & PITCH READY**.
-  - **Auto-Nudge Simulation**: Added backend/frontend logic to demonstrate automated lead re-engagement (The Relentless Hunter).
-  - **Streak Visualization**: Implemented a "Follow-up Streak" tracker in the Admin Hub with dynamic 🔥 status badges.
-  - **Pitch Strategy**: Created a comprehensive `pitch_guide.md` with a 5-step script for client presentations.
-  - **Final Polish**: Reset database with high-intent mock leads for FilCan Cars demo.
+- **2026-03-27 (V14.0)**: **PITCH FAIL-SAFE & INSTANT DEMO READY**.
+  - **Frontend Fail-safe**: Implemented robust mock lead fallbacks in `Admin.jsx` to ensure a perfect demo even without API/DB keys.
+  - **Instant UI Updates**: Refactored `handleInjectLead` to provide immediate visual feedback in the Inbox table.
+  - **Offline Resilience**: Ensured the 'Relentless' simulation logic works flawlessly in disconnected/degraded states.
