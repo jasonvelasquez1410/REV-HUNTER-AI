@@ -646,12 +646,15 @@ const Admin = () => {
                                     <div>8. Inventory Match ✅</div>
                                     <div>9. Booking 📅</div>
                                 </div>
-                                <button 
-                                    onClick={() => setPresentationStep(2)}
-                                    style={{ marginTop: '50px', padding: '12px 30px', background: '#D92027', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
-                                >
-                                    SHOW ME THE ROI →
-                                </button>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '50px' }}>
+                                    <button onClick={() => setPresentationStep(0)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>← PREVIOUS</button>
+                                    <button 
+                                        onClick={() => setPresentationStep(2)}
+                                        style={{ padding: '12px 30px', background: '#D92027', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
+                                    >
+                                        SHOW ME THE ROI →
+                                    </button>
+                                </div>
                             </div>
                         )}
 
@@ -672,7 +675,65 @@ const Admin = () => {
                                         <div style={{ fontSize: '0.8rem', color: '#888' }}>Operational Availability</div>
                                     </div>
                                 </div>
-                                <div style={{ marginTop: '40px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '50px' }}>
+                                    <button onClick={() => setPresentationStep(1)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>← PREVIOUS</button>
+                                    <button 
+                                        onClick={() => setPresentationStep(3)}
+                                        style={{ padding: '12px 30px', background: '#D92027', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
+                                    >
+                                        NEXT: DASHBOARD →
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {presentationStep === 3 && (
+                            <div className="slide animate-in">
+                                <h2 style={{ fontSize: '2rem', marginBottom: '30px' }}>Full Transparency Dashboard 📊</h2>
+                                <p style={{ fontSize: '1.1rem', color: '#aaa', marginBottom: '40px' }}>
+                                    The Command Center gives you 100% visibility into every conversation. You stay in control while the AI handles the heavy lifting.
+                                </p>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', textAlign: 'left' }}>
+                                    <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                                        <span style={{ color: '#00b894' }}>✓</span> Real-Time Audit Logs
+                                    </div>
+                                    <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                                        <span style={{ color: '#00b894' }}>✓</span> Human-in-the-Loop Switching
+                                    </div>
+                                    <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                                        <span style={{ color: '#00b894' }}>✓</span> Automated CRM Sync
+                                    </div>
+                                    <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                                        <span style={{ color: '#00b894' }}>✓</span> Relentless Multi-channel Follow-up
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '50px' }}>
+                                    <button onClick={() => setPresentationStep(2)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>← PREVIOUS</button>
+                                    <button 
+                                        onClick={() => setPresentationStep(4)}
+                                        style={{ padding: '12px 30px', background: '#D92027', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
+                                    >
+                                        NEXT: GET STARTED →
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {presentationStep === 4 && (
+                            <div className="slide animate-in">
+                                <h2 style={{ fontSize: '2.5rem', marginBottom: '20px', color: '#D92027' }}>Ready to Scale FilCan Cars?</h2>
+                                <p style={{ fontSize: '1.2rem', color: '#aaa', marginBottom: '50px' }}>
+                                    We are ready to flip the switch. All we need is Facebook Admin access to connect your official page to the Relentless Hunter engine.
+                                </p>
+                                <div style={{ background: 'rgba(217, 32, 39, 0.1)', padding: '40px', borderRadius: '25px', display: 'inline-block' }}>
+                                    <h4 style={{ marginBottom: '20px' }}>Next Action Items:</h4>
+                                    <div style={{ textAlign: 'left', display: 'inline-block' }}>
+                                        <div>1. Grant FB Admin Access 🔑</div>
+                                        <div>2. Connect Inventory API 🚗</div>
+                                        <div>3. GO LIVE & START HUNTING 🚀</div>
+                                    </div>
+                                </div>
+                                <div style={{ marginTop: '50px' }}>
                                     <button 
                                         onClick={() => setPresentationStep(0)}
                                         style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}
@@ -682,6 +743,21 @@ const Admin = () => {
                                 </div>
                             </div>
                         )}
+
+                        {/* Navigation Dots */}
+                        <div style={{ position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '15px' }}>
+                            {[0, 1, 2, 3, 4].map(step => (
+                                <div 
+                                    key={step}
+                                    onClick={() => setPresentationStep(step)}
+                                    style={{ 
+                                        width: '12px', height: '12px', borderRadius: '50%', 
+                                        background: presentationStep === step ? '#D92027' : '#444', 
+                                        cursor: 'pointer', transition: '0.3s' 
+                                    }}
+                                />
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}
