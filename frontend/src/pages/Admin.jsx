@@ -7,6 +7,20 @@ const MOCK_FALLBACK_LEADS = [
     { id: 102, name: "Jessica Chen", status: "Qualified", quality_score: 85, follow_up_streak: 1, conversation_state: '{"step": 3}', conversation_summary: "Looking for family SUV. CX-5 vs Atlas.", last_action_time: "Today 9:15 AM" }
 ];
 
+const MOCK_CHATS = {
+    101: [
+        { sender: 'customer', text: "Hi, I saw your post about the 2024 VW Atlas. Is it still available?", time: "10:45 AM" },
+        { sender: 'ai', text: "Hi Marvin! 👋 Yes, we have two 2024 Atlas units in stock: a Platinum-Grey and an Aurora-Red. Which one catches your eye?", time: "10:46 AM" },
+        { sender: 'customer', text: "The Grey one looks great. What's the monthly payment roughly?", time: "10:50 AM" },
+        { sender: 'ai', text: "Great choice! The Atlas is perfect for families. Based on today's rates, we can get you into that for around $650/mo with your trade-in. Speaking of which, how is that 2018 RAV4 holding up?", time: "10:51 AM" },
+        { sender: 'ai', text: "Hey Marvin, just following up! 🏆 I just ran a preliminary appraisal on your RAV4 and it might be worth more than you think. Want me to send the numbers?", time: "12:51 PM", isNudge: true }
+    ],
+    102: [
+        { sender: 'customer', text: "Looking for a family SUV. Not sure between CX-5 and Atlas.", time: "9:15 AM" },
+        { sender: 'ai', text: "Hi Jessica! Both are excellent. The CX-5 is sportier, while the Atlas offers way more interior space for the family. Do you need the extra 3rd-row seating?", time: "9:16 AM" }
+    ]
+};
+
 const Admin = () => {
     const { tenant } = useTenant();
     const [leads, setLeads] = useState([]);
@@ -29,6 +43,7 @@ const Admin = () => {
 
     const [isGeneratingAd, setIsGeneratingAd] = useState(false);
     const [isSyncingCRM, setIsSyncingCRM] = useState(null); 
+    const [selectedLeadChat, setSelectedLeadChat] = useState(null);
     const [selectedPillar, setSelectedPillar] = useState('tactical');
 
     const dailyLeads = leads.filter(l => l.is_reported);
@@ -407,6 +422,12 @@ const Admin = () => {
                                             </div>
                                         </td>
                                         <td style={{ padding: '12px', textAlign: 'right', display: 'flex', gap: '5px', justifyContent: 'flex-end' }}>
+                                            <button 
+                                                onClick={() => setSelectedLeadChat(lead)}
+                                                style={{ padding: '6px 12px', fontSize: '0.7rem', backgroundColor: '#6c5ce7', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                                            >
+                                                👁️ View
+                                            </button>
                                             <button 
                                                 onClick={() => handleManualReply(lead)}
                                                 style={{ padding: '6px 12px', fontSize: '0.7rem', backgroundColor: '#eee', color: '#333', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
@@ -810,6 +831,70 @@ const Admin = () => {
                     </div>
                 </div>
             )}
+            {selectedLeadChat && (
+                <ChatModal 
+                    lead={selectedLeadChat} 
+                    onClose={() => setSelectedLeadChat(null)} 
+                    tenant={tenant} 
+                />
+            )}
+        </div>
+    );
+};
+
+/* Chat Modal Component for Demo */
+const ChatModal = ({ lead, onClose, tenant }) => {
+    const chat = MOCK_CHATS[lead.id] || [
+        { sender: 'customer', text: `Hi! I'm interested in the car. Do you have one in stock?`, time: "Just Now" },
+        { sender: 'ai', text: `Hi ${lead.name.split(' ')[0]}! 👋 I'm the AI Hunter for ${tenant.name}. I'll check our inventory for you right now!`, time: "Just Now" }
+    ];
+
+    return (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+            <div style={{ width: '450px', height: '600px', background: 'white', borderRadius: '25px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'slideUp 0.3s ease-out' }}>
+                <div style={{ background: tenant.theme_color || '#003366', padding: '20px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'white', color: tenant.theme_color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{lead.name.charAt(0)}</div>
+                        <div>
+                            <div style={{ fontWeight: 'bold' }}>{lead.name}</div>
+                            <div style={{ fontSize: '0.7rem', opacity: 0.8 }}>Relentless AI: ACTIVE</div>
+                        </div>
+                    </div>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+                </div>
+                
+                <div style={{ flex: 1, padding: '20px', overflowY: 'auto', background: '#f9f9fb', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {chat.map((msg, i) => (
+                        <div key={i} style={{ 
+                            alignSelf: msg.sender === 'ai' ? 'flex-start' : 'flex-end',
+                            maxWidth: '80%',
+                            display: 'flex', flexDirection: 'column',
+                            alignItems: msg.sender === 'ai' ? 'flex-start' : 'flex-end'
+                        }}>
+                            <div style={{ 
+                                padding: '12px 16px', borderRadius: '18px', fontSize: '0.9rem',
+                                background: msg.sender === 'ai' ? (msg.isNudge ? '#D92027' : '#003366') : '#fff',
+                                color: msg.sender === 'ai' ? 'white' : '#333',
+                                border: msg.sender === 'customer' ? '1px solid #eee' : 'none',
+                                boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+                                borderBottomLeftRadius: msg.sender === 'ai' ? '4px' : '18px',
+                                borderBottomRightRadius: msg.sender === 'customer' ? '4px' : '18px'
+                            }}>
+                                {msg.text}
+                            </div>
+                            <span style={{ fontSize: '0.65rem', color: '#aaa', marginTop: '4px' }}>{msg.time} {msg.isNudge && "🔥 AUTO-NUDGE"}</span>
+                        </div>
+                    ))}
+                </div>
+
+                <div style={{ padding: '20px', borderTop: '1px solid #eee', background: 'white', display: 'flex', gap: '10px' }}>
+                    <input disabled placeholder="AI is lead-hunting..." style={{ flex: 1, padding: '12px', borderRadius: '25px', border: '1px solid #eee', backgroundColor: '#f5f5f5', fontSize: '0.85rem' }} />
+                    <button style={{ background: tenant.theme_color, color: 'white', border: 'none', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🏹</button>
+                </div>
+            </div>
+            <style>{`
+                @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            `}</style>
         </div>
     );
 };
