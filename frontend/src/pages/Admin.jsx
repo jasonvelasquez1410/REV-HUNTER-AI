@@ -13,7 +13,6 @@ const Admin = () => {
         { id: 3, time: "Sat 10:00 PM", action: "90-Day Follow-up sent to Sarah", type: "AI" }
     ]);
 
-    const [apiStatus, setApiStatus] = useState('Checking...');
 
     const [showPresentation, setShowPresentation] = useState(false);
     const [presentationStep, setPresentationStep] = useState(0);
@@ -53,15 +52,6 @@ const Admin = () => {
     };
 
     useEffect(() => {
-        const checkStatus = async () => {
-            try {
-                const res = await fetch(`${apiUrl}/`);
-                if (res.ok) setApiStatus('CONNECTED');
-                else setApiStatus('ERROR');
-            } catch {
-                setApiStatus('OFFLINE');
-            }
-        };
 
         const fetchAllLeads = async () => {
             try {
@@ -84,7 +74,6 @@ const Admin = () => {
             }
         };
         
-        checkStatus();
         if (tenant.id) fetchAllLeads();
     }, [tenant.id, apiUrl]);
 
@@ -322,7 +311,7 @@ const Admin = () => {
                     </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.8rem', color: '#888' }}>API Status: <span style={{ color: apiStatus === 'CONNECTED' ? '#00b894' : '#e17055', fontWeight: 'bold' }}>{apiStatus}</span></div>
+                    <div style={{ fontSize: '0.8rem', color: '#00b894' }}>PITCH MODE: <span style={{ fontWeight: 'bold' }}>ACTIVE (SIMULATED)</span></div>
                     <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end', marginTop: '5px' }}>
                         <button 
                             onClick={handleInjectLead}
