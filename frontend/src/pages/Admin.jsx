@@ -702,10 +702,10 @@ const Admin = () => {
                         {presentationStep === 1 && (
                             <div className="slide animate-in">
                                 <h2 style={{ fontSize: '2rem', marginBottom: '30px' }}>The 9-Step Relentless Hunter 🏹</h2>
-                                <p style={{ fontSize: '1.1rem', color: '#aaa', marginBottom: '40px' }}>
-                                    Unlike a human receptionist, RevHunter AI never misses a beat. It follows a strict, proven 9-step qualification process to ensure no lead is left cold.
+                                <p style={{ fontSize: '1.1rem', color: '#aaa', marginBottom: '30px' }}>
+                                    Unlike a human receptionist, RevHunter AI never misses a beat. It follows a strict, proven 9-step qualification process.
                                 </p>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', textAlign: 'left', fontSize: '0.9rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', textAlign: 'left', fontSize: '0.9rem', marginBottom: '30px', background: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '15px' }}>
                                     <div>1. Greeting 👋</div>
                                     <div>2. Discovery 🔍</div>
                                     <div>3. Lifestyle 🏠</div>
@@ -716,13 +716,19 @@ const Admin = () => {
                                     <div>8. Inventory Match ✅</div>
                                     <div>9. Booking 📅</div>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '50px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
                                     <button onClick={() => setPresentationStep(0)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>← PREVIOUS</button>
+                                    <button 
+                                        onClick={() => { setShowPresentation(false); setTimeout(() => alert("Demo: Open a lead chat to see the 9-steps in action!"), 500); }}
+                                        style={{ padding: '12px 30px', background: '#00b894', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
+                                    >
+                                        👁️ VIEW LIVE CHAT DEMO
+                                    </button>
                                     <button 
                                         onClick={() => setPresentationStep(2)}
                                         style={{ padding: '12px 30px', background: '#D92027', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
                                     >
-                                        SHOW ME THE ROI →
+                                        WHY US? →
                                     </button>
                                 </div>
                             </div>
@@ -730,28 +736,32 @@ const Admin = () => {
 
                         {presentationStep === 2 && (
                             <div className="slide animate-in">
-                                <h2 style={{ fontSize: '2rem', marginBottom: '30px', color: '#00b894' }}>Projected ROI: FilCan Cars 📈</h2>
-                                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '30px', borderRadius: '20px', marginBottom: '40px' }}>
-                                    <div style={{ fontSize: '3rem', fontWeight: '900' }}>$125,000+</div>
-                                    <div style={{ color: '#888' }}>Estimated Monthly Sales Opportunity</div>
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                                    <div style={{ textAlign: 'left', border: '1px solid #333', padding: '20px', borderRadius: '15px' }}>
-                                        <div style={{ fontSize: '1.5rem', color: '#00b894' }}>95%</div>
-                                        <div style={{ fontSize: '0.8rem', color: '#888' }}>Instant Engagement Rate</div>
+                                <h2 style={{ fontSize: '2.4rem', marginBottom: '30px', color: '#f1c40f' }}>The RevHunter Advantage 🏆</h2>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px', textAlign: 'left' }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '20px' }}>
+                                        <h4 style={{ color: '#f1c40f', marginBottom: '10px' }}>Relentless Persistence</h4>
+                                        <p style={{ fontSize: '0.85rem', color: '#aaa' }}>While humans stop after 2 tries, RevHunter AI follows up for 90 days across Facebook and SMS.</p>
                                     </div>
-                                    <div style={{ textAlign: 'left', border: '1px solid #333', padding: '20px', borderRadius: '15px' }}>
-                                        <div style={{ fontSize: '1.5rem', color: '#00b894' }}>24/7</div>
-                                        <div style={{ fontSize: '0.8rem', color: '#888' }}>Operational Availability</div>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '20px' }}>
+                                        <h4 style={{ color: '#f1c40f', marginBottom: '10px' }}>Inventory Intelligence</h4>
+                                        <p style={{ fontSize: '0.85rem', color: '#aaa' }}>Instantly matches customers to your specific stock (e.g. 2024 VW Atlas) without manual lookup.</p>
+                                    </div>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '20px' }}>
+                                        <h4 style={{ color: '#f1c40f', marginBottom: '10px' }}>Accountability First</h4>
+                                        <p style={{ fontSize: '0.85rem', color: '#aaa' }}>Every action is time-stamped, logged, and synced to your CRM (CDK Drive) in real-time.</p>
+                                    </div>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '20px' }}>
+                                        <h4 style={{ color: '#f1c40f', marginBottom: '10px' }}>Human-in-the-Loop</h4>
+                                        <p style={{ fontSize: '0.85rem', color: '#aaa' }}>The AI qualifies, but you stay in control. Take over a hot chat with one click.</p>
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '50px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '40px' }}>
                                     <button onClick={() => setPresentationStep(1)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>← PREVIOUS</button>
                                     <button 
                                         onClick={() => setPresentationStep(3)}
                                         style={{ padding: '12px 30px', background: '#D92027', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
                                     >
-                                        NEXT: DASHBOARD →
+                                        SHOW THE NUMBERS →
                                     </button>
                                 </div>
                             </div>
@@ -759,31 +769,21 @@ const Admin = () => {
 
                         {presentationStep === 3 && (
                             <div className="slide animate-in">
-                                <h2 style={{ fontSize: '2rem', marginBottom: '30px' }}>Full Transparency Dashboard 📊</h2>
-                                <p style={{ fontSize: '1.1rem', color: '#aaa', marginBottom: '40px' }}>
-                                    The Command Center gives you 100% visibility into every conversation. You stay in control while the AI handles the heavy lifting.
+                                <h2 style={{ fontSize: '2rem', marginBottom: '20px', color: '#00b894' }}>The 10-Lead Guarantee ✅</h2>
+                                <p style={{ fontSize: '1.2rem', color: '#aaa', marginBottom: '40px' }}>
+                                    We don't just provide a tool; we provide results. We guarantee **10 Qualified Leads per day** for FilCan Cars.
                                 </p>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', textAlign: 'left' }}>
-                                    <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
-                                        <span style={{ color: '#00b894' }}>✓</span> Real-Time Audit Logs
-                                    </div>
-                                    <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
-                                        <span style={{ color: '#00b894' }}>✓</span> Human-in-the-Loop Switching
-                                    </div>
-                                    <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
-                                        <span style={{ color: '#00b894' }}>✓</span> Automated CRM Sync
-                                    </div>
-                                    <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
-                                        <span style={{ color: '#00b894' }}>✓</span> Relentless Multi-channel Follow-up
-                                    </div>
+                                <div style={{ background: 'rgba(0, 184, 148, 0.1)', padding: '30px', borderRadius: '25px', border: '1px solid #00b894', marginBottom: '40px' }}>
+                                    <div style={{ fontSize: '3.5rem', fontWeight: '900', color: '#00b894' }}>10 / DAY</div>
+                                    <div style={{ color: '#aaa', textTransform: 'uppercase', letterSpacing: '2px' }}>Minimum Qualified Output</div>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '50px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
                                     <button onClick={() => setPresentationStep(2)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>← PREVIOUS</button>
                                     <button 
                                         onClick={() => setPresentationStep(4)}
                                         style={{ padding: '12px 30px', background: '#D92027', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
                                     >
-                                        NEXT: GET STARTED →
+                                        HOW DO I MANAGE THEM? →
                                     </button>
                                 </div>
                             </div>
@@ -791,32 +791,51 @@ const Admin = () => {
 
                         {presentationStep === 4 && (
                             <div className="slide animate-in">
-                                <h2 style={{ fontSize: '2.5rem', marginBottom: '20px', color: '#D92027' }}>Ready to Scale FilCan Cars?</h2>
-                                <p style={{ fontSize: '1.2rem', color: '#aaa', marginBottom: '50px' }}>
-                                    We are ready to flip the switch. All we need is Facebook Admin access to connect your official page to the Relentless Hunter engine.
+                                <h2 style={{ fontSize: '2rem', marginBottom: '30px' }}>Transparency & Control 📊</h2>
+                                <p style={{ fontSize: '1.1rem', color: '#aaa', marginBottom: '40px' }}>
+                                    The Command Center gives you 100% visibility. You see everything the AI sees.
                                 </p>
-                                <div style={{ background: 'rgba(217, 32, 39, 0.1)', padding: '40px', borderRadius: '25px', display: 'inline-block' }}>
-                                    <h4 style={{ marginBottom: '20px' }}>Next Action Items:</h4>
-                                    <div style={{ textAlign: 'left', display: 'inline-block' }}>
-                                        <div>1. Grant FB Admin Access 🔑</div>
-                                        <div>2. Connect Inventory API 🚗</div>
-                                        <div>3. GO LIVE & START HUNTING 🚀</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', textAlign: 'left', marginBottom: '40px' }}>
+                                    <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>✓ Real-Time Audit Logs</div>
+                                    <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>✓ 🔄 CDK CRM Integration</div>
+                                    <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>✓ Automated CRM Sync</div>
+                                    <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>✓ Relentless Mining</div>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+                                    <button onClick={() => setPresentationStep(3)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>← PREVIOUS</button>
+                                    <button 
+                                        onClick={() => setPresentationStep(5)}
+                                        style={{ padding: '12px 30px', background: '#D92027', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
+                                    >
+                                        LET'S START HUNTING →
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {presentationStep === 5 && (
+                            <div className="slide animate-in">
+                                <h2 style={{ fontSize: '3rem', marginBottom: '20px', color: '#D92027', fontWeight: '900' }}>READY TO SCALE?</h2>
+                                <p style={{ fontSize: '1.3rem', color: '#aaa', marginBottom: '50px' }}>
+                                    Join the elite dealerships using **Relentless AI** to dominate their market.
+                                </p>
+                                <div style={{ background: 'white', color: '#003366', padding: '40px', borderRadius: '30px', display: 'inline-block', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
+                                    <h3 style={{ marginBottom: '25px' }}>Next Action Items:</h3>
+                                    <div style={{ textAlign: 'left', fontSize: '1.2rem' }}>
+                                        <div style={{ marginBottom: '10px' }}>1. Grant Facebook Admin Access 🔑</div>
+                                        <div style={{ marginBottom: '10px' }}>2. Connect CDK Drive API 🚗</div>
+                                        <div style={{ marginBottom: '10px', color: '#D92027', fontWeight: 'bold' }}>3. GO LIVE & START HUNTING 🚀</div>
                                     </div>
                                 </div>
                                 <div style={{ marginTop: '50px' }}>
-                                    <button 
-                                        onClick={() => setPresentationStep(0)}
-                                        style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}
-                                    >
-                                        ← RESTART PITCH
-                                    </button>
+                                    <button onClick={() => setPresentationStep(0)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>← RESTART PITCH</button>
                                 </div>
                             </div>
                         )}
 
                         {/* Navigation Dots */}
                         <div style={{ position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '15px' }}>
-                            {[0, 1, 2, 3, 4].map(step => (
+                            {[0, 1, 2, 3, 4, 5].map(step => (
                                 <div 
                                     key={step}
                                     onClick={() => setPresentationStep(step)}
