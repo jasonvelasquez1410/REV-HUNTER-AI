@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Vapi from '@vapi-ai/web';
 import LeadReportCard from '../components/LeadReportCard';
 import { useTenant } from '../context/TenantContext';
 
@@ -37,6 +38,32 @@ const Admin = () => {
         { id: 2, time: "Sat 9:05 PM", action: "Task sent to Rjay's phone", type: "REP" },
         { id: 3, time: "Sat 10:00 PM", action: "90-Day Follow-up sent to Sarah", type: "AI" }
     ]);
+
+    const vapi = useRef(null);
+    const VAPI_PUBLIC_KEY = '012fbe2f-192f-44f3-a1b3-76db83ce299c';
+    const VAPI_ASSISTANT_ID = '5921ac52-3ea4-443f-a531-993b5e43fddf';
+
+    useEffect(() => {
+        vapi.current = new Vapi(VAPI_PUBLIC_KEY);
+
+        vapi.current.on('call-start', () => {
+            console.log('Vapi Call started');
+        });
+
+        vapi.current.on('call-end', () => {
+            console.log('Vapi Call ended');
+            setIsCalling(null);
+        });
+
+        vapi.current.on('error', (e) => {
+            console.error('Vapi Error:', e);
+            setIsCalling(null);
+        });
+
+        return () => {
+            if (vapi.current) vapi.current.stop();
+        };
+    }, []);
 
 
     const [showPresentation, setShowPresentation] = useState(false);
@@ -219,23 +246,22 @@ const Admin = () => {
     };
 
     const handleVoiceCall = (lead) => {
+        if (!vapi.current) return;
+        
         setIsCalling(lead);
-        const utterance = new SpeechSynthesisUtterance(
-            `Hi ${lead.name.split(' ')[0]}! This is your RevHunter AI agent for ${tenant.name}. I'm following up on your interest in the ${lead.car || 'vehicle'}. We have a test-drive slot open tomorrow. Would you like me to reserve it for you?`
-        );
-        utterance.rate = 0.9;
-        utterance.pitch = 1.0;
         
-        window.speechSynthesis.speak(utterance);
+        // Start the real-time Vapi call
+        vapi.current.start(VAPI_ASSISTANT_ID, {
+            variable_overrides: {
+                customerName: lead.name.split(' ')[0],
+                carModel: lead.car || 'vehicle'
+            }
+        });
         
-        utterance.onend = () => {
-            setIsCalling(null);
-            setAuditLogs(prev => [
-                { id: `voice-${Date.now()}`, time: "Now", action: `📞 AI VOICE: Completed follow-up call to ${lead.name}`, type: "AI" },
-                ...prev
-            ]);
-            alert(`Voice Follow-up Complete for ${lead.name}`);
-        };
+        setAuditLogs(prev => [
+            { id: `voice-${Date.now()}`, time: "Now", action: `📞 VAPI: Initiated human-grade AI voice call to ${lead.name}`, type: "AI" },
+            ...prev
+        ]);
     };
 
     const handleAutoNudge = async (leadId) => {
@@ -552,23 +578,46 @@ const Admin = () => {
             {isCalling && (
                 <div style={{
                     position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-                    background: 'rgba(0,0,0,0.85)', zIndex: 9999,
+                    background: 'rgba(0,0,0,0.92)', zIndex: 9999,
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    color: 'white', backdropFilter: 'blur(5px)'
+                    color: 'white', backdropFilter: 'blur(10px)'
                 }}>
                     <div className="calling-circle" style={{
-                        width: '120px', height: '120px', background: '#00b894', borderRadius: '50%',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem',
-                        marginBottom: '30px', boxShadow: '0 0 50px rgba(0,184,148,0.5)',
+                        width: '140px', height: '140px', background: '#00b894', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem',
+                        marginBottom: '30px', boxShadow: '0 0 70px rgba(0,184,148,0.6)',
                         animation: 'pulse 1.5s infinite'
                     }}>
-                        📞
+                        🎙️
                     </div>
-                    <h2 style={{ fontSize: '2rem', marginBottom: '10px' }}>AI OUTBOUND CALL</h2>
-                    <p style={{ fontSize: '1.2rem', color: '#00b894', fontWeight: 'bold' }}>Speaking to {isCalling.name}...</p>
-                    <div style={{ marginTop: '40px', background: 'rgba(255,255,255,0.1)', padding: '20px', borderRadius: '15px', maxWidth: '400px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '0.8rem', color: '#aaa', marginBottom: '10px' }}>AI LIVE SCRIPT:</div>
-                        <i>"Hi {isCalling.name.split(' ')[0]}, this is your RevHunter agent. We have an opening for an {isCalling.car || 'Atlas'} viewing..."</i>
+                    <h2 style={{ fontSize: '2.2rem', marginBottom: '5px' }}>REAL-TIME HUMAN-AI VOICE</h2>
+                    <div style={{ fontSize: '0.8rem', color: '#00b894', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '2px' }}>POWERED BY VAPI & ELEVENLABS</div>
+                    
+                    <p style={{ fontSize: '1.2rem', color: '#fff', fontWeight: '500' }}>In conversation with <span style={{ color: '#00b894' }}>{isCalling.name}</span>...</p>
+                    
+                    <div style={{ marginTop: '40px', background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '20px', maxWidth: '450px', border: '1px solid rgba(0,184,148,0.3)', textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#00b894', marginBottom: '15px', textTransform: 'uppercase', fontWeight: 'bold' }}>Live Call Insights</div>
+                        <i style={{ fontSize: '0.95rem', color: '#ddd' }}>"The AI is currently discussing {isCalling.car || 'the vehicle'} with {isCalling.name.split(' ')[0]}. It is identifying their trade-in value and booking the showroom slot."</i>
+                    </div>
+
+                    <button 
+                        onClick={() => {
+                            if (vapi.current) vapi.current.stop();
+                            setIsCalling(null);
+                        }}
+                        style={{ 
+                            marginTop: '50px', padding: '15px 40px', background: '#D92027', color: 'white', 
+                            border: 'none', borderRadius: '50px', fontSize: '1rem', fontWeight: 'bold', 
+                            cursor: 'pointer', boxShadow: '0 10px 30px rgba(217,32,39,0.3)', transition: 'all 0.2s'
+                        }}
+                        onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+                        onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                    >
+                        🛑 END LIVE CALL
+                    </button>
+                    
+                    <div style={{ position: 'absolute', bottom: '40px', color: '#444', fontSize: '0.7rem' }}>
+                        RevHunter Voice Engine V20.1 | Low Latency Mode Active
                     </div>
                 </div>
             )}
