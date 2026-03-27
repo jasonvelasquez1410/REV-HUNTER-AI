@@ -21,6 +21,12 @@ const MOCK_CHATS = {
     ]
 };
 
+const MOCK_APPOINTMENTS = [
+    { id: 1, lead: "Marvin Raymundo", car: "2024 VW Atlas", time: "Mon 2:00 PM", status: "CONFIRMED" },
+    { id: 2, lead: "Jessica Chen", car: "Mazda CX-5", time: "Tue 10:30 AM", status: "AI BOOKED" },
+    { id: 3, lead: "Tony Stark", car: "F-150 Lightning", time: "Wed 4:00 PM", status: "PENDING" }
+];
+
 const Admin = () => {
     const { tenant } = useTenant();
     const [leads, setLeads] = useState([]);
@@ -44,6 +50,8 @@ const Admin = () => {
     const [isGeneratingAd, setIsGeneratingAd] = useState(false);
     const [isSyncingCRM, setIsSyncingCRM] = useState(null); 
     const [selectedLeadChat, setSelectedLeadChat] = useState(null);
+    const [isCalling, setIsCalling] = useState(null);
+    const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' or 'showroom'
     const [selectedPillar, setSelectedPillar] = useState('tactical');
 
     const dailyLeads = leads.filter(l => l.is_reported);
@@ -210,6 +218,26 @@ const Admin = () => {
         }, 2000);
     };
 
+    const handleVoiceCall = (lead) => {
+        setIsCalling(lead);
+        const utterance = new SpeechSynthesisUtterance(
+            `Hi ${lead.name.split(' ')[0]}! This is your RevHunter AI agent for ${tenant.name}. I'm following up on your interest in the ${lead.car || 'vehicle'}. We have a test-drive slot open tomorrow. Would you like me to reserve it for you?`
+        );
+        utterance.rate = 0.9;
+        utterance.pitch = 1.0;
+        
+        window.speechSynthesis.speak(utterance);
+        
+        utterance.onend = () => {
+            setIsCalling(null);
+            setAuditLogs(prev => [
+                { id: `voice-${Date.now()}`, time: "Now", action: `📞 AI VOICE: Completed follow-up call to ${lead.name}`, type: "AI" },
+                ...prev
+            ]);
+            alert(`Voice Follow-up Complete for ${lead.name}`);
+        };
+    };
+
     const handleAutoNudge = async (leadId) => {
         try {
             await fetch(`${apiUrl}/admin/simulate-nudge`, {
@@ -369,22 +397,45 @@ const Admin = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom: '30px' }}>
                 {/* Inbox Section */}
                 <section style={{ background: 'white', padding: '25px', borderRadius: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', backdropFilter: 'blur(10px)' }}>
-                    <h2 style={{ marginBottom: '20px', fontSize: '1.2rem', display: 'flex', justifyContent: 'space-between', color: '#1a1a1a' }}>
-                        Raw Lead Inbox
-                        <span style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'normal' }}>Vetted by AI</span>
-                    </h2>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ borderBottom: '2px solid #f0f0f0', textAlign: 'left' }}>
-                                    <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>CUSTOMER</th>
-                                    <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>STEP</th>
-                                    <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>STREAK</th>
-                                    <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>PROGRESS</th>
-                                    <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>INTENT</th>
-                                    <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem', textAlign: 'right' }}>ACTION</th>
-                                </tr>
-                            </thead>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <div style={{ display: 'flex', gap: '15px' }}>
+                            <button 
+                                onClick={() => setActiveTab('inbox')}
+                                style={{ 
+                                    padding: '10px 20px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer',
+                                    background: activeTab === 'inbox' ? '#D92027' : '#f0f0f0',
+                                    color: activeTab === 'inbox' ? 'white' : '#666'
+                                }}
+                            >
+                                📥 RAW INBOX
+                            </button>
+                            <button 
+                                onClick={() => setActiveTab('showroom')}
+                                style={{ 
+                                    padding: '10px 20px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer',
+                                    background: activeTab === 'showroom' ? '#00b894' : '#f0f0f0',
+                                    color: activeTab === 'showroom' ? 'white' : '#666'
+                                }}
+                            >
+                                📅 SHOWROOM
+                            </button>
+                        </div>
+                        <span style={{ fontSize: '0.8rem', color: '#666' }}>AI Sentinex Engine Active</span>
+                    </div>
+
+                    {activeTab === 'inbox' ? (
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ borderBottom: '2px solid #f0f0f0', textAlign: 'left' }}>
+                                        <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>CUSTOMER</th>
+                                        <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>STEP</th>
+                                        <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>HEAT</th>
+                                        <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>PROGRESS</th>
+                                        <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>INTENT</th>
+                                        <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem', textAlign: 'right' }}>ACTION</th>
+                                    </tr>
+                                </thead>
                             <tbody>
                                 {leads.map((lead, i) => (
                                     <tr key={i} style={{ borderBottom: '1px solid #f5f5f5' }}>
@@ -399,10 +450,10 @@ const Admin = () => {
                                         </td>
                                         <td style={{ padding: '12px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                                <span style={{ fontWeight: '800', color: lead.follow_up_streak > 0 ? '#e17055' : '#ccc' }}>
-                                                    {lead.follow_up_streak || 0}x
+                                                <span style={{ fontWeight: '800', color: lead.quality_score > 90 ? '#e17055' : '#fdcb6e' }}>
+                                                    {lead.quality_score}%
                                                 </span>
-                                                {lead.follow_up_streak > 0 && <span>🔥</span>}
+                                                {lead.quality_score > 90 ? <span>🔥</span> : <span>⚡</span>}
                                             </div>
                                         </td>
                                         <td style={{ padding: '12px' }}>
@@ -422,6 +473,16 @@ const Admin = () => {
                                             </div>
                                         </td>
                                         <td style={{ padding: '12px', textAlign: 'right', display: 'flex', gap: '5px', justifyContent: 'flex-end' }}>
+                                            <button 
+                                                onClick={() => handleVoiceCall(lead)}
+                                                style={{ 
+                                                    padding: '6px 10px', fontSize: '0.7rem', border: 'none', borderRadius: '6px', cursor: 'pointer',
+                                                    backgroundColor: '#00b894', color: 'white'
+                                                }}
+                                                title="Initiate AI Voice Follow-up"
+                                            >
+                                                📞 Call
+                                            </button>
                                             <button 
                                                 onClick={() => setSelectedLeadChat(lead)}
                                                 style={{ padding: '6px 12px', fontSize: '0.7rem', backgroundColor: '#6c5ce7', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
@@ -461,7 +522,56 @@ const Admin = () => {
                             </tbody>
                         </table>
                     </div>
-                </section>
+                ) : (
+                    <div style={{ padding: '20px' }}>
+                        <h3 style={{ marginBottom: '20px', color: '#00b894' }}>Upcoming Showroom Appointments</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+                            {MOCK_APPOINTMENTS.map(app => (
+                                <div key={app.id} style={{ background: '#f8f9fa', padding: '20px', borderRadius: '15px', borderLeft: `5px solid ${app.status === 'CONFIRMED' ? '#00b894' : '#fdcb6e'}` }}>
+                                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{app.lead}</div>
+                                    <div style={{ color: '#666', fontSize: '0.9rem', marginBottom: '10px' }}>{app.car}</div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>📅 {app.time}</span>
+                                        <span style={{ 
+                                            fontSize: '0.7rem', padding: '4px 8px', borderRadius: '5px',
+                                            backgroundColor: app.status === 'CONFIRMED' ? '#e6f4ea' : '#fff9eb',
+                                            color: app.status === 'CONFIRMED' ? '#1e7e34' : '#af8702'
+                                        }}>{app.status}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ marginTop: '30px', padding: '15px', background: 'rgba(0,184,148,0.1)', borderRadius: '10px', fontSize: '0.85rem', color: '#00b894', border: '1px dashed #00b894' }}>
+                            💡 All appointments above were **fully booked by RevHunter AI** without any human intervention.
+                        </div>
+                    </div>
+                )}
+            </section>
+
+            {/* AI Calling Overlay */}
+            {isCalling && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                    background: 'rgba(0,0,0,0.85)', zIndex: 9999,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    color: 'white', backdropFilter: 'blur(5px)'
+                }}>
+                    <div className="calling-circle" style={{
+                        width: '120px', height: '120px', background: '#00b894', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem',
+                        marginBottom: '30px', boxShadow: '0 0 50px rgba(0,184,148,0.5)',
+                        animation: 'pulse 1.5s infinite'
+                    }}>
+                        📞
+                    </div>
+                    <h2 style={{ fontSize: '2rem', marginBottom: '10px' }}>AI OUTBOUND CALL</h2>
+                    <p style={{ fontSize: '1.2rem', color: '#00b894', fontWeight: 'bold' }}>Speaking to {isCalling.name}...</p>
+                    <div style={{ marginTop: '40px', background: 'rgba(255,255,255,0.1)', padding: '20px', borderRadius: '15px', maxWidth: '400px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.8rem', color: '#aaa', marginBottom: '10px' }}>AI LIVE SCRIPT:</div>
+                        <i>"Hi {isCalling.name.split(' ')[0]}, this is your RevHunter agent. We have an opening for an {isCalling.car || 'Atlas'} viewing..."</i>
+                    </div>
+                </div>
+            )}
 
                 {/* Daily Quality Report Section */}
                 <section style={{ 
@@ -828,14 +938,43 @@ const Admin = () => {
                                     </div>
                                 </div>
                                 <div style={{ marginTop: '50px' }}>
-                                    <button onClick={() => setPresentationStep(0)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>← RESTART PITCH</button>
+                                    <button onClick={() => setPresentationStep(6)} style={{ padding: '12px 30px', background: '#00b894', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}>FINAL RECAP →</button>
                                 </div>
+                            </div>
+                        )}
+
+                        {presentationStep === 6 && (
+                            <div className="slide animate-in">
+                                <h2 style={{ fontSize: '2.5rem', marginBottom: '20px', color: '#00b894' }}>The Complete Sales Department</h2>
+                                <p style={{ fontSize: '1.2rem', color: '#aaa', marginBottom: '40px' }}>
+                                    RevHunter is more than a bot. It is your 24/7 Digital Sales Team.
+                                </p>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '40px' }}>
+                                    <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '15px', border: '1px solid #333' }}>
+                                        <div style={{ fontSize: '2rem' }}>💬</div>
+                                        <h4>FB Chat</h4>
+                                    </div>
+                                    <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '15px', border: '1px solid #333' }}>
+                                        <div style={{ fontSize: '2rem' }}>📞</div>
+                                        <h4>AI Voice</h4>
+                                    </div>
+                                    <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '15px', border: '1px solid #333' }}>
+                                        <div style={{ fontSize: '2rem' }}>📅</div>
+                                        <h4>Booked</h4>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => setPresentationStep(0)}
+                                    style={{ padding: '12px 30px', background: '#D92027', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
+                                >
+                                    RESTART PITCH
+                                </button>
                             </div>
                         )}
 
                         {/* Navigation Dots */}
                         <div style={{ position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '15px' }}>
-                            {[0, 1, 2, 3, 4, 5].map(step => (
+                            {[0, 1, 2, 3, 4, 5, 6].map(step => (
                                 <div 
                                     key={step}
                                     onClick={() => setPresentationStep(step)}
