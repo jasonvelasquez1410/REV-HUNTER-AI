@@ -743,16 +743,16 @@ const Admin = () => {
                                         <p style={{ fontSize: '0.85rem', color: '#aaa' }}>While humans stop after 2 tries, RevHunter AI follows up for 90 days across Facebook and SMS.</p>
                                     </div>
                                     <div style={{ background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '20px' }}>
+                                        <h4 style={{ color: '#00b894', marginBottom: '10px' }}>Risk-Free Performance</h4>
+                                        <p style={{ fontSize: '0.85rem', color: '#aaa' }}>Stop paying for 'software' and start paying for 'sales'. You only pay per qualified lead we deliver.</p>
+                                    </div>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '20px' }}>
                                         <h4 style={{ color: '#f1c40f', marginBottom: '10px' }}>Inventory Intelligence</h4>
                                         <p style={{ fontSize: '0.85rem', color: '#aaa' }}>Instantly matches customers to your specific stock (e.g. 2024 VW Atlas) without manual lookup.</p>
                                     </div>
                                     <div style={{ background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '20px' }}>
                                         <h4 style={{ color: '#f1c40f', marginBottom: '10px' }}>Accountability First</h4>
-                                        <p style={{ fontSize: '0.85rem', color: '#aaa' }}>Every action is time-stamped, logged, and synced to your CRM (CDK Drive) in real-time.</p>
-                                    </div>
-                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '20px' }}>
-                                        <h4 style={{ color: '#f1c40f', marginBottom: '10px' }}>Human-in-the-Loop</h4>
-                                        <p style={{ fontSize: '0.85rem', color: '#aaa' }}>The AI qualifies, but you stay in control. Take over a hot chat with one click.</p>
+                                        <p style={{ fontSize: '0.85rem', color: '#aaa' }}>Every action is time-stamped and synced to your CRM (CDK Drive) in real-time.</p>
                                     </div>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '40px' }}>
@@ -771,11 +771,11 @@ const Admin = () => {
                             <div className="slide animate-in">
                                 <h2 style={{ fontSize: '2rem', marginBottom: '20px', color: '#00b894' }}>The 10-Lead Guarantee ✅</h2>
                                 <p style={{ fontSize: '1.2rem', color: '#aaa', marginBottom: '40px' }}>
-                                    We don't just provide a tool; we provide results. We guarantee **10 Qualified Leads per day** for FilCan Cars.
+                                    No upfront risk. **You only pay per qualified lead** found in your daily report.
                                 </p>
                                 <div style={{ background: 'rgba(0, 184, 148, 0.1)', padding: '30px', borderRadius: '25px', border: '1px solid #00b894', marginBottom: '40px' }}>
                                     <div style={{ fontSize: '3.5rem', fontWeight: '900', color: '#00b894' }}>10 / DAY</div>
-                                    <div style={{ color: '#aaa', textTransform: 'uppercase', letterSpacing: '2px' }}>Minimum Qualified Output</div>
+                                    <div style={{ color: '#aaa', textTransform: 'uppercase', letterSpacing: '2px' }}>Target Quality Output</div>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
                                     <button onClick={() => setPresentationStep(2)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>← PREVIOUS</button>
