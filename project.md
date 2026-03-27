@@ -64,8 +64,8 @@ This file serves as a persistent record of the project's state to help future se
   - Added Dual-Mode Routing (Path/Hash) to `App.jsx` as a deployment fallback.
   - Added `v11.1` versioning to `ChatWidget` to verify live updates.
   - Enhanced error diagnostics for chat connection failures.
-- **2026-03-27 (V11.2)**: **ENHANCEMENT & RESILIENCE PATCH**.
-  - **AI Logic**: Refined 9-step qualification engine with explicit rules for pricing and intent extraction.
-  - **UI/UX**: Updated Admin Command Center with V11.2 branding and live status indicators.
-  - **Database Resilience**: Implemented automatic retry logic for lead state persistence to handle transient connectivity issues.
-  - **Versioning**: Synced internal AI context and UI with V11.2 tags.
+- **2026-03-27 (V12.0)**: **CLIENT PRESENTATION MODE (PITCH EDITION)**.
+  - **Simulation Lab**: Added real-time lead injection tool to the Admin Hub for live AI demonstrations.
+  - **Pitch Deck**: Expanded the 'Demo Pitch Mode' with ROI calculators and 24/7 accountability slides.
+  - **Premium Mock Data**: Tailored all leads, inventory, and reports specifically to FilCan Cars (Sherwood Park) for maximum impact.
+  - **Executive Reporting**: Refactored reports to provide simplified, high-impact 'Executive Summaries'.

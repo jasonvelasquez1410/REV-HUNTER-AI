@@ -162,6 +162,42 @@ const Admin = () => {
         }
     };
 
+    const handleInjectLead = async () => {
+        const names = ["Marcus Aurelius", "Leia Organa", "Tony Stark", "Diana Prince"];
+        const cars = ["VW Atlas", "Mazda CX-5", "Ford F-150", "Honda Civic"];
+        const name = names[Math.floor(Math.random() * names.length)];
+        const car = cars[Math.floor(Math.random() * cars.length)];
+        
+        const payload = {
+            entry: [{
+                messaging: [{
+                    sender: { id: `demo_${Date.now()}` },
+                    message: { text: `Hi! I'm interested in the ${car}. Do you have one in stock?` }
+                }]
+            }]
+        };
+
+        try {
+            await fetch(`${apiUrl}/webhook`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            setAuditLogs(prev => [
+                { id: `sim-${Date.now()}`, time: "Now", action: `PITCH MODE: Simulated lead '${name}' injected via Webhook`, type: "AI" },
+                ...prev
+            ]);
+            
+            // Refresh leads list
+            const leadsRes = await fetch(`${apiUrl}/leads`, { headers: { 'X-Tenant-Id': tenant.id } });
+            const leadsData = await leadsRes.json();
+            setLeads(leadsData);
+        } catch (err) {
+            console.error("Injection failed:", err);
+        }
+    };
+
     const stats = {
         published: 12,
         pending: 4,
@@ -228,7 +264,13 @@ const Admin = () => {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '0.8rem', color: '#888' }}>API Status: <span style={{ color: apiStatus === 'CONNECTED' ? '#00b894' : '#e17055', fontWeight: 'bold' }}>{apiStatus}</span></div>
-                    <div style={{ fontSize: '0.7rem', color: '#00b894' }}>DB Resilience: <span style={{ fontWeight: 'bold' }}>ACTIVE (RETRY MODE)</span></div>
+                    <button 
+                        onClick={handleInjectLead}
+                        style={{ background: '#00b894', color: 'white', border: 'none', padding: '4px 12px', borderRadius: '15px', fontSize: '0.7rem', cursor: 'pointer', marginTop: '5px' }}
+                    >
+                        🧪 Inject Demo Lead (Pitch Mode)
+                    </button>
+                    <div style={{ fontSize: '0.7rem', color: '#00b894', marginTop: '5px' }}>DB Resilience: <span style={{ fontWeight: 'bold' }}>ACTIVE (RETRY MODE)</span></div>
                     <div style={{ fontSize: '0.7rem', color: '#00b894' }}>All actions time-stamped & verified</div>
                 </div>
             </section>
@@ -546,28 +588,55 @@ const Admin = () => {
 
                         {presentationStep === 1 && (
                             <div className="slide animate-in">
-                                <h2 style={{ fontSize: '2rem', marginBottom: '30px' }}>Role #3: Marketing Manager (Human-in-the-Loop)</h2>
+                                <h2 style={{ fontSize: '2rem', marginBottom: '30px' }}>The 9-Step Relentless Hunter 🏹</h2>
                                 <p style={{ fontSize: '1.1rem', color: '#aaa', marginBottom: '40px' }}>
-                                    RevHunter AI generates high-converting content for Facebook & Instagram, but stays under your control. 
-                                    Nothing goes live without your "Approve & Post" confirmation.
+                                    Unlike a human receptionist, RevHunter AI never misses a beat. It follows a strict, proven 9-step qualification process to ensure no lead is left cold.
                                 </p>
-                                <div style={{ display: 'flex', justifyContent: 'center', gap: '30px' }}>
-                                    <div style={{ textAlign: 'left' }}>
-                                        <div style={{ color: '#00b894', fontWeight: 'bold' }}>✓ AI Drafts Content</div>
-                                        <div style={{ color: '#00b894', fontWeight: 'bold' }}>✓ Targets {tenant.location}</div>
-                                        <div style={{ color: '#00b894', fontWeight: 'bold' }}>✓ Highlights Inventory</div>
-                                    </div>
-                                    <div style={{ borderLeft: '1px solid #444', paddingLeft: '30px' }}>
-                                        <div style={{ color: '#f1c40f', fontWeight: 'bold' }}>⚠ Requires Owner Approval</div>
-                                        <div style={{ color: '#f1c40f', fontWeight: 'bold' }}>⚠ Visual Dashboard Preview</div>
-                                    </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', textAlign: 'left', fontSize: '0.9rem' }}>
+                                    <div>1. Greeting 👋</div>
+                                    <div>2. Discovery 🔍</div>
+                                    <div>3. Lifestyle 🏠</div>
+                                    <div>4. Must-Haves ⭐</div>
+                                    <div>5. Current Car 🚗</div>
+                                    <div>6. Trade-in 💰</div>
+                                    <div>7. Financing 🏦</div>
+                                    <div>8. Inventory Match ✅</div>
+                                    <div>9. Booking 📅</div>
                                 </div>
                                 <button 
-                                    onClick={() => setPresentationStep(0)}
-                                    style={{ marginTop: '50px', background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}
+                                    onClick={() => setPresentationStep(2)}
+                                    style={{ marginTop: '50px', padding: '12px 30px', background: '#D92027', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
                                 >
-                                    ← BACK TO ROLES
+                                    SHOW ME THE ROI →
                                 </button>
+                            </div>
+                        )}
+
+                        {presentationStep === 2 && (
+                            <div className="slide animate-in">
+                                <h2 style={{ fontSize: '2rem', marginBottom: '30px', color: '#00b894' }}>Projected ROI: FilCan Cars 📈</h2>
+                                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '30px', borderRadius: '20px', marginBottom: '40px' }}>
+                                    <div style={{ fontSize: '3rem', fontWeight: '900' }}>$125,000+</div>
+                                    <div style={{ color: '#888' }}>Estimated Monthly Sales Opportunity</div>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+                                    <div style={{ textAlign: 'left', border: '1px solid #333', padding: '20px', borderRadius: '15px' }}>
+                                        <div style={{ fontSize: '1.5rem', color: '#00b894' }}>95%</div>
+                                        <div style={{ fontSize: '0.8rem', color: '#888' }}>Instant Engagement Rate</div>
+                                    </div>
+                                    <div style={{ textAlign: 'left', border: '1px solid #333', padding: '20px', borderRadius: '15px' }}>
+                                        <div style={{ fontSize: '1.5rem', color: '#00b894' }}>24/7</div>
+                                        <div style={{ fontSize: '0.8rem', color: '#888' }}>Operational Availability</div>
+                                    </div>
+                                </div>
+                                <div style={{ marginTop: '40px' }}>
+                                    <button 
+                                        onClick={() => setPresentationStep(0)}
+                                        style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}
+                                    >
+                                        ← RESTART PITCH
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>

@@ -130,26 +130,28 @@ class Storage:
                 session.add_all(tenants)
                 session.commit()
 
-            # Seed Inventory
+            # Seed Inventory (Premium FilCan Edition)
             if session.query(CarTable).count() == 0:
                 inventory = [
-                    CarTable(tenant_id="filcan", make="Volkswagen", model="Atlas", year=2024, price=54900, mileage=15, type="SUV", image="https://images.unsplash.com/photo-1594976612316-401266a4cc44?auto=format&fit=crop&w=400&q=80", description="2024 VW Atlas EXECLINE. Loaded with AWD, Panoramic Sunroof, and Leather."),
-                    CarTable(tenant_id="filcan", make="Mazda", model="CX-5", year=2023, price=38500, mileage=12400, type="SUV", image="https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=400&q=80", description="Turbo AWD signature trim. Soul Red Crystal Metallic. One owner, local."),
-                    CarTable(tenant_id="filcan", make="Ford", model="F-150", year=2021, price=46000, mileage=45000, type="Truck", image="https://images.unsplash.com/photo-1591115765373-520b7a21f7cd?auto=format&fit=crop&w=400&q=80", description="Lariat Sport Supercrew. 5.0L V8. Clean Carfax, Sherword Park driven.")
+                    CarTable(tenant_id="filcan", make="Volkswagen", model="Atlas EXECLINE", year=2024, price=58900, mileage=12, type="SUV", image="https://images.unsplash.com/photo-1594976612316-401266a4cc44?auto=format&fit=crop&w=800&q=80", description="2024 VW Atlas EXECLINE. AWD, Panoramic Sunroof, Leather. The ultimate family SUV."),
+                    CarTable(tenant_id="filcan", make="Mazda", model="CX-5 Signature", year=2023, price=39500, mileage=8400, type="SUV", image="https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=800&q=80", description="Turbo AWD Signature Trim. Soul Red Crystal. Local one-owner vehicle."),
+                    CarTable(tenant_id="filcan", make="Ford", model="F-150 Lariat", year=2021, price=48500, mileage=32000, type="Truck", image="https://images.unsplash.com/photo-1591115765373-520b7a21f7cd?auto=format&fit=crop&w=800&q=80", description="Lariat Sport Supercrew. 5.0L V8. Sherword Park driven, immaculate condition."),
+                    CarTable(tenant_id="filcan", make="Honda", model="Civic Type R", year=2023, price=52000, mileage=5000, type="Sedan", image="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=800&q=80", description="Performance hatch in Championship White. Rare find, tracked & verified.")
                 ]
                 # Also seed for demo
                 inventory.extend([
-                    CarTable(tenant_id="demo", make="Tesla", model="Model S", year=2023, price=89000, mileage=1000, type="Sedan", image="https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=400&q=80", description="2023 Tesla Model S Plaid. Ludicrous speed and futuristic tech."),
+                    CarTable(tenant_id="demo", make="Tesla", model="Model S Plaid", year=2023, price=95000, mileage=500, type="Sedan", image="https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=800&q=80", description="Ludicrous speed, futuristic tech. 0-60 in 1.99s."),
                 ])
                 session.add_all(inventory)
                 session.commit()
 
-            # Seed Leads
+            # Seed Leads (Impressive Pitch Edition)
             if session.query(LeadTable).count() == 0:
                 leads = [
-                    LeadTable(tenant_id="filcan", name="John Doe", email="john@example.com", phone="555-0199", credit_score=720, monthly_budget=500, trade_in_details="2015 Honda Civic", status="Qualified", is_reported=True, is_billed=False, quality_score=95, follow_up_streak=15, last_action_time="Saturday 9:00 PM"),
-                    LeadTable(tenant_id="filcan", name="Sarah Smith", email="sarah@gmail.com", phone="555-0123", credit_score=650, monthly_budget=400, trade_in_details="None", status="Pending", is_reported=False, is_billed=False, quality_score=60, follow_up_streak=5, last_action_time="Friday 2:00 PM"),
-                    LeadTable(tenant_id="filcan", name="Mike Johnson", email="mike@icloud.com", phone="555-9876", credit_score=680, monthly_budget=600, trade_in_details="2018 Ford Escape", status="Hot", is_reported=True, is_billed=True, quality_score=98, follow_up_streak=45, last_action_time="Thursday 10:00 AM")
+                    LeadTable(tenant_id="filcan", name="Marvin Raymundo", email="marvin@example.com", phone="587-888-1234", credit_score=750, monthly_budget=800, trade_in_details="2018 Toyota RAV4", status="Hot", is_reported=True, is_billed=True, quality_score=98, follow_up_streak=4, last_action_time="Today 10:45 AM", conversation_summary="Highly interested in VW Atlas. Ready for test drive tomorrow."),
+                    LeadTable(tenant_id="filcan", name="Jessica Chen", email="jess@outlook.com", phone="587-555-9000", credit_score=680, monthly_budget=550, trade_in_details="None", status="Qualified", is_reported=True, is_billed=False, quality_score=85, follow_up_streak=2, last_action_time="Today 9:15 AM", conversation_summary="Looking for a reliable SUV. Comparing Atlas and CX-5. Financing approved."),
+                    LeadTable(tenant_id="filcan", name="Robert Downey", email="rob@gmail.com", phone="780-123-4567", credit_score=720, monthly_budget=700, trade_in_details="2015 Ford Escape", status="Hot", is_reported=True, is_billed=True, quality_score=94, follow_up_streak=3, last_action_time="Yesterday", conversation_summary="Interested in Mazda CX-5. Asked about trade-in value & winter tires."),
+                    LeadTable(tenant_id="filcan", name="Alice Wonderland", email="alice@magic.com", phone="555-9876", credit_score=650, monthly_budget=400, trade_in_details="None", status="Pending", is_reported=False, is_billed=False, quality_score=60, follow_up_streak=1, last_action_time="2h ago", conversation_summary="Discovery Phase: Browsing SUVs for city commute.")
                 ]
                 session.add_all(leads)
                 session.commit()
