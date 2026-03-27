@@ -188,6 +188,27 @@ async def admin_manual_reply(req: ManualReplyRequest):
     print(f"Manual Reply to {req.recipient_id}: {req.message}")
     return {"status": "sent", "reply": req.message}
 
+@api_router.post("/admin/simulate-nudge")
+async def simulate_nudge(req: ManualReplyRequest, tenant_id: str = Depends(get_tenant_id)):
+    """
+    V13 Pitch Mode: Simulation for automated re-engagement (The Relentless Hunter).
+    """
+    lead_index = int(req.recipient_id) # In the demo, id is often used as index
+    
+    # 1. Update Streak in DB
+    with db.session_factory() as session:
+        from storage import LeadTable
+        lead = session.query(LeadTable).filter(LeadTable.id == lead_index).first()
+        if lead:
+            lead.follow_up_streak += 1
+            lead.last_action_time = f"AUTO-NUDGE #{lead.follow_up_streak}"
+            session.commit()
+            
+            print(f"Relentless Nudge sent to {lead.name} (Streak: {lead.follow_up_streak})")
+            return {"status": "nudged", "streak": lead.follow_up_streak}
+    
+    raise HTTPException(status_code=404, detail="Lead not found")
+
 @api_router.get("/ads", response_model=List[AdApproval])
 async def get_ads():
     return db.get_ads()

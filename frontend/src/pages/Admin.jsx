@@ -162,6 +162,28 @@ const Admin = () => {
         }
     };
 
+    const handleAutoNudge = async (leadId) => {
+        try {
+            await fetch(`${apiUrl}/admin/simulate-nudge`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipient_id: leadId, message: "SIMULATED NUDGE" })
+            });
+            
+            setAuditLogs(prev => [
+                { id: `nudge-${Date.now()}`, time: "Now", action: `RELENTLESS: AI sent automated nudge to lead ID #${leadId}`, type: "AI" },
+                ...prev
+            ]);
+            
+            // Refresh leads list
+            const leadsRes = await fetch(`${apiUrl}/leads`, { headers: { 'X-Tenant-Id': tenant.id } });
+            const leadsData = await leadsRes.json();
+            setLeads(leadsData);
+        } catch (err) {
+            console.error("Nudge failed:", err);
+        }
+    };
+
     const handleInjectLead = async () => {
         const names = ["Marcus Aurelius", "Leia Organa", "Tony Stark", "Diana Prince"];
         const cars = ["VW Atlas", "Mazda CX-5", "Ford F-150", "Honda Civic"];
@@ -264,12 +286,24 @@ const Admin = () => {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '0.8rem', color: '#888' }}>API Status: <span style={{ color: apiStatus === 'CONNECTED' ? '#00b894' : '#e17055', fontWeight: 'bold' }}>{apiStatus}</span></div>
-                    <button 
-                        onClick={handleInjectLead}
-                        style={{ background: '#00b894', color: 'white', border: 'none', padding: '4px 12px', borderRadius: '15px', fontSize: '0.7rem', cursor: 'pointer', marginTop: '5px' }}
-                    >
-                        🧪 Inject Demo Lead (Pitch Mode)
-                    </button>
+                    <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end', marginTop: '5px' }}>
+                        <button 
+                            onClick={handleInjectLead}
+                            style={{ background: '#00b894', color: 'white', border: 'none', padding: '4px 12px', borderRadius: '15px', fontSize: '0.7rem', cursor: 'pointer' }}
+                        >
+                            🧪 Inject Lead
+                        </button>
+                        <button 
+                            onClick={() => {
+                                const lead = leads.find(l => l.status === 'Pending' || l.status === 'Discovery');
+                                if (lead) handleAutoNudge(lead.id);
+                                else alert("Please inject a lead first!");
+                            }}
+                            style={{ background: '#D92027', color: 'white', border: 'none', padding: '4px 12px', borderRadius: '15px', fontSize: '0.7rem', cursor: 'pointer' }}
+                        >
+                            🚀 Test Auto-Nudge
+                        </button>
+                    </div>
                     <div style={{ fontSize: '0.7rem', color: '#00b894', marginTop: '5px' }}>DB Resilience: <span style={{ fontWeight: 'bold' }}>ACTIVE (RETRY MODE)</span></div>
                     <div style={{ fontSize: '0.7rem', color: '#00b894' }}>All actions time-stamped & verified</div>
                 </div>
@@ -288,6 +322,7 @@ const Admin = () => {
                                 <tr style={{ borderBottom: '2px solid #f0f0f0', textAlign: 'left' }}>
                                     <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>CUSTOMER</th>
                                     <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>STEP</th>
+                                    <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>STREAK</th>
                                     <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>PROGRESS</th>
                                     <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem' }}>INTENT</th>
                                     <th style={{ padding: '12px', color: '#666', fontSize: '0.8rem', textAlign: 'right' }}>ACTION</th>
@@ -303,6 +338,14 @@ const Admin = () => {
                                         <td style={{ padding: '12px' }}>
                                             <div style={{ fontWeight: '600', color: tenant.theme_color }}>
                                                 STEP {JSON.parse(lead.conversation_state || '{}').step || 1}
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '12px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                <span style={{ fontWeight: '800', color: lead.follow_up_streak > 0 ? '#e17055' : '#ccc' }}>
+                                                    {lead.follow_up_streak || 0}x
+                                                </span>
+                                                {lead.follow_up_streak > 0 && <span>🔥</span>}
                                             </div>
                                         </td>
                                         <td style={{ padding: '12px' }}>
