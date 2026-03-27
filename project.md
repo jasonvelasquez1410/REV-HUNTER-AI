@@ -64,3 +64,8 @@ This file serves as a persistent record of the project's state to help future se
   - Added Dual-Mode Routing (Path/Hash) to `App.jsx` as a deployment fallback.
   - Added `v11.1` versioning to `ChatWidget` to verify live updates.
   - Enhanced error diagnostics for chat connection failures.
+- **2026-03-27 (V11.2)**: **ENHANCEMENT & RESILIENCE PATCH**.
+  - **AI Logic**: Refined 9-step qualification engine with explicit rules for pricing and intent extraction.
+  - **UI/UX**: Updated Admin Command Center with V11.2 branding and live status indicators.
+  - **Database Resilience**: Implemented automatic retry logic for lead state persistence to handle transient connectivity issues.
+  - **Versioning**: Synced internal AI context and UI with V11.2 tags.

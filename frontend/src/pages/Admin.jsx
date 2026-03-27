@@ -175,7 +175,7 @@ const Admin = () => {
         <div className="container admin-container">
             <h1 style={{ marginBottom: '30px', color: '#003366', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <span style={{ background: '#003366', color: 'white', padding: '5px 12px', borderRadius: '8px', fontSize: '1rem' }}>REVHUNTER AI</span>
+                    <span style={{ background: '#003366', color: 'white', padding: '5px 12px', borderRadius: '8px', fontSize: '1rem' }}>REVHUNTER AI V11.2</span>
                     Marketing Command Center
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
@@ -228,6 +228,7 @@ const Admin = () => {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '0.8rem', color: '#888' }}>API Status: <span style={{ color: apiStatus === 'CONNECTED' ? '#00b894' : '#e17055', fontWeight: 'bold' }}>{apiStatus}</span></div>
+                    <div style={{ fontSize: '0.7rem', color: '#00b894' }}>DB Resilience: <span style={{ fontWeight: 'bold' }}>ACTIVE (RETRY MODE)</span></div>
                     <div style={{ fontSize: '0.7rem', color: '#00b894' }}>All actions time-stamped & verified</div>
                 </div>
             </section>

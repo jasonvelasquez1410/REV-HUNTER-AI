@@ -245,15 +245,25 @@ class Storage:
             return False
 
     def update_lead_state(self, lead_id: int, state: Dict, summary: str) -> bool:
-        with self.session_factory() as session:
-            lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
-            if lead:
-                lead.conversation_state = json.dumps(state)
-                lead.conversation_summary = summary
-                lead.last_action_time = "Just Now"
-                session.commit()
-                return True
-            return False
+        if not self.session_factory: return False
+        
+        # V11.2: Added basic retry logic for DB resilience
+        max_retries = 2
+        for attempt in range(max_retries):
+            try:
+                with self.session_factory() as session:
+                    lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
+                    if lead:
+                        lead.conversation_state = json.dumps(state)
+                        lead.conversation_summary = summary
+                        lead.last_action_time = "Just Now"
+                        session.commit()
+                        return True
+                    return False
+            except Exception as e:
+                print(f"DB Update Attempt {attempt+1} failed: {e}")
+                if attempt == max_retries - 1: return False
+        return False
 
     def get_or_create_lead(self, tenant_id: str, name: str, phone: str = None) -> LeadTable:
         with self.session_factory() as session:

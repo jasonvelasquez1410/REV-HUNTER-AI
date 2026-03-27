@@ -37,10 +37,10 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     current_step = context.get("step", 1)
     collected_data = context.get("data", {})
 
-    # System Prompt for the Relentless Hunter
+    # V11.2 Enhancement: Explicit Versioning & Better State Persistence
     system_prompt = f"""
-    You are the 'RevHunter AI' for {tenant['name']} in {tenant['location']}.
-    Goal: Follow the 9-Step Lead Qualification process RELENTLESSLY but professionally.
+    You are 'RevHunter AI' V11.2 for {tenant['name']}.
+    Goal: Lead {tenant['location']} customers through the 9-Step Sales Process.
     
     Inventory:
     {inventory_str}
@@ -59,11 +59,12 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     Current Progress: Step {current_step}/9
     What we know so far: {json.dumps(collected_data)}
     
-    Instruction:
-    1. Respond to the user's message.
-    2. Decide if we move to the next step or stay on the current one based on their answer.
-    3. Extract any new info (budget, model preference, etc.).
-    4. Return your response ONLY in this JSON format:
+    Rules:
+    - If user asks for pricing, give it if it's in the inventory, otherwise estimate.
+    - If user is ready to move faster, skip steps as appropriate.
+    - Always extract budget, trade-in info, and credit scores if mentioned.
+    
+    Return your response ONLY in this JSON format:
     {{
         "response": "Your message to the user",
         "next_step": 1-9,
@@ -75,17 +76,15 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     if not GOOGLE_API_KEY:
         # Simulate state transition for Demo Mode
         new_step = min(current_step + 1, 9)
-        new_context = {"step": new_step, "data": collected_data, "last_msg": message}
-        return f"System Note: GOOGLE_API_KEY is not configured. (Demo Mode Active - Simulating Step {new_step})", json.dumps(new_context), f"Demo Summary for Step {new_step}"
+        new_context = {"step": new_step, "data": collected_data, "last_msg": message, "v": "11.2"}
+        return f"System Note: GOOGLE_API_KEY is not configured. (V11.2 Demo Mode Active - Simulating Step {new_step})", json.dumps(new_context), f"V11.2 Demo Summary for Step {new_step}"
 
     try:
         model = genai.GenerativeModel('gemini-1.5-flash')
-        # We use generate_content for a clean state-to-state transition
         response = model.generate_content(f"{system_prompt}\n\nUser Message: {message}")
         
         # Parse JSON from response
         res_text = response.text.strip()
-        # Clean up possible markdown backticks
         if "```json" in res_text:
             res_text = res_text.split("```json")[1].split("```")[0].strip()
         elif "```" in res_text:
@@ -98,7 +97,8 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
         new_context = {
             "step": data.get("next_step", current_step),
             "data": new_data,
-            "last_msg": message
+            "last_msg": message,
+            "v": "11.2"
         }
         
         return data["response"], json.dumps(new_context), data["summary"]
