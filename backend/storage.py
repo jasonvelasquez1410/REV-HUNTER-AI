@@ -21,15 +21,20 @@ def init_db():
             print("WARNING: DATABASE_URL not set. Falling back to in-memory for safety.")
             db_url = "sqlite:///./test.db"
         else:
+            # Fix postgres:// to postgresql:// for SQLAlchemy 1.4+
             db_url = DATABASE_URL
+            if db_url.startswith("postgres://"):
+                db_url = db_url.replace("postgres://", "postgresql://", 1)
             
         try:
             # Supabase requires some pooling adjustments for serverless
+            # Vercel Serverless: Reduce pool size and max overflow for stability
             engine = create_engine(
                 db_url, 
-                pool_size=5, 
-                max_overflow=10,
-                pool_pre_ping=True
+                pool_size=2, 
+                max_overflow=0,
+                pool_pre_ping=True,
+                connect_args={"connect_timeout": 5}
             )
             SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
             # Create tables if they don't exist
@@ -98,14 +103,16 @@ TENANTS_FILE = os.path.join(os.path.dirname(__file__), "tenants.json")
 
 class Storage:
     def __init__(self):
-        init_db()
-        self.session_factory = SessionLocal
         try:
+            init_db()
+            self.session_factory = SessionLocal
             self._seed_data_if_empty()
         except Exception as e:
-            print(f"Seeding Error: {e}")
+            print(f"Storage Initialization Critical Error: {e}")
+            self.session_factory = None
 
     def _seed_data_if_empty(self):
+        if not self.session_factory: return
         with self.session_factory() as session:
             # Seed Tenants
             if session.query(TenantTable).count() == 0:
