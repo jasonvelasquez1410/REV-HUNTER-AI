@@ -290,27 +290,30 @@ const Admin = () => {
     };
 
     // Ultimate safe voice selector favoring Natural/Neural voices
-    const getBestVoice = (gender = 'female') => {
+    const getBestVoice = (gender = 'female', excludeVoice = null) => {
         if (availableVoices.length === 0) return null;
 
-        // Priorities: Neural > Natural > Online (Edge) > Google > Standard
-        const femaleNames = ['aria', 'jenny', 'samantha', 'google us english', 'natural', 'neural', 'shannon', 'zira'];
-        const maleNames = ['guy', 'andrew', 'david', 'mark', 'google us english', 'natural', 'neural', 'stefan'];
+        // Mutually exclusive gender names to prevent overlap
+        const femaleNames = ['aria', 'jenny', 'samantha', 'victoria', 'google us english', 'shannon', 'zira', 'hazel', 'elena'];
+        const maleNames = ['guy', 'andrew', 'david', 'mark', 'stefan', 'george', 'google uk english male', 'google us english male'];
         
         const preferredNames = gender === 'female' ? femaleNames : maleNames;
         
-        // 1. Find by explicit high-quality keywords
-        let best = availableVoices.find(v => (v.name.toLowerCase().includes('natural') || v.name.toLowerCase().includes('online') || v.name.toLowerCase().includes('neural')) && 
+        // Filter out the excluded voice if provided
+        const candidates = excludeVoice ? availableVoices.filter(v => v.name !== excludeVoice.name) : availableVoices;
+        
+        // 1. Find by explicit high-quality keywords (Neural/Natural)
+        let best = candidates.find(v => (v.name.toLowerCase().includes('natural') || v.name.toLowerCase().includes('online') || v.name.toLowerCase().includes('neural')) && 
                                      preferredNames.some(n => v.name.toLowerCase().includes(n)));
         
-        // 2. Fallback to Google versions
-        if (!best) best = availableVoices.find(v => v.name.toLowerCase().includes('google') && 
+        // 2. Fallback to Google versions (specific to gender)
+        if (!best) best = candidates.find(v => v.name.toLowerCase().includes('google') && 
                                           preferredNames.some(n => v.name.toLowerCase().includes(n)));
         
-        // 3. Fallback to any voice matching gender names
-        if (!best) best = availableVoices.find(v => preferredNames.some(n => v.name.toLowerCase().includes(n)));
+        // 3. Last resort matching name keywords
+        if (!best) best = candidates.find(v => preferredNames.some(n => v.name.toLowerCase().includes(n)));
         
-        return best || availableVoices[0];
+        return best || candidates[0] || availableVoices[0];
     };
 
     const handleVoiceDemo = () => {
