@@ -6,6 +6,42 @@ import LandingPageDemo from './pages/LandingPageDemo';
 import FacebookDemo from './pages/FacebookDemo';
 import { TenantProvider, useTenant } from './context/TenantContext';
 
+// Safe-guarding the pitch from any unexpected runtime regressions
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error: error.message };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("Critical UI Error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '40px', background: '#1a1a1a', color: '#ff4d4d', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '3rem', marginBottom: '20px' }}>⚠️ System Alert</h1>
+          <p style={{ fontSize: '1.2rem', color: '#888', maxWidth: '600px', marginBottom: '30px' }}>
+            A temporary rendering issue occurred. This does not affect your lead data or AI follow-ups.
+          </p>
+          <div style={{ background: '#000', padding: '20px', borderRadius: '10px', color: '#00ff00', fontFamily: 'monospace', marginBottom: '30px', textAlign: 'left', width: '100%', maxWidth: '800px', overflowX: 'auto' }}>
+            {this.state.error}
+          </div>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{ padding: '15px 40px', background: '#ff4d4d', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            REFRESH SYSTEM
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function AppContent() {
   const [currentPage, setCurrentPage] = useState('home');
   const { tenant } = useTenant();
@@ -82,9 +118,11 @@ function AppContent() {
 
 function App() {
   return (
-    <TenantProvider>
-      <AppContent />
-    </TenantProvider>
+    <ErrorBoundary>
+      <TenantProvider>
+        <AppContent />
+      </TenantProvider>
+    </ErrorBoundary>
   );
 }
 

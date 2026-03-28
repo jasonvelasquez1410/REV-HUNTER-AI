@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Vapi } from '@vapi-ai/web';
+import { Vapi as VapiNamed } from '@vapi-ai/web';
+import VapiDefault from '@vapi-ai/web';
 import LeadReportCard from '../components/LeadReportCard';
 import { useTenant } from '../context/TenantContext';
 
@@ -44,10 +44,16 @@ const Admin = () => {
     const VAPI_ASSISTANT_ID = '5921ac52-3ea4-443f-a531-993b5e43fddf';
 
     useEffect(() => {
-        // Safe constructor resolution for production builds
-        const VapiConstructor = typeof Vapi === 'function' ? Vapi : (Vapi.default || Vapi);
+        // Ultimate safe constructor resolution for production builds
+        const VapiBase = VapiNamed || VapiDefault;
+        const VapiConstructor = typeof VapiBase === 'function' ? VapiBase : (VapiBase?.default || VapiBase);
+        
         try {
-            vapi.current = new VapiConstructor(VAPI_PUBLIC_KEY);
+            if (typeof VapiConstructor === 'function') {
+                vapi.current = new VapiConstructor(VAPI_PUBLIC_KEY);
+            } else {
+                console.error("VapiConstructor is not a function:", VapiConstructor);
+            }
         } catch (err) {
             console.error("Failed to initialize Vapi:", err);
         }
