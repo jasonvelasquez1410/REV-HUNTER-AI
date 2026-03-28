@@ -44,7 +44,13 @@ const Admin = () => {
     const VAPI_ASSISTANT_ID = '5921ac52-3ea4-443f-a531-993b5e43fddf';
 
     useEffect(() => {
-        vapi.current = new Vapi(VAPI_PUBLIC_KEY);
+        // Safe constructor resolution for production builds
+        const VapiConstructor = typeof Vapi === 'function' ? Vapi : (Vapi.default || Vapi);
+        try {
+            vapi.current = new VapiConstructor(VAPI_PUBLIC_KEY);
+        } catch (err) {
+            console.error("Failed to initialize Vapi:", err);
+        }
 
         vapi.current.on('call-start', () => {
             console.log('Vapi Call started');
