@@ -151,7 +151,9 @@ const LandingPageDemo = () => {
                         if (isCalling) {
                             vapi.current.stop();
                         } else {
-                            vapi.current.start(VAPI_ASSISTANT_ID);
+                            vapi.current.start(VAPI_ASSISTANT_ID, {
+                                firstMessage: "Hi! This is Elliot, the AI Sales Specialist for FilCan Cars. I saw you were looking at our inventory. How can I help you today?"
+                            });
                         }
                     }}
                     style={{ 

@@ -352,12 +352,10 @@ const Admin = () => {
             }
 
             vapi.current.start(VAPI_ASSISTANT_ID, {
+                firstMessage: greeting,
                 variableValues: {
                     customerName: lead.name.split(' ')[0],
                     carModel: lead.car || 'vehicle'
-                },
-                assistant: {
-                    firstMessage: greeting
                 }
             });
         } catch (err) {
