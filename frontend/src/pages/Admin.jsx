@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Vapi from '@vapi-ai/web';
+import { Vapi } from '@vapi-ai/web';
 import LeadReportCard from '../components/LeadReportCard';
 import { useTenant } from '../context/TenantContext';
 
