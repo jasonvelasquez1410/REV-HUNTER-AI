@@ -46,18 +46,28 @@ const Admin = () => {
 
     useEffect(() => {
         try {
-            // Simplified initialization for @vapi-ai/web v2.x
+            // Robust constructor resolution for Vapi Web SDK v2.x
             const VapiBase = VapiNamed || VapiDefault;
-            const VapiConstructor = typeof VapiBase === 'function' ? VapiBase : (VapiBase?.default || VapiBase);
+            let constructor = null;
             
-            if (VapiConstructor) {
-                console.log("Initializing Vapi with Public Key:", VAPI_PUBLIC_KEY);
-                vapi.current = new VapiConstructor(VAPI_PUBLIC_KEY);
+            if (typeof VapiBase === 'function') {
+                constructor = VapiBase;
+            } else if (VapiBase?.default && typeof VapiBase.default === 'function') {
+                constructor = VapiBase.default;
+            } else if (VapiBase && typeof VapiBase === 'object') {
+                // Handle cases where the package is an object with the class inside
+                const found = Object.values(VapiBase).find(v => typeof v === 'function');
+                if (found) constructor = found;
+            }
+            
+            if (constructor) {
+                console.log("Initializing Vapi Engine...");
+                vapi.current = new constructor(VAPI_PUBLIC_KEY);
             } else {
-                console.error("Vapi constructor not found in @vapi-ai/web package");
+                console.error("Vapi class not resolved from package", VapiBase);
             }
         } catch (err) {
-            console.error("Failed to initialize Vapi:", err);
+            console.error("Vapi Init Error:", err);
         }
 
         if (!vapi.current) return;

@@ -14,14 +14,31 @@ const LandingPageDemo = () => {
     const vapi = useRef(null);
 
     useEffect(() => {
-        vapi.current = new Vapi(VAPI_PUBLIC_KEY);
-        
-        vapi.current.on('call-start', () => setIsCalling(true));
-        vapi.current.on('call-end', () => setIsCalling(false));
-        vapi.current.on('error', (e) => {
-            console.error('Vapi Error:', e);
-            setIsCalling(false);
-        });
+        try {
+            // Robust constructor resolution for Vapi Web SDK v2.x
+            let constructor = null;
+            if (typeof Vapi === 'function') {
+                constructor = Vapi;
+            } else if (Vapi?.default && typeof Vapi.default === 'function') {
+                constructor = Vapi.default;
+            } else if (Vapi && typeof Vapi === 'object') {
+                const found = Object.values(Vapi).find(v => typeof v === 'function');
+                if (found) constructor = found;
+            }
+
+            if (constructor) {
+                vapi.current = new constructor(VAPI_PUBLIC_KEY);
+                
+                vapi.current.on('call-start', () => setIsCalling(true));
+                vapi.current.on('call-end', () => setIsCalling(false));
+                vapi.current.on('error', (e) => {
+                    console.error('Vapi Error:', e);
+                    setIsCalling(false);
+                });
+            }
+        } catch (err) {
+            console.error("Vapi Init Error:", err);
+        }
 
         const fetchCars = async () => {
             try {
@@ -170,8 +187,8 @@ const LandingPageDemo = () => {
                 }
             `}</style>
 
-            {/* Omni Hunter Widget */}
-            <ChatWidget />
+            {/* Omni Hunter Widget - Hidden to prioritize Voice Call Demo as requested */}
+            {/* <ChatWidget /> */}
         </div>
     );
 };
