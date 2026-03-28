@@ -70,7 +70,13 @@ const Admin = () => {
 
         vapi.current.on('error', (e) => {
             console.error('Vapi Error:', e);
-            setIsCalling(null);
+            setVapiError(e.message || "Connection failed. Check your microphone or Vapi keys.");
+            // Don't immediately close, let the user see the error
+            // setIsCalling(null); 
+        });
+
+        vapi.current.on('message', (msg) => {
+            console.log('Vapi Message:', msg);
         });
 
         return () => {
@@ -91,6 +97,7 @@ const Admin = () => {
     const [isSyncingCRM, setIsSyncingCRM] = useState(null); 
     const [selectedLeadChat, setSelectedLeadChat] = useState(null);
     const [isCalling, setIsCalling] = useState(null);
+    const [vapiError, setVapiError] = useState(null);
     const [isVoiceDemoPlaying, setIsVoiceDemoPlaying] = useState(false);
     const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' or 'showroom'
     const [selectedPillar, setSelectedPillar] = useState('tactical');
@@ -275,13 +282,20 @@ const Admin = () => {
         
         setIsCalling(lead);
         
-        // Start the real-time Vapi call
-        vapi.current.start(VAPI_ASSISTANT_ID, {
-            variable_overrides: {
-                customerName: lead.name.split(' ')[0],
-                carModel: lead.car || 'vehicle'
-            }
-        });
+        // Start the real-time Vapi call with CORRECT SDK v2.x schema
+        try {
+            vapi.current.start(VAPI_ASSISTANT_ID, {
+                assistantOverrides: {
+                    variableValues: {
+                        customerName: lead.name.split(' ')[0],
+                        carModel: lead.car || 'vehicle'
+                    }
+                }
+            });
+        } catch (err) {
+            console.error("Vapi Start Exception:", err);
+            setVapiError("Vapi Start Failed: " + err.message);
+        }
         
         setAuditLogs(prev => [
             { id: `voice-${Date.now()}`, time: "Now", action: `📞 VAPI: Initiated human-grade AI voice call to ${lead.name}`, type: "AI" },
@@ -735,7 +749,13 @@ const Admin = () => {
                     <h2 style={{ fontSize: '2.2rem', marginBottom: '5px' }}>REAL-TIME HUMAN-AI VOICE</h2>
                     <div style={{ fontSize: '0.8rem', color: '#00b894', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '2px' }}>POWERED BY VAPI & ELEVENLABS</div>
                     
-                    <p style={{ fontSize: '1.2rem', color: '#fff', fontWeight: '500' }}>In conversation with <span style={{ color: '#00b894' }}>{isCalling?.name || "Customer"}</span>...</p>
+                    {vapiError ? (
+                        <div style={{ padding: '20px', background: 'rgba(217,32,39,0.2)', border: '1px solid #D92027', borderRadius: '15px', color: '#ff4d4d', marginBottom: '20px' }}>
+                            <strong>CALL ERROR:</strong> {vapiError}
+                        </div>
+                    ) : (
+                        <p style={{ fontSize: '1.2rem', color: '#fff', fontWeight: '500' }}>In conversation with <span style={{ color: '#00b894' }}>{isCalling?.name || "Customer"}</span>...</p>
+                    )}
                     
                     <div style={{ marginTop: '40px', background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '20px', maxWidth: '450px', border: '1px solid rgba(0,184,148,0.3)', textAlign: 'center' }}>
                         <div style={{ fontSize: '0.7rem', color: '#00b894', marginBottom: '15px', textTransform: 'uppercase', fontWeight: 'bold' }}>Live Call Insights</div>
@@ -746,6 +766,7 @@ const Admin = () => {
                         onClick={() => {
                             if (vapi.current) vapi.current.stop();
                             setIsCalling(null);
+                            setVapiError(null);
                         }}
                         style={{ 
                             marginTop: '50px', padding: '15px 40px', background: '#D92027', color: 'white', 
