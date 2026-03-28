@@ -283,6 +283,7 @@ const Admin = () => {
         setIsCalling(lead);
         
         // Start the real-time Vapi call with CORRECT SDK v2.x schema
+        console.log("VAPI_DEBUG_V2: Sending assistantOverrides.variableValues...");
         try {
             vapi.current.start(VAPI_ASSISTANT_ID, {
                 assistantOverrides: {
