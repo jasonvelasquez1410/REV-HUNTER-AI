@@ -278,6 +278,31 @@ const Admin = () => {
         ]);
     };
 
+    // Helper to find the best possible free browser voice
+    const getBestVoice = (gender = 'female') => {
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length === 0) return null;
+
+        // Priorities: Natural/Neural > Google > Microsoft > Others
+        const femaleKeywords = ['female', 'zira', 'samantha', 'victoria', 'google us english', 'natural', 'neural', 'shannon', 'hazel'];
+        const maleKeywords = ['male', 'david', 'mark', 'google us english', 'natural', 'neural', 'guy', 'andrew'];
+        
+        const keywords = gender === 'female' ? femaleKeywords : maleKeywords;
+        
+        // 1. Try to find a "Natural" or "Neural" voice first
+        let best = voices.find(v => (v.name.toLowerCase().includes('natural') || v.name.toLowerCase().includes('neural')) && 
+                                     keywords.some(k => v.name.toLowerCase().includes(k)));
+        
+        // 2. Try Google voices (often higher quality)
+        if (!best) best = voices.find(v => v.name.toLowerCase().includes('google') && 
+                                          keywords.some(k => v.name.toLowerCase().includes(k)));
+        
+        // 3. Fallback to any voice with the right keyword
+        if (!best) best = voices.find(v => keywords.some(k => v.name.toLowerCase().includes(k)));
+        
+        return best || voices[0];
+    };
+
     const handleVoiceDemo = () => {
         if (isVoiceDemoPlaying) return;
         setIsVoiceDemoPlaying(true);
