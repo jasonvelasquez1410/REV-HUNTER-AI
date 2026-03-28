@@ -1,9 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import VapiNamed from '@vapi-ai/web';
+import VapiDefault from '@vapi-ai/web';
 import ChatWidget from '../components/ChatWidget';
 import { useTenant } from '../context/TenantContext';
 
+// Presentation Keys (Shared across the platform for the demo)
+const VAPI_PUBLIC_KEY = '012fbe2f-192f-44f3-a1b3-76db83ce299c';
+const VAPI_ASSISTANT_ID = '5921ac52-3ea4-443f-a531-993b5e43fddf';
+
 const FacebookDemo = () => {
     const { tenant } = useTenant();
+    const [isCalling, setIsCalling] = useState(false);
+    const vapi = useRef(null);
+
+    useEffect(() => {
+        try {
+            // Robust constructor resolution for Vapi Web SDK v2.x
+            const VapiBase = VapiNamed || VapiDefault;
+            let constructor = null;
+            if (typeof VapiBase === 'function') {
+                constructor = VapiBase;
+            } else if (VapiBase?.default && typeof VapiBase.default === 'function') {
+                constructor = VapiBase.default;
+            } else if (VapiBase && typeof VapiBase === 'object') {
+                const found = Object.values(VapiBase).find(v => typeof v === 'function');
+                if (found) constructor = found;
+            }
+
+            if (constructor) {
+                vapi.current = new constructor(VAPI_PUBLIC_KEY);
+                vapi.current.on('call-start', () => setIsCalling(true));
+                vapi.current.on('call-end', () => setIsCalling(false));
+                vapi.current.on('error', (e) => {
+                    console.error('Vapi Error:', e);
+                    setIsCalling(false);
+                });
+            }
+        } catch (err) {
+            console.error("Vapi Init Error:", err);
+        }
+    }, []);
+
     const initials = tenant.name.split(' ').map(w => w[0]).join('');
 
     const [messages] = useState([
@@ -86,10 +123,55 @@ const FacebookDemo = () => {
                 </main>
             </div>
 
-            {/* Messenger Integration Overlay */}
+            {/* Floating AI Call Button (Simulated for FB) */}
             <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 1000 }}>
-                <ChatWidget defaultOpen={false} placeholder={`Message ${tenant.name} AI Hunter...`} />
+                <button 
+                    onClick={() => {
+                        if (isCalling) {
+                            vapi.current.stop();
+                        } else {
+                            vapi.current.start(VAPI_ASSISTANT_ID, {
+                                assistant: {
+                                    firstMessage: "Hi! This is Riley, the AI Sales Assistant for FilCan Cars. I saw you were looking at our Facebook post. How can I help you today?"
+                                }
+                            });
+                        }
+                    }}
+                    style={{ 
+                        width: '60px', height: '60px', borderRadius: '50%', 
+                        background: isCalling ? '#fa3e3e' : '#1877f2', 
+                        color: 'white', border: 'none', cursor: 'pointer',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '1.5rem', transition: 'all 0.3s',
+                        animation: isCalling ? 'pulse-red-fb 1.5s infinite' : 'none'
+                    }}
+                    title={isCalling ? "End Call" : "Call AI Specialist"}
+                >
+                    {isCalling ? '🛑' : '📞'}
+                </button>
+                {!isCalling && (
+                    <div style={{
+                        position: 'absolute', right: '70px', top: '15px', 
+                        background: 'white', padding: '5px 15px', borderRadius: '20px',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.1)', whiteSpace: 'nowrap',
+                        fontSize: '0.8rem', fontWeight: 'bold', color: '#333'
+                    }}>
+                        Call AI Hunter
+                    </div>
+                )}
             </div>
+
+            <style>{`
+                @keyframes pulse-red-fb {
+                    0% { box-shadow: 0 0 0 0 rgba(250, 62, 62, 0.7); }
+                    70% { box-shadow: 0 0 0 15px rgba(250, 62, 62, 0); }
+                    100% { box-shadow: 0 0 0 0 rgba(250, 62, 62, 0); }
+                }
+            `}</style>
+
+            {/* Messenger Integration Overlay - Hidden to prioritize Voice Call Demo */}
+            {/* <ChatWidget defaultOpen={false} placeholder={`Message ${tenant.name} AI Hunter...`} /> */}
         </div>
     );
 };
