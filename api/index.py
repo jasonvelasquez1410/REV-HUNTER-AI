@@ -129,9 +129,25 @@ async def reactivate_lead(lead_index: int):
 @api_router.post("/generate-ad")
 async def create_ad(req: MarketingRequest, tenant_id: str = Depends(get_tenant_id)):
     content = generate_ad_copy(tenant_id, req.context)
-    new_ad = {"id": 100, "content": content, "platform": "Facebook", "status": "Pending"}
-    db.add_ad(new_ad)
-    return new_ad
+    new_ad_data = {"content": content, "platform": "Facebook", "status": "Pending"}
+    # db.add_ad returns None, social ID is autoincrement in DB
+    db.add_ad(new_ad_data, tenant_id)
+    return {"status": "success", "content": content}
+
+@api_router.post("/leads/{lead_id}/sync-gsheets")
+async def sync_lead_gsheets(lead_id: int):
+    if db.sync_to_gsheets(lead_id):
+        return {"message": "Lead synced to Google Sheets successfully"}
+    raise HTTPException(status_code=404, detail="Lead not found")
+
+@api_router.patch("/leads/{lead_id}/status")
+async def update_lead_status(lead_id: int, status_update: dict):
+    new_status = status_update.get("status")
+    if not new_status:
+        raise HTTPException(status_code=400, detail="Status is required")
+    if db.update_lead_status(lead_id, new_status):
+        return {"message": f"Lead status updated to {new_status}"}
+    raise HTTPException(status_code=404, detail="Lead not found")
 
 @api_router.post("/generate-image-prompt")
 async def create_image_prompt(ad_context: str):

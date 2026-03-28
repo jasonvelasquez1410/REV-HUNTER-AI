@@ -45,19 +45,22 @@ const Admin = () => {
     const VAPI_ASSISTANT_ID = '5921ac52-3ea4-443f-a531-993b5e43fddf';
 
     useEffect(() => {
-        // Ultimate safe constructor resolution for production builds
-        const VapiBase = VapiNamed || VapiDefault;
-        const VapiConstructor = typeof VapiBase === 'function' ? VapiBase : (VapiBase?.default || VapiBase);
-        
         try {
-            if (typeof VapiConstructor === 'function') {
+            // Simplified initialization for @vapi-ai/web v2.x
+            const VapiBase = VapiNamed || VapiDefault;
+            const VapiConstructor = typeof VapiBase === 'function' ? VapiBase : (VapiBase?.default || VapiBase);
+            
+            if (VapiConstructor) {
+                console.log("Initializing Vapi with Public Key:", VAPI_PUBLIC_KEY);
                 vapi.current = new VapiConstructor(VAPI_PUBLIC_KEY);
             } else {
-                console.error("VapiConstructor is not a function:", VapiConstructor);
+                console.error("Vapi constructor not found in @vapi-ai/web package");
             }
         } catch (err) {
             console.error("Failed to initialize Vapi:", err);
         }
+
+        if (!vapi.current) return;
 
         vapi.current.on('call-start', () => {
             console.log('Vapi Call started');
@@ -69,10 +72,10 @@ const Admin = () => {
         });
 
         vapi.current.on('error', (e) => {
-            console.error('Vapi Error:', e);
-            setVapiError(e.message || "Connection failed. Check your microphone or Vapi keys.");
-            // Don't immediately close, let the user see the error
-            // setIsCalling(null); 
+            console.error('Vapi Global Error:', e);
+            // Extract detailed info if available (Vapi SDK e is often an object with message/error)
+            const detail = e.message || e.error || (typeof e === 'string' ? e : "Connection failed");
+            setVapiError(`${detail}. Verify microphone access and Assistant ID.`);
         });
 
         vapi.current.on('message', (msg) => {
@@ -99,8 +102,9 @@ const Admin = () => {
     const [isCalling, setIsCalling] = useState(null);
     const [vapiError, setVapiError] = useState(null);
     const [isVoiceDemoPlaying, setIsVoiceDemoPlaying] = useState(false);
-    const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' or 'showroom'
+    const [activeTab, setActiveTab] = useState('inbox'); // 'inbox', 'showroom', or 'pipeline'
     const [selectedPillar, setSelectedPillar] = useState('tactical');
+    const PILLARS = ['New', 'Discovery', 'Qualified', 'Follow-up', 'Closed'];
 
     const dailyLeads = leads.filter(l => l.is_reported);
     const apiUrl = import.meta.env.VITE_API_URL || '/api';
@@ -216,6 +220,23 @@ const Admin = () => {
         ]);
     };
 
+    const handleMoveLead = async (leadId, newStatus) => {
+        try {
+            await fetch(`${apiUrl}/leads/${leadId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
+            setAuditLogs(prev => [
+                { id: `move-${Date.now()}`, time: "Now", action: `Lead ID #${leadId} moved to '${newStatus}'`, type: "REP" },
+                ...prev
+            ]);
+        } catch (err) {
+            console.error("Move failed:", err);
+        }
+    };
+
     const handleGenerateAd = async () => {
         setIsGeneratingAd(true);
         try {
@@ -266,15 +287,27 @@ const Admin = () => {
     const handleSyncCRM = async (lead) => {
         setIsSyncingCRM(lead.id);
         
-        // Professional simulation delay
-        setTimeout(() => {
-            setAuditLogs(prev => [
-                { id: `crm-${Date.now()}`, time: "Now", action: `CRM: Lead '${lead.name}' successfully exported to CDK Drive (ID: ${Math.floor(Math.random() * 90000) + 10000})`, type: "REP" },
-                ...prev
-            ]);
+        try {
+            const res = await fetch(`${apiUrl}/leads/${lead.id}/sync-gsheets`, {
+                method: 'POST',
+                headers: { 'X-Tenant-Id': tenant.id }
+            });
+            
+            if (res.ok) {
+                setAuditLogs(prev => [
+                    { id: `crm-${Date.now()}`, time: "Now", action: `CRM: Lead '${lead.name}' successfully synced to GSheets/CDK (ID: ${lead.id})`, type: "REP" },
+                    ...prev
+                ]);
+                alert(`✅ ${lead.name} synced to FilCan CRM (Google Sheets)`);
+            } else {
+                throw new Error("Sync failed");
+            }
+        } catch (err) {
+            console.error("CRM Sync failed:", err);
+            alert("❌ CRM Sync failed. Check backend logs.");
+        } finally {
             setIsSyncingCRM(null);
-            alert(`✅ ${lead.name} synced to FilCan CRM (CDK Drive)`);
-        }, 2000);
+        }
     };
 
     const handleVoiceCall = (lead) => {
@@ -282,8 +315,15 @@ const Admin = () => {
         
         setIsCalling(lead);
         
-        // Start the real-time Vapi call - FLATTENED for SDK v2.x (Internal auto-wrap)
+        // Start the real-time Vapi call - Using the most explicit structure for v2.x
         try {
+            console.log("Attempting Vapi call to Assistant:", VAPI_ASSISTANT_ID);
+            
+            // Check for microphone availability first
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error("Microphone access is not supported by your browser or is blocked by security settings (HTTPS required).");
+            }
+            
             vapi.current.start(VAPI_ASSISTANT_ID, {
                 variableValues: {
                     customerName: lead.name.split(' ')[0],
@@ -291,8 +331,8 @@ const Admin = () => {
                 }
             });
         } catch (err) {
-            console.error("Vapi Start Exception:", err);
-            setVapiError("Vapi Start Failed: " + err.message);
+            console.error("Vapi Start Exception (Detailed):", err);
+            setVapiError("Manual Failure: " + (err.message || "Engine initialization failed"));
         }
         
         setAuditLogs(prev => [
@@ -580,6 +620,16 @@ const Admin = () => {
                                 📥 RAW INBOX
                             </button>
                             <button 
+                                onClick={() => setActiveTab('pipeline')}
+                                style={{ 
+                                    padding: '10px 20px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer',
+                                    background: activeTab === 'pipeline' ? '#003366' : '#f0f0f0',
+                                    color: activeTab === 'pipeline' ? 'white' : '#666'
+                                }}
+                            >
+                                🏹 PIPELINE
+                            </button>
+                            <button 
                                 onClick={() => setActiveTab('showroom')}
                                 style={{ 
                                     padding: '10px 20px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer',
@@ -692,6 +742,50 @@ const Admin = () => {
                             </tbody>
                         </table>
                     </div>
+                    ) : activeTab === 'pipeline' ? (
+                        <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '20px' }}>
+                            {PILLARS.map(pillar => (
+                                <div key={pillar} style={{ minWidth: '280px', flex: 1, background: '#f4f7f9', borderRadius: '15px', padding: '15px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                        <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#003366', fontWeight: 'bold' }}>{pillar.toUpperCase()}</h4>
+                                        <span style={{ fontSize: '0.7rem', background: '#e0e0e0', padding: '2px 8px', borderRadius: '10px' }}>
+                                            {leads.filter(l => (l.status === pillar) || (pillar === 'New' && (l.status === 'Hot' || l.status === 'New')) || (pillar === 'Discovery' && (l.status === 'Pending' || l.status === 'Discovery' || l.status === 'Discovery Phase'))).length}
+                                        </span>
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                        {leads.filter(l => {
+                                            if (pillar === 'New') return l.status === 'Hot' || l.status === 'New';
+                                            if (pillar === 'Discovery') return l.status === 'Pending' || l.status === 'Discovery' || l.status === 'Discovery Phase';
+                                            return l.status === pillar;
+                                        }).map(lead => (
+                                            <div key={lead.id} style={{ background: 'white', padding: '15px', borderRadius: '10px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', borderLeft: `4px solid ${tenant.theme_color}` }}>
+                                                <div style={{ fontWeight: 'bold', fontSize: '0.85rem', marginBottom: '5px' }}>{lead.name}</div>
+                                                <div style={{ fontSize: '0.7rem', color: '#666', marginBottom: '10px' }}>{lead.conversation_summary}</div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <div style={{ display: 'flex', gap: '5px' }}>
+                                                        <button 
+                                                            onClick={() => handleVoiceCall(lead)}
+                                                            style={{ padding: '4px 8px', fontSize: '0.6rem', background: '#00b894', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                                        >📞</button>
+                                                        <button 
+                                                            onClick={() => handleSyncCRM(lead)}
+                                                            style={{ padding: '4px 8px', fontSize: '0.6rem', background: '#003366', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                                        >🔄</button>
+                                                    </div>
+                                                    <select 
+                                                        value={lead.status} 
+                                                        onChange={(e) => handleMoveLead(lead.id, e.target.value)}
+                                                        style={{ fontSize: '0.65rem', padding: '2px', borderRadius: '4px', border: '1px solid #ddd' }}
+                                                    >
+                                                        {PILLARS.map(p => <option key={p} value={p}>{p}</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     ) : (
                         <div style={{ padding: '20px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>

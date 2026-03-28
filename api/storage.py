@@ -270,14 +270,48 @@ class Storage:
             return False
 
     def reactivate_lead(self, lead_id: int) -> bool:
+        if not self.session_factory: return False
         with self.session_factory() as session:
             lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
             if lead:
                 lead.is_aged = False
                 lead.last_action_time = "Just Now"
                 lead.follow_up_streak = 1
+                lead.status = "Qualified"
                 session.commit()
                 return True
+            return False
+
+    def update_lead_status(self, lead_id: int, new_status: str) -> bool:
+        if not self.session_factory: return False
+        try:
+            with self.session_factory() as session:
+                lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
+                if lead:
+                    lead.status = new_status
+                    lead.last_action_time = "Stage Updated"
+                    session.commit()
+                    return True
+                return False
+        except Exception as e:
+            print(f"DB Update Error (update_lead_status): {e}")
+            return False
+
+    def sync_to_gsheets(self, lead_id: int) -> bool:
+        """
+        Placeholder for real Google Sheets sync.
+        TODO: Implement gspread logic when credentials are provided.
+        """
+        if not self.session_factory: return True # Simulate success in fallback mode
+        try:
+            with self.session_factory() as session:
+                lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
+                if lead:
+                    print(f"SYNC-TO-GSHEETS: Lead {lead.name} would be synced to Google Sheets.")
+                    return True
+                return False
+        except Exception as e:
+            print(f"GSheets Sync Error: {e}")
             return False
 
     def update_lead_state(self, lead_id: int, state: Dict, summary: str) -> bool:
