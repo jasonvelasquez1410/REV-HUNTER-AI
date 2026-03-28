@@ -377,12 +377,21 @@ const Admin = () => {
                 greeting = `Hi there! I am the RevHunter AI Sales Engine. I've already engaged with ${lead.name}. Based on our conversation, they are highly interested in the ${lead.car || 'vehicle'} and are ready for a showroom appointment. I've qualified them as a ${lead.intent || 'High Priority'} lead.`;
             }
 
+            const isInsightCall = lead.name === 'Marvin Raymundo' || lead.name === 'Jessica Chen';
+
             vapi.current.start(VAPI_ASSISTANT_ID, {
                 firstMessage: greeting,
                 variableValues: {
-                    customerName: lead.name.split(' ')[0],
+                    customerName: isInsightCall ? 'Partner' : lead.name.split(' ')[0],
                     carModel: lead.car || 'vehicle'
-                }
+                },
+                assistant: isInsightCall ? {
+                    model: {
+                        messages: [
+                            { role: 'system', content: 'You are now speaking to your manager/partner at FilCan Cars. Provide an executive summary of the lead. Address them as Partner or Boss.' }
+                        ]
+                    }
+                } : undefined
             });
         } catch (err) {
             console.error("Vapi Start Exception (Detailed):", err);
@@ -882,8 +891,8 @@ const Admin = () => {
                 <div style={{
                     position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
                     background: 'rgba(0,0,0,0.92)', zIndex: 9999,
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    color: 'white', backdropFilter: 'blur(10px)'
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
+                    color: 'white', backdropFilter: 'blur(10px)', overflowY: 'auto', padding: '40px 0'
                 }}>
                     <div className="calling-circle" style={{
                         width: '140px', height: '140px', background: '#00b894', borderRadius: '50%',
@@ -896,7 +905,7 @@ const Admin = () => {
                     <h2 style={{ fontSize: '2.2rem', marginBottom: '5px' }}>REAL-TIME HUMAN-AI VOICE</h2>
                     <div style={{ fontSize: '0.8rem', color: '#00b894', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '2px' }}>POWERED BY VAPI & ELEVENLABS</div>
                     
-                    {vapiError ? (
+                    {vapiError && !JSON.stringify(vapiError).includes('Meeting has ended') ? (
                         <div style={{ padding: '20px', background: 'rgba(217,32,39,0.2)', border: '1px solid #D92027', borderRadius: '15px', color: '#ff4d4d', marginBottom: '20px', maxWidth: '80%' }}>
                             <strong>CALL ERROR:</strong> {typeof vapiError === 'string' ? vapiError : JSON.stringify(vapiError)}
                         </div>
@@ -904,7 +913,7 @@ const Admin = () => {
                         <p style={{ fontSize: '1.2rem', color: '#fff', fontWeight: '500' }}>In conversation with <span style={{ color: '#00b894' }}>{isCalling?.name || "Customer"}</span>...</p>
                     )}
                     
-                    <div style={{ display: 'flex', gap: '20px', width: '90%', maxWidth: '1000px', height: '350px', marginTop: '30px' }}>
+                    <div style={{ display: 'flex', gap: '20px', width: '90%', maxWidth: '1000px', height: '250px', marginTop: '20px' }}>
                         {/* LEFT: Live Transcript Simulation */}
                         <div style={{ flex: 1.5, background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(0,184,148,0.2)', padding: '20px', display: 'flex', flexDirection: 'column' }}>
                             <div style={{ fontSize: '0.7rem', color: '#00b894', marginBottom: '15px', textTransform: 'uppercase', fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '5px' }}>
