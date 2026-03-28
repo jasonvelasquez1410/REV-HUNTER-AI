@@ -132,7 +132,7 @@ const FacebookDemo = () => {
                         } else {
                             vapi.current.start(VAPI_ASSISTANT_ID, {
                                 assistant: {
-                                    firstMessage: "Hi! This is Riley, the AI Sales Assistant for FilCan Cars. I saw you were looking at our Facebook post. How can I help you today?"
+                                    firstMessage: "Hi! This is Elliot, the AI Sales Assistant for FilCan Cars. I saw you were looking at our Facebook post. How can I help you today?"
                                 }
                             });
                         }
@@ -157,7 +157,7 @@ const FacebookDemo = () => {
                         boxShadow: '0 2px 10px rgba(0,0,0,0.1)', whiteSpace: 'nowrap',
                         fontSize: '0.8rem', fontWeight: 'bold', color: '#333'
                     }}>
-                        Call AI Hunter
+                        Call AI Elliot
                     </div>
                 )}
             </div>

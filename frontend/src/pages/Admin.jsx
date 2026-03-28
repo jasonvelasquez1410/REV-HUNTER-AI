@@ -335,7 +335,7 @@ const Admin = () => {
             }
             
             // DYNAMIC PRESENTATION MODE: Call Recap Simulation
-            let greeting = `Hi ${lead.name.split(' ')[0]}! This is Riley from FilCan Cars. I noticed you were looking at our ${lead.car || 'inventory'}. How can I help you today?`;
+            let greeting = `Hi ${lead.name.split(' ')[0]}! This is Elliot from FilCan Cars. I noticed you were looking at our ${lead.car || 'inventory'}. How can I help you today?`;
             
             // If lead is already Qualified or Hot, provide a 'Recap Simulation' for the presentation
             if (lead.intent === 'Hot' || lead.status === 'Qualified' || lead.step === 'STEP 1') {

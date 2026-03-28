@@ -174,7 +174,7 @@ const LandingPageDemo = () => {
                         boxShadow: '0 2px 10px rgba(0,0,0,0.1)', whiteSpace: 'nowrap',
                         fontSize: '0.8rem', fontWeight: 'bold', color: '#333'
                     }}>
-                        Speak with AI Riley
+                        Speak with AI Elliot
                     </div>
                 )}
             </div>
