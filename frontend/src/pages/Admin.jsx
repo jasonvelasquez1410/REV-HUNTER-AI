@@ -95,8 +95,19 @@ const Admin = () => {
     const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' or 'showroom'
     const [selectedPillar, setSelectedPillar] = useState('tactical');
 
-    const dailyLeads = leads.filter(l => l.is_reported);
+    constdailyLeads = leads.filter(l => l.is_reported);
     const apiUrl = import.meta.env.VITE_API_URL || '/api';
+
+    // Persist voices to prevent mid-demo shifts
+    const [availableVoices, setAvailableVoices] = useState([]);
+    useEffect(() => {
+        const loadVoices = () => {
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) setAvailableVoices(voices);
+        };
+        loadVoices();
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+    }, []);
 
     const fetchLeads = async () => {
         try {
@@ -280,8 +291,7 @@ const Admin = () => {
 
     // Ultimate safe voice selector favoring Natural/Neural voices
     const getBestVoice = (gender = 'female') => {
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length === 0) return null;
+        if (availableVoices.length === 0) return null;
 
         // Priorities: Neural > Natural > Online (Edge) > Google > Standard
         const femaleNames = ['aria', 'jenny', 'samantha', 'google us english', 'natural', 'neural', 'shannon', 'zira'];
@@ -290,23 +300,25 @@ const Admin = () => {
         const preferredNames = gender === 'female' ? femaleNames : maleNames;
         
         // 1. Find by explicit high-quality keywords
-        let best = voices.find(v => (v.name.toLowerCase().includes('natural') || v.name.toLowerCase().includes('online') || v.name.toLowerCase().includes('neural')) && 
+        let best = availableVoices.find(v => (v.name.toLowerCase().includes('natural') || v.name.toLowerCase().includes('online') || v.name.toLowerCase().includes('neural')) && 
                                      preferredNames.some(n => v.name.toLowerCase().includes(n)));
         
         // 2. Fallback to Google versions
-        if (!best) best = voices.find(v => v.name.toLowerCase().includes('google') && 
+        if (!best) best = availableVoices.find(v => v.name.toLowerCase().includes('google') && 
                                           preferredNames.some(n => v.name.toLowerCase().includes(n)));
         
         // 3. Fallback to any voice matching gender names
-        if (!best) best = voices.find(v => preferredNames.some(n => v.name.toLowerCase().includes(n)));
+        if (!best) best = availableVoices.find(v => preferredNames.some(n => v.name.toLowerCase().includes(n)));
         
-        return best || voices[0];
+        return best || availableVoices[0];
     };
 
     const handleVoiceDemo = () => {
         if (isVoiceDemoPlaying) return;
         
-        // Pre-select and CACHE voices to prevent mid-conversation changes
+        // Cancel any lingering speech to prevent the "simultaneous overlap" bug
+        window.speechSynthesis.cancel();
+
         const rileyVoice = getBestVoice('female');
         const customerVoice = getBestVoice('male');
         
@@ -315,10 +327,10 @@ const Admin = () => {
         setIsVoiceDemoPlaying(true);
         
         const script = [
-            { speaker: 'Customer', text: "Hi, I'm interested in the 2024 VW Atlas. Do you have one available for a test drive tomorrow?", voice: { pitch: 1.0, rate: 1.05 } },
-            { speaker: 'Riley (AI)', text: "Hi! This is Riley from FilCan Cars. Yes, we have two Atlas units in stock—Platinum Grey and Aurora Red. Would 2:00 PM tomorrow work for you?", voice: { pitch: 1.0, rate: 1.1 } },
-            { speaker: 'Customer', text: "2:00 PM sounds perfect. Also, do you guys accept trade-ins? I have a 2018 RAV4.", voice: { pitch: 1.0, rate: 1.05 } },
-            { speaker: 'Riley (AI)', text: "Absolutely! We love RAV4s. Bring it with you, and I'll have our appraisal team give you a top-market value while you're out on your test drive. See you then!", voice: { pitch: 1.0, rate: 1.1 } }
+            { speaker: 'Customer', text: "Hi, I'm interested in the 2024 VW Atlas. Do you have one available for a test drive tomorrow?", voice: { pitch: 1.0, rate: 0.95 } },
+            { speaker: 'Riley (AI)', text: "Hi! This is Riley from FilCan Cars. Yes, we have two Atlas units in stock—Platinum Grey and Aurora Red. Would 2:00 PM tomorrow work for you?", voice: { pitch: 1.0, rate: 1.0 } },
+            { speaker: 'Customer', text: "2:00 PM sounds perfect. Also, do you guys accept trade-ins? I have a 2018 RAV4.", voice: { pitch: 1.0, rate: 0.95 } },
+            { speaker: 'Riley (AI)', text: "Absolutely! We love RAV4s. Bring it with you, and I'll have our appraisal team give you a top-market value while you're out on your test drive. See you then!", voice: { pitch: 1.0, rate: 1.0 } }
         ];
 
         let currentLine = 0;
@@ -338,26 +350,38 @@ const Admin = () => {
             
             // Use CACHED voices for consistency
             const activeVoice = line.speaker.toLowerCase().includes('riley') ? rileyVoice : customerVoice;
-            if (activeVoice) utterance.voice = activeVoice;
+            if (activeVoice) {
+                utterance.voice = activeVoice;
+                // Log and speed up slightly if it's a "classic" robotic voice
+                if (!activeVoice.name.toLowerCase().includes('natural') && !activeVoice.name.toLowerCase().includes('online')) {
+                    utterance.rate = line.voice.rate * 0.9; // Slow down robotic ones to sound less 'urgent'
+                }
+            }
 
             utterance.pitch = line.voice.pitch;
             utterance.rate = line.voice.rate;
             
-            // Highlight the current speaker in the UI (implied via state)
             utterance.onstart = () => {
-                console.log(`Speaking as ${line.speaker}: ${line.text}`);
+                console.log(`Speaking as ${line.speaker} (Line ${currentLine + 1}/${script.length})`);
             };
 
             utterance.onend = () => {
                 currentLine++;
-                setTimeout(speakNext, 450); // Faster, more natural tum-taking
+                // Add a slightly randomized pause for more human feel
+                const humanPause = 400 + Math.random() * 300; 
+                setTimeout(speakNext, humanPause);
+            };
+
+            // Error handling to prevent the queue from getting stuck
+            utterance.onerror = (e) => {
+                console.error("Speech error:", e);
+                currentLine++;
+                speakNext();
             };
 
             window.speechSynthesis.speak(utterance);
         };
 
-        // Ensure voices are loaded (some browsers need a kickstart)
-        window.speechSynthesis.getVoices();
         speakNext();
     };
 
