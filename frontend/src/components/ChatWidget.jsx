@@ -92,6 +92,19 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
                     <div className="chat-messages">
                         {messages.map((msg, idx) => (
                             <div key={idx} className={`message ${msg.isAi ? 'message-ai' : 'message-user'}`}>
+                                {msg.isAi && (
+                                    <div style={{ 
+                                        fontSize: '0.7rem', 
+                                        fontWeight: 'bold', 
+                                        marginBottom: '4px', 
+                                        color: tenant.theme_color || '#D92027',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px'
+                                    }}>
+                                        🤖 Elliot (AI Agent)
+                                    </div>
+                                )}
                                 {msg.text}
                             </div>
                         ))}

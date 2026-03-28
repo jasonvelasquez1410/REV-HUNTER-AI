@@ -84,7 +84,16 @@ const Admin = () => {
         vapi.current.on('error', (e) => {
             console.error('Vapi Global Error:', e);
             // Extract detailed info if available (Vapi SDK e is often an object with message/error)
-            const detail = e.message || e.error || (typeof e === 'string' ? e : "Connection failed");
+            let detail = "Connection failed";
+            if (typeof e === 'string') {
+                detail = e;
+            } else if (e && e.message) {
+                detail = e.message;
+            } else if (e && e.error) {
+                detail = typeof e.error === 'string' ? e.error : JSON.stringify(e.error);
+            } else if (e) {
+                detail = JSON.stringify(e);
+            }
             setVapiError(`${detail}. Verify microphone access and Assistant ID.`);
         });
 
@@ -863,8 +872,8 @@ const Admin = () => {
                     <div style={{ fontSize: '0.8rem', color: '#00b894', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '2px' }}>POWERED BY VAPI & ELEVENLABS</div>
                     
                     {vapiError ? (
-                        <div style={{ padding: '20px', background: 'rgba(217,32,39,0.2)', border: '1px solid #D92027', borderRadius: '15px', color: '#ff4d4d', marginBottom: '20px' }}>
-                            <strong>CALL ERROR:</strong> {vapiError}
+                        <div style={{ padding: '20px', background: 'rgba(217,32,39,0.2)', border: '1px solid #D92027', borderRadius: '15px', color: '#ff4d4d', marginBottom: '20px', maxWidth: '80%' }}>
+                            <strong>CALL ERROR:</strong> {typeof vapiError === 'string' ? vapiError : JSON.stringify(vapiError)}
                         </div>
                     ) : (
                         <p style={{ fontSize: '1.2rem', color: '#fff', fontWeight: '500' }}>In conversation with <span style={{ color: '#00b894' }}>{isCalling?.name || "Customer"}</span>...</p>
@@ -1383,6 +1392,9 @@ const ChatModal = ({ lead, onClose, tenant }) => {
                                 borderBottomLeftRadius: msg.sender === 'ai' ? '4px' : '18px',
                                 borderBottomRightRadius: msg.sender === 'customer' ? '4px' : '18px'
                             }}>
+                                {msg.sender === 'ai' && (
+                                    <div style={{ fontSize: '0.65rem', fontWeight: 'bold', marginBottom: '4px', opacity: 0.8 }}>🤖 Elliot (AI Agent)</div>
+                                )}
                                 {msg.text}
                             </div>
                             <span style={{ fontSize: '0.65rem', color: '#aaa', marginTop: '4px' }}>{msg.time} {msg.isNudge && "🔥 AUTO-NUDGE"}</span>
