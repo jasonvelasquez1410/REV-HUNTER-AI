@@ -6,6 +6,31 @@ import LandingPageDemo from './pages/LandingPageDemo';
 import FacebookDemo from './pages/FacebookDemo';
 import { TenantProvider, useTenant } from './context/TenantContext';
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error: error.message };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '20px', background: '#fff0f0', color: '#d00', border: '5px solid red', margin: '20px' }}>
+          <h2>Something went wrong in the UI.</h2>
+          <pre>{this.state.error}</pre>
+          <button onClick={() => window.location.reload()}>Reload Page</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function AppContent() {
   const [currentPage, setCurrentPage] = useState('home');
   const { tenant } = useTenant();
@@ -47,14 +72,14 @@ function AppContent() {
 
       <nav>
         <div className="container nav-content">
-          <a href="#" className="logo" onClick={() => setCurrentPage('home')} style={{ color: tenant.theme_color }}>
+          <a href="#" className="logo" onClick={(e) => { e.preventDefault(); setCurrentPage('home'); }} style={{ color: tenant.theme_color }}>
             {tenant.name.toUpperCase()}
           </a>
           <div className="nav-links">
-            <a href="#" onClick={() => setCurrentPage('home')}>Inventory</a>
-            <a href="#" onClick={() => setCurrentPage('landing')}>Demo Site</a>
-            <a href="#" onClick={() => setCurrentPage('facebook')}>Demo FB</a>
-            <a href="#" onClick={() => setCurrentPage('admin')}>Admin Portal</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('home'); }}>Inventory</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('landing'); }}>Demo Site</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('facebook'); }}>Demo FB</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('admin'); }}>Admin Portal</a>
           </div>
         </div>
       </nav>
@@ -82,9 +107,11 @@ function AppContent() {
 
 function App() {
   return (
-    <TenantProvider>
-      <AppContent />
-    </TenantProvider>
+    <ErrorBoundary>
+      <TenantProvider>
+        <AppContent />
+      </TenantProvider>
+    </ErrorBoundary>
   );
 }
 
