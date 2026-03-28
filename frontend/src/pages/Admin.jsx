@@ -369,20 +369,20 @@ const Admin = () => {
             // DYNAMIC PRESENTATION MODE: Call Recap Simulation (Executive Briefing)
             let greeting = `Hi ${lead.name.split(' ')[0]}! This is Elliot from FilCan Cars. I noticed you were looking at our ${lead.car || 'inventory'}. How can I help you today?`;
             
-            if (lead.name === 'Marvin Raymundo') {
-                greeting = `Partner, I've analyzed the lead DNA for Marvin Raymundo. He is a high-urgency buyer interested in the 2024 VW Atlas. I've confirmed his trade-in is a 2018 RAV4 and his monthly budget is $650. He is ready for a Monday showroom appointment. How would you like to proceed with his credit app?`;
-            } else if (lead.name === 'Jessica Chen') {
-                greeting = `Boss, here is the status update on Jessica Chen. She is currently comparing the CX-5 and Atlas. Her primary drivers are safety and reliability. I have already nudged her for a Tuesday morning test drive. She is currently Qualified. What specific safety specs should I emphasize in our next follow-up?`;
+            if (lead.name.includes('Marvin')) {
+                greeting = `Boss, [STRICT: You are speaking to your Manager, NOT Marvin]. I've analyzed the lead DNA for Marvin Raymundo. He is a high-urgency buyer interested in the 2024 VW Atlas. I've confirmed his trade-in is a 2018 RAV4 and his monthly budget is $650. He is ready for a Monday showroom appointment. How would you like to proceed with his credit app?`;
+            } else if (lead.name.includes('Jessica')) {
+                greeting = `Boss, [STRICT: You are speaking to your Manager, NOT Jessica]. Here is the status update on Jessica Chen. She is currently comparing the CX-5 and Atlas. Her primary drivers are safety and reliability. I have already nudged her for a Tuesday morning test drive. She is currently Qualified. What specific safety specs should I emphasize in our next follow-up?`;
             } else if (lead.intent === 'Hot' || lead.status === 'Qualified' || lead.step === 'STEP 1') {
                 greeting = `Hi there! I am the RevHunter AI Sales Engine. I've already engaged with ${lead.name}. Based on our conversation, they are highly interested in the ${lead.car || 'vehicle'} and are ready for a showroom appointment. I've qualified them as a ${lead.intent || 'High Priority'} lead.`;
             }
 
-            const isInsightCall = lead.name === 'Marvin Raymundo' || lead.name === 'Jessica Chen';
+            const isInsightCall = lead.name.includes('Marvin') || lead.name.includes('Jessica');
 
             vapi.current.start(VAPI_ASSISTANT_ID, {
                 firstMessage: greeting,
                 variableValues: {
-                    customerName: isInsightCall ? 'Partner' : lead.name.split(' ')[0],
+                    customerName: isInsightCall ? 'Boss' : lead.name.split(' ')[0],
                     carModel: lead.car || 'vehicle'
                 }
             });
