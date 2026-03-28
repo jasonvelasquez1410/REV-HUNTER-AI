@@ -324,10 +324,16 @@ const Admin = () => {
                 throw new Error("Microphone access is not supported by your browser or is blocked by security settings (HTTPS required).");
             }
             
+            // Overriding the first message to be professional and FilCan-specific
+            const personalizedGreeting = `Hi ${lead.name.split(' ')[0]}! This is Riley from FilCan Cars. I noticed you were looking at our ${lead.car || 'inventory'}. How can I help you today?`;
+
             vapi.current.start(VAPI_ASSISTANT_ID, {
                 variableValues: {
                     customerName: lead.name.split(' ')[0],
                     carModel: lead.car || 'vehicle'
+                },
+                assistant: {
+                    firstMessage: personalizedGreeting
                 }
             });
         } catch (err) {
