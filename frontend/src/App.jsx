@@ -10,18 +10,30 @@ function AppContent() {
   const [currentPage, setCurrentPage] = useState('home');
   const { tenant } = useTenant();
 
-  useEffect(() => {
-    const path = window.location.pathname;
-    const hash = window.location.hash.replace('#', '');
-    const activeRoute = hash || path;
+    useEffect(() => {
+    const syncRoute = () => {
+      const path = window.location.pathname;
+      const hash = window.location.hash.replace('#', '');
+      const activeRoute = hash || path;
 
-    if (activeRoute === '/admin' || activeRoute === 'admin') {
-      setCurrentPage('admin');
-    } else if (activeRoute === '/landing' || activeRoute === 'landing') {
-      setCurrentPage('landing');
-    } else if (activeRoute === '/facebook' || activeRoute === 'facebook') {
-      setCurrentPage('facebook');
-    }
+      if (activeRoute === '/admin' || activeRoute === 'admin') {
+        setCurrentPage('admin');
+      } else if (activeRoute === '/landing' || activeRoute === 'landing') {
+        setCurrentPage('landing');
+      } else if (activeRoute === '/facebook' || activeRoute === 'facebook') {
+        setCurrentPage('facebook');
+      } else {
+        setCurrentPage('home');
+      }
+    };
+
+    syncRoute();
+    window.addEventListener('hashchange', syncRoute);
+    window.addEventListener('popstate', syncRoute);
+    return () => {
+      window.removeEventListener('hashchange', syncRoute);
+      window.removeEventListener('popstate', syncRoute);
+    };
   }, []);
 
   return (

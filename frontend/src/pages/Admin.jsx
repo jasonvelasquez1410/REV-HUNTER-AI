@@ -375,6 +375,14 @@ const Admin = () => {
         }
     };
 
+    const parseState = (stateStr) => {
+        try {
+            return JSON.parse(stateStr || '{}');
+        } catch {
+            return { step: 1 };
+        }
+    };
+
     const stats = {
         published: 12,
         pending: 4,
@@ -436,7 +444,7 @@ const Admin = () => {
                     </div>
                     <div>
                         <span style={{ color: '#888', fontSize: '0.7rem' }}>LATEST AI ACTION</span>
-                        <div style={{ fontSize: '0.9rem' }}>{auditLogs[0]?.action}</div>
+                        <div style={{ fontSize: '0.9rem' }}>{auditLogs[0]?.action || "Monitoring..."}</div>
                     </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -511,20 +519,20 @@ const Admin = () => {
                                 {leads.map((lead, i) => (
                                     <tr key={i} style={{ borderBottom: '1px solid #f5f5f5' }}>
                                         <td style={{ padding: '12px' }}>
-                                            <div style={{ fontWeight: '600' }}>{lead.name}</div>
-                                            <div style={{ fontSize: '0.75rem', color: '#888' }}>{lead.budget}</div>
+                                            <div style={{ fontWeight: '600' }}>{lead?.name || "Anonymous Lead"}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#888' }}>{lead?.budget || "Discovery Phase"}</div>
                                         </td>
                                         <td style={{ padding: '12px' }}>
                                             <div style={{ fontWeight: '600', color: tenant.theme_color }}>
-                                                STEP {JSON.parse(lead.conversation_state || '{}').step || 1}
+                                                STEP {parseState(lead.conversation_state).step || 1}
                                             </div>
                                         </td>
                                         <td style={{ padding: '12px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                                <span style={{ fontWeight: '800', color: lead.quality_score > 90 ? '#e17055' : '#fdcb6e' }}>
-                                                    {lead.quality_score}%
+                                                <span style={{ fontWeight: '800', color: (lead?.quality_score || 0) > 90 ? '#e17055' : '#fdcb6e' }}>
+                                                    {lead?.quality_score || 0}%
                                                 </span>
-                                                {lead.quality_score > 90 ? <span>🔥</span> : <span>⚡</span>}
+                                                {(lead?.quality_score || 0) > 90 ? <span>🔥</span> : <span>⚡</span>}
                                             </div>
                                         </td>
                                         <td style={{ padding: '12px' }}>
@@ -539,7 +547,7 @@ const Admin = () => {
                                                     backgroundColor: lead.status === 'Hot' ? '#fff0f0' : lead.status === 'Qualified' ? '#f0fff4' : '#fff9eb',
                                                     color: lead.status === 'Hot' ? '#ff4d4d' : lead.status === 'Qualified' ? '#27ae60' : '#f39c12',
                                                     border: `1px solid ${lead.status === 'Hot' ? '#ffcccc' : lead.status === 'Qualified' ? '#c3e6cb' : '#ffeeba'}`
-                                                }}>{lead.status}</span>
+                                                }}>{lead?.status || "Pending"}</span>
                                                 <span style={{ fontSize: '0.6rem', color: '#999' }}>FB MSG</span>
                                             </div>
                                         </td>
@@ -648,11 +656,11 @@ const Admin = () => {
                     <h2 style={{ fontSize: '2.2rem', marginBottom: '5px' }}>REAL-TIME HUMAN-AI VOICE</h2>
                     <div style={{ fontSize: '0.8rem', color: '#00b894', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '2px' }}>POWERED BY VAPI & ELEVENLABS</div>
                     
-                    <p style={{ fontSize: '1.2rem', color: '#fff', fontWeight: '500' }}>In conversation with <span style={{ color: '#00b894' }}>{isCalling.name}</span>...</p>
+                    <p style={{ fontSize: '1.2rem', color: '#fff', fontWeight: '500' }}>In conversation with <span style={{ color: '#00b894' }}>{isCalling?.name || "Customer"}</span>...</p>
                     
                     <div style={{ marginTop: '40px', background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '20px', maxWidth: '450px', border: '1px solid rgba(0,184,148,0.3)', textAlign: 'center' }}>
                         <div style={{ fontSize: '0.7rem', color: '#00b894', marginBottom: '15px', textTransform: 'uppercase', fontWeight: 'bold' }}>Live Call Insights</div>
-                        <i style={{ fontSize: '0.95rem', color: '#ddd' }}>"The AI is currently discussing {isCalling.car || 'the vehicle'} with {isCalling.name.split(' ')[0]}. It is identifying their trade-in value and booking the showroom slot."</i>
+                        <i style={{ fontSize: '0.95rem', color: '#ddd' }}>"The AI is currently discussing {isCalling?.car || 'the vehicle'} with {isCalling?.name?.split(' ')[0] || "the customer"}. It is identifying their trade-in value and booking the showroom slot."</i>
                     </div>
 
                     <button 
@@ -726,7 +734,7 @@ const Admin = () => {
                             ))
                         ) : (
                             <div style={{ textAlign: 'center', padding: '60px 20px', color: '#999' }}>
-                                <div style={{ fontSize: '3rem', marginBottom: '10px opacity: 0.3' }}>📊</div>
+                                <div style={{ fontSize: '3rem', marginBottom: '10px', opacity: 0.3 }}>📊</div>
                                 <p style={{ margin: 0, fontWeight: '500' }}>Report is currently empty</p>
                                 <p style={{ fontSize: '0.8rem' }}>Move quality leads from the inbox to start building today's report for {tenant.name}.</p>
                             </div>
