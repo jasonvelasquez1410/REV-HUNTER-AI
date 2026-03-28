@@ -303,6 +303,14 @@ const Admin = () => {
 
             const line = script[currentLine];
             const utterance = new SpeechSynthesisUtterance(line.text);
+            
+            // Assign the best possible voice for the persona
+            const bestVoice = getBestVoice(line.speaker.toLowerCase().includes('riley') ? 'female' : 'male');
+            if (bestVoice) {
+                utterance.voice = bestVoice;
+                console.log(`Using voice for ${line.speaker}:`, bestVoice.name);
+            }
+
             utterance.pitch = line.voice.pitch;
             utterance.rate = line.voice.rate;
             
@@ -319,6 +327,8 @@ const Admin = () => {
             window.speechSynthesis.speak(utterance);
         };
 
+        // Ensure voices are loaded (some browsers need a kickstart)
+        window.speechSynthesis.getVoices();
         speakNext();
     };
 
