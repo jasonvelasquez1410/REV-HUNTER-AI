@@ -29,6 +29,29 @@ const MOCK_APPOINTMENTS = [
     { id: 3, lead: "Tony Stark", car: "F-150 Lightning", time: "Wed 4:00 PM", status: "PENDING" }
 ];
 
+const PRESENTATION_INSIGHTS = {
+    "Marvin Raymundo": {
+        transcript: [
+            { sender: "customer", text: "Is the 2024 VW Atlas still available?" },
+            { sender: "ai", text: "Yes it is! We have two in stock. What features are you looking for?" },
+            { sender: "customer", text: "I need space for 3 kids and a dog. My budget is $650/mo." },
+            { sender: "ai", text: "The Atlas is perfect for that! Speaking of budget, do you have a trade-in?" },
+            { sender: "customer", text: "Yes, a 2018 RAV4. I'd like to see it on Monday." }
+        ],
+        dna: { "Trade-in": "2018 RAV4 ✅", "Budget": "$650/mo ✅", "Priority": "Critical ✅" }
+    },
+    "Jessica Chen": {
+        transcript: [
+            { sender: "customer", text: "Comparing the CX-5 and the Atlas." },
+            { sender: "ai", text: "Excellent models! Are you looking for sportiness or extra row space?" },
+            { sender: "customer", text: "Mostly safety and reliability for my commute." },
+            { sender: "ai", text: "Understood. The CX-5 has top safety ratings. When can you come for a test drive?" },
+            { sender: "customer", text: "Maybe Tuesday morning." }
+        ],
+        dna: { "Intent": "Comparison ✅", "Urgency": "Medium ✅", "Showroom": "Requested ✅" }
+    }
+};
+
 const Admin = () => {
     const { tenant } = useTenant();
     const [leads, setLeads] = useState([]);
@@ -343,12 +366,15 @@ const Admin = () => {
                 throw new Error("Microphone access is not supported by your browser or is blocked by security settings (HTTPS required).");
             }
             
-            // DYNAMIC PRESENTATION MODE: Call Recap Simulation
+            // DYNAMIC PRESENTATION MODE: Call Recap Simulation (Executive Briefing)
             let greeting = `Hi ${lead.name.split(' ')[0]}! This is Elliot from FilCan Cars. I noticed you were looking at our ${lead.car || 'inventory'}. How can I help you today?`;
             
-            // If lead is already Qualified or Hot, provide a 'Recap Simulation' for the presentation
-            if (lead.intent === 'Hot' || lead.status === 'Qualified' || lead.step === 'STEP 1') {
-                greeting = `Hi there! I am the RevHunter AI Sales Engine. I've already engaged with ${lead.name}. Based on our conversation, they are highly interested in the ${lead.car || 'vehicle'} and are ready for a showroom appointment. I've qualified them as a ${lead.intent || 'High Priority'} lead. Feel free to ask me anything about their trade-in or credit status!`;
+            if (lead.name === 'Marvin Raymundo') {
+                greeting = `Reviewing Lead DNA for Marvin Raymundo. He is a high-urgency buyer interested in the 2024 VW Atlas. I've confirmed his trade-in is a 2018 RAV4 and his monthly budget is $650. He is ready for a Monday showroom appointment. How would you like to proceed with his credit app?`;
+            } else if (lead.name === 'Jessica Chen') {
+                greeting = `Status update on Jessica Chen. She is currently comparing the CX-5 and Atlas. Her primary drivers are safety and reliability. I have already nudged her for a Tuesday morning test drive. She is currently categorized as a Qualified Prospect. What specific safety specs should I emphasize in our next follow-up?`;
+            } else if (lead.intent === 'Hot' || lead.status === 'Qualified' || lead.step === 'STEP 1') {
+                greeting = `Hi there! I am the RevHunter AI Sales Engine. I've already engaged with ${lead.name}. Based on our conversation, they are highly interested in the ${lead.car || 'vehicle'} and are ready for a showroom appointment. I've qualified them as a ${lead.intent || 'High Priority'} lead.`;
             }
 
             vapi.current.start(VAPI_ASSISTANT_ID, {
@@ -725,11 +751,12 @@ const Admin = () => {
                                                 onClick={() => handleVoiceCall(lead)}
                                                 style={{ 
                                                     padding: '6px 10px', fontSize: '0.7rem', border: 'none', borderRadius: '6px', cursor: 'pointer',
-                                                    backgroundColor: '#00b894', color: 'white'
+                                                    backgroundColor: lead.status === 'Hot' ? '#ff4d4d' : lead.status === 'Qualified' ? '#00b894' : '#00b894', 
+                                                    color: 'white', fontWeight: 'bold'
                                                 }}
-                                                title="Initiate AI Voice Follow-up"
+                                                title="View AI Qualification Insight"
                                             >
-                                                📞 Call
+                                                {lead.name === 'Marvin Raymundo' ? '🎯 Why Hot?' : lead.name === 'Jessica Chen' ? '🎯 Why Qualified?' : '📞 Call'}
                                             </button>
                                             <button 
                                                 onClick={() => setSelectedLeadChat(lead)}
@@ -877,9 +904,52 @@ const Admin = () => {
                         <p style={{ fontSize: '1.2rem', color: '#fff', fontWeight: '500' }}>In conversation with <span style={{ color: '#00b894' }}>{isCalling?.name || "Customer"}</span>...</p>
                     )}
                     
-                    <div style={{ marginTop: '40px', background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '20px', maxWidth: '450px', border: '1px solid rgba(0,184,148,0.3)', textAlign: 'center' }}>
-                        <div style={{ fontSize: '0.7rem', color: '#00b894', marginBottom: '15px', textTransform: 'uppercase', fontWeight: 'bold' }}>Live Call Insights</div>
-                        <i style={{ fontSize: '0.95rem', color: '#ddd' }}>"The AI is currently discussing {isCalling?.car || 'the vehicle'} with {isCalling?.name?.split(' ')[0] || "the customer"}. It is identifying their trade-in value and booking the showroom slot."</i>
+                    <div style={{ display: 'flex', gap: '20px', width: '90%', maxWidth: '1000px', height: '350px', marginTop: '30px' }}>
+                        {/* LEFT: Live Transcript Simulation */}
+                        <div style={{ flex: 1.5, background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(0,184,148,0.2)', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#00b894', marginBottom: '15px', textTransform: 'uppercase', fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '5px' }}>
+                                LIVE TRANSCRIPT MEMORY
+                            </div>
+                            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '10px' }} className="custom-scroll">
+                                {(PRESENTATION_INSIGHTS[isCalling.name]?.transcript || [
+                                    { sender: 'ai', text: 'Initializing neural connection...' },
+                                    { sender: 'ai', text: 'Accessing FilCan Cars inventory database...' },
+                                    { sender: 'ai', text: `Analyzing engagement history for ${isCalling.name}...` }
+                                ]).map((line, idx) => (
+                                    <div key={idx} style={{ 
+                                        padding: '10px 15px', borderRadius: '12px', fontSize: '0.85rem',
+                                        alignSelf: line.sender === 'customer' ? 'flex-end' : 'flex-start',
+                                        background: line.sender === 'customer' ? 'rgba(255,255,255,0.05)' : 'rgba(0,184,148,0.1)',
+                                        border: line.sender === 'customer' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,184,148,0.2)',
+                                        color: line.sender === 'customer' ? '#ccc' : '#fff',
+                                        maxWidth: '85%'
+                                    }}>
+                                        <div style={{ fontSize: '0.6rem', color: line.sender === 'customer' ? '#888' : '#00b894', fontWeight: 'bold', marginBottom: '4px' }}>
+                                            {line.sender === 'customer' ? 'CUSTOMER' : '🤖 ELLIOT (AI)'}
+                                        </div>
+                                        {line.text}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* RIGHT: AI DNA Insight */}
+                        <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(0,184,148,0.2)', padding: '20px' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#00b894', marginBottom: '15px', textTransform: 'uppercase', fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '5px' }}>
+                                LEAD DNA ANALYSIS
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                {Object.entries(PRESENTATION_INSIGHTS[isCalling.name]?.dna || { "Status": "Processing", "Intelligence": "Deep Learning Active" }).map(([key, val]) => (
+                                    <div key={key} style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ fontSize: '0.6rem', color: '#888', textTransform: 'uppercase' }}>{key}</div>
+                                        <div style={{ fontSize: '0.95rem', fontWeight: 'bold', color: '#00b894' }}>{val}</div>
+                                    </div>
+                                ))}
+                                <div style={{ marginTop: '10px', padding: '10px', background: 'rgba(0, 184, 148, 0.1)', borderRadius: '10px', border: '1px dashed #00b894', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '0.7rem', color: '#00b894', fontWeight: 'bold' }}>AI CONFIDENCE: 98%</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <button 
@@ -1407,6 +1477,11 @@ const ChatModal = ({ lead, onClose, tenant }) => {
             </div>
             <style>{`
                 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+                @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 184, 148, 0.4); } 70% { box-shadow: 0 0 0 30px rgba(0, 184, 148, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 184, 148, 0); } }
+                .custom-scroll::-webkit-scrollbar { width: 6px; }
+                .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+                .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0,184,148,0.3); border-radius: 10px; }
+                .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,184,148,0.5); }
             `}</style>
         </div>
     );
