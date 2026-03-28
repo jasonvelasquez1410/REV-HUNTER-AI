@@ -278,40 +278,47 @@ const Admin = () => {
         ]);
     };
 
-    // Helper to find the best possible free browser voice
+    // Ultimate safe voice selector favoring Natural/Neural voices
     const getBestVoice = (gender = 'female') => {
         const voices = window.speechSynthesis.getVoices();
         if (voices.length === 0) return null;
 
-        // Priorities: Natural/Neural > Google > Microsoft > Others
-        const femaleKeywords = ['female', 'zira', 'samantha', 'victoria', 'google us english', 'natural', 'neural', 'shannon', 'hazel'];
-        const maleKeywords = ['male', 'david', 'mark', 'google us english', 'natural', 'neural', 'guy', 'andrew'];
+        // Priorities: Neural > Natural > Online (Edge) > Google > Standard
+        const femaleNames = ['aria', 'jenny', 'samantha', 'google us english', 'natural', 'neural', 'shannon', 'zira'];
+        const maleNames = ['guy', 'andrew', 'david', 'mark', 'google us english', 'natural', 'neural', 'stefan'];
         
-        const keywords = gender === 'female' ? femaleKeywords : maleKeywords;
+        const preferredNames = gender === 'female' ? femaleNames : maleNames;
         
-        // 1. Try to find a "Natural" or "Neural" voice first
-        let best = voices.find(v => (v.name.toLowerCase().includes('natural') || v.name.toLowerCase().includes('neural')) && 
-                                     keywords.some(k => v.name.toLowerCase().includes(k)));
+        // 1. Find by explicit high-quality keywords
+        let best = voices.find(v => (v.name.toLowerCase().includes('natural') || v.name.toLowerCase().includes('online') || v.name.toLowerCase().includes('neural')) && 
+                                     preferredNames.some(n => v.name.toLowerCase().includes(n)));
         
-        // 2. Try Google voices (often higher quality)
+        // 2. Fallback to Google versions
         if (!best) best = voices.find(v => v.name.toLowerCase().includes('google') && 
-                                          keywords.some(k => v.name.toLowerCase().includes(k)));
+                                          preferredNames.some(n => v.name.toLowerCase().includes(n)));
         
-        // 3. Fallback to any voice with the right keyword
-        if (!best) best = voices.find(v => keywords.some(k => v.name.toLowerCase().includes(k)));
+        // 3. Fallback to any voice matching gender names
+        if (!best) best = voices.find(v => preferredNames.some(n => v.name.toLowerCase().includes(n)));
         
         return best || voices[0];
     };
 
     const handleVoiceDemo = () => {
         if (isVoiceDemoPlaying) return;
+        
+        // Pre-select and CACHE voices to prevent mid-conversation changes
+        const rileyVoice = getBestVoice('female');
+        const customerVoice = getBestVoice('male');
+        
+        console.log("Cached Demo Voices:", { riley: rileyVoice?.name, customer: customerVoice?.name });
+
         setIsVoiceDemoPlaying(true);
         
         const script = [
-            { speaker: 'Customer', text: "Hi, I'm interested in the 2024 VW Atlas. Do you have one available for a test drive tomorrow?", voice: { pitch: 0.9, rate: 0.9 } },
-            { speaker: 'Riley (AI)', text: "Hi! This is Riley from FilCan Cars. Yes, we have two Atlas units in stock—Platinum Grey and Aurora Red. Would 2:00 PM tomorrow work for you?", voice: { pitch: 1.2, rate: 1.0 } },
-            { speaker: 'Customer', text: "2:00 PM sounds perfect. Also, do you guys accept trade-ins? I have a 2018 RAV4.", voice: { pitch: 0.9, rate: 0.9 } },
-            { speaker: 'Riley (AI)', text: "Absolutely! We love RAV4s. Bring it with you, and I'll have our appraisal team give you a top-market value while you're out on your test drive. See you then!", voice: { pitch: 1.2, rate: 1.0 } }
+            { speaker: 'Customer', text: "Hi, I'm interested in the 2024 VW Atlas. Do you have one available for a test drive tomorrow?", voice: { pitch: 1.0, rate: 1.05 } },
+            { speaker: 'Riley (AI)', text: "Hi! This is Riley from FilCan Cars. Yes, we have two Atlas units in stock—Platinum Grey and Aurora Red. Would 2:00 PM tomorrow work for you?", voice: { pitch: 1.0, rate: 1.1 } },
+            { speaker: 'Customer', text: "2:00 PM sounds perfect. Also, do you guys accept trade-ins? I have a 2018 RAV4.", voice: { pitch: 1.0, rate: 1.05 } },
+            { speaker: 'Riley (AI)', text: "Absolutely! We love RAV4s. Bring it with you, and I'll have our appraisal team give you a top-market value while you're out on your test drive. See you then!", voice: { pitch: 1.0, rate: 1.1 } }
         ];
 
         let currentLine = 0;
@@ -329,12 +336,9 @@ const Admin = () => {
             const line = script[currentLine];
             const utterance = new SpeechSynthesisUtterance(line.text);
             
-            // Assign the best possible voice for the persona
-            const bestVoice = getBestVoice(line.speaker.toLowerCase().includes('riley') ? 'female' : 'male');
-            if (bestVoice) {
-                utterance.voice = bestVoice;
-                console.log(`Using voice for ${line.speaker}:`, bestVoice.name);
-            }
+            // Use CACHED voices for consistency
+            const activeVoice = line.speaker.toLowerCase().includes('riley') ? rileyVoice : customerVoice;
+            if (activeVoice) utterance.voice = activeVoice;
 
             utterance.pitch = line.voice.pitch;
             utterance.rate = line.voice.rate;
@@ -346,7 +350,7 @@ const Admin = () => {
 
             utterance.onend = () => {
                 currentLine++;
-                setTimeout(speakNext, 800); // Natural pause between speakers
+                setTimeout(speakNext, 450); // Faster, more natural tum-taking
             };
 
             window.speechSynthesis.speak(utterance);
