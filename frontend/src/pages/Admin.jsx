@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { Vapi as VapiNamed } from '@vapi-ai/web';
 import VapiDefault from '@vapi-ai/web';
 import LeadReportCard from '../components/LeadReportCard';
