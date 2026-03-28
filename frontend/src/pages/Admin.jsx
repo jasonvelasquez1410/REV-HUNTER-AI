@@ -323,7 +323,7 @@ const Admin = () => {
         window.speechSynthesis.cancel();
 
         const rileyVoice = getBestVoice('female');
-        const customerVoice = getBestVoice('male');
+        const customerVoice = getBestVoice('male', rileyVoice);
         
         console.log("Cached Demo Voices:", { riley: rileyVoice?.name, customer: customerVoice?.name });
 
