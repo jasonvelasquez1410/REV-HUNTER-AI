@@ -282,15 +282,12 @@ const Admin = () => {
         
         setIsCalling(lead);
         
-        // Start the real-time Vapi call with CORRECT SDK v2.x schema
-        console.log("VAPI_DEBUG_V2: Sending assistantOverrides.variableValues...");
+        // Start the real-time Vapi call - FLATTENED for SDK v2.x (Internal auto-wrap)
         try {
             vapi.current.start(VAPI_ASSISTANT_ID, {
-                assistantOverrides: {
-                    variableValues: {
-                        customerName: lead.name.split(' ')[0],
-                        carModel: lead.car || 'vehicle'
-                    }
+                variableValues: {
+                    customerName: lead.name.split(' ')[0],
+                    carModel: lead.car || 'vehicle'
                 }
             });
         } catch (err) {
