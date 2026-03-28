@@ -95,7 +95,7 @@ const Admin = () => {
     const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' or 'showroom'
     const [selectedPillar, setSelectedPillar] = useState('tactical');
 
-    constdailyLeads = leads.filter(l => l.is_reported);
+    const dailyLeads = leads.filter(l => l.is_reported);
     const apiUrl = import.meta.env.VITE_API_URL || '/api';
 
     // Persist voices to prevent mid-demo shifts
