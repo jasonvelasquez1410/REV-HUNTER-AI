@@ -1,12 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Vapi from '@vapi-ai/web';
 import ChatWidget from '../components/ChatWidget';
 import { useTenant } from '../context/TenantContext';
+
+// Presentation Keys (Shared across the platform for the demo)
+const VAPI_PUBLIC_KEY = '012fbe2f-192f-44f3-a1b3-76db83ce299c';
+const VAPI_ASSISTANT_ID = '5921ac52-3ea4-443f-a531-993b5e43fddf';
 
 const LandingPageDemo = () => {
     const { tenant } = useTenant();
     const [cars, setCars] = useState([]);
+    const [isCalling, setIsCalling] = useState(false);
+    const vapi = useRef(null);
 
     useEffect(() => {
+        vapi.current = new Vapi(VAPI_PUBLIC_KEY);
+        
+        vapi.current.on('call-start', () => setIsCalling(true));
+        vapi.current.on('call-end', () => setIsCalling(false));
+        vapi.current.on('error', (e) => {
+            console.error('Vapi Error:', e);
+            setIsCalling(false);
+        });
+
         const fetchCars = async () => {
             try {
                 const apiUrl = import.meta.env.VITE_API_URL || '/api';
@@ -110,6 +126,49 @@ const LandingPageDemo = () => {
                     </div>
                 </main>
             </div>
+
+            {/* Floating AI Call Button */}
+            <div style={{ position: 'fixed', bottom: '100px', right: '20px', zIndex: 1000 }}>
+                <button 
+                    onClick={() => {
+                        if (isCalling) {
+                            vapi.current.stop();
+                        } else {
+                            vapi.current.start(VAPI_ASSISTANT_ID);
+                        }
+                    }}
+                    style={{ 
+                        width: '60px', height: '60px', borderRadius: '50%', 
+                        background: isCalling ? '#D92027' : '#00b894', 
+                        color: 'white', border: 'none', cursor: 'pointer',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '1.5rem', transition: 'all 0.3s',
+                        animation: isCalling ? 'pulse-red 1.5s infinite' : 'none'
+                    }}
+                    title={isCalling ? "End Call" : "Call AI Specialist"}
+                >
+                    {isCalling ? '🛑' : '📞'}
+                </button>
+                {!isCalling && (
+                    <div style={{
+                        position: 'absolute', right: '70px', top: '15px', 
+                        background: 'white', padding: '5px 15px', borderRadius: '20px',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.1)', whiteSpace: 'nowrap',
+                        fontSize: '0.8rem', fontWeight: 'bold', color: '#333'
+                    }}>
+                        Speak with AI Riley
+                    </div>
+                )}
+            </div>
+
+            <style>{`
+                @keyframes pulse-red {
+                    0% { box-shadow: 0 0 0 0 rgba(217,32,39, 0.7); }
+                    70% { box-shadow: 0 0 0 15px rgba(217,32,39, 0); }
+                    100% { box-shadow: 0 0 0 0 rgba(217,32,39, 0); }
+                }
+            `}</style>
 
             {/* Omni Hunter Widget */}
             <ChatWidget />

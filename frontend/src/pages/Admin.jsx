@@ -324,8 +324,13 @@ const Admin = () => {
                 throw new Error("Microphone access is not supported by your browser or is blocked by security settings (HTTPS required).");
             }
             
-            // Overriding the first message to be professional and FilCan-specific
-            const personalizedGreeting = `Hi ${lead.name.split(' ')[0]}! This is Riley from FilCan Cars. I noticed you were looking at our ${lead.car || 'inventory'}. How can I help you today?`;
+            // DYNAMIC PRESENTATION MODE: Call Recap Simulation
+            let greeting = `Hi ${lead.name.split(' ')[0]}! This is Riley from FilCan Cars. I noticed you were looking at our ${lead.car || 'inventory'}. How can I help you today?`;
+            
+            // If lead is already Qualified or Hot, provide a 'Recap Simulation' for the presentation
+            if (lead.intent === 'Hot' || lead.status === 'Qualified' || lead.step === 'STEP 1') {
+                greeting = `Hi there! I am the RevHunter AI Sales Engine. I've already engaged with ${lead.name}. Based on our conversation, they are highly interested in the ${lead.car || 'vehicle'} and are ready for a showroom appointment. I've qualified them as a ${lead.intent || 'High Priority'} lead. Feel free to ask me anything about their trade-in or credit status!`;
+            }
 
             vapi.current.start(VAPI_ASSISTANT_ID, {
                 variableValues: {
@@ -333,7 +338,7 @@ const Admin = () => {
                     carModel: lead.car || 'vehicle'
                 },
                 assistant: {
-                    firstMessage: personalizedGreeting
+                    firstMessage: greeting
                 }
             });
         } catch (err) {
