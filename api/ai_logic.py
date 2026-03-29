@@ -79,63 +79,86 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     }}
     """
     
-    if not GOOGLE_API_KEY:
+    if not GOOGLE_API_KEY and not os.getenv("OPENAI_API_KEY"):
         # Simulate state transition for Demo Mode
         new_step = min(current_step + 1, 9)
         new_context = {"step": new_step, "data": collected_data, "last_msg": message, "v": "11.2"}
         return f"System Note: GOOGLE_API_KEY is not configured. (V11.2 Demo Mode Active - Simulating Step {new_step})", json.dumps(new_context), f"V11.2 Demo Summary for Step {new_step}"
 
-    try:
-        # ATTEMPT MULTI-MODEL FALLBACK (Fixes 404 Model Not Found)
-        models_to_try = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro']
-        model = None
-        last_err = ""
-        
-        for model_id in models_to_try:
-            try:
-                model = genai.GenerativeModel(model_id)
-                # Test with a very small prompt to see if it exists
-                prompt = f"{system_prompt}\n\nUser Message: {message}\n\nIMPORTANT: Return ONLY valid JSON."
-                response = model.generate_content(prompt)
-                res_text = response.text.strip()
-                break # Success!
-            except Exception as e:
-                last_err = str(e)
-                continue
-        
-        if not model or not res_text:
-            raise ValueError(f"All models failed: {last_err}")
+    # --- ATTEMPT 1: OPENAI (GPT-4o) - The "Smart" Hunter Brain ---
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    if OPENAI_API_KEY:
+        try:
+            import urllib.request
+            import json as pyjson
             
-        # Robust JSON Extraction using Regex
-        import re
-        match = re.search(r'\{.*\}', res_text, re.DOTALL)
-        if match:
-            try:
-                data = json.loads(match.group())
-            except:
-                # If nested JSON fails, try a simpler parse or look for the last pair
-                raise ValueError("JSON matching failed")
-        else:
-            raise ValueError("No JSON found in response")
-        
-        # Update context
-        new_data = {**collected_data, **data.get("extracted_data", {})}
-        new_context = {
-            "step": data.get("next_step", current_step),
-            "data": new_data,
-            "last_msg": message,
-            "v": "11.2"
-        }
-        
-        return data["response"], new_context, data["summary"]
-        
-    except Exception as e:
-        error_msg = str(e)
-        print(f"Gemini Error in Qualify: {error_msg}")
-        # SMART FALLBACK: Increment step and acknowledge input to avoid repetition
-        new_step = min(current_step + 1, 9)
-        new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": error_msg[:100]}
-        return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific like an SUV or a Sedan? (Relentless Engine Active)", new_context, "Auto-Advanced Summary"
+            url = "https://api.openai.com/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {OPENAI_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "model": "gpt-4o",
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": message}
+                ],
+                "response_format": {"type": "json_object"},
+                "temperature": 0.7
+            }
+            
+            req = urllib.request.Request(url, data=pyjson.dumps(payload).encode(), headers=headers, method='POST')
+            with urllib.request.urlopen(req, timeout=10) as response:
+                res_data = pyjson.loads(response.read().decode())
+                content = res_data['choices'][0]['message']['content']
+                data = pyjson.loads(content)
+                
+                new_data = {**collected_data, **data.get("extracted_data", {})}
+                new_context = {
+                    "step": data.get("next_step", current_step),
+                    "data": new_data,
+                    "last_msg": message,
+                    "v": "11.2",
+                    "engine": "gpt-4o"
+                }
+                return data["response"], new_context, data["summary"]
+        except Exception as oe:
+            print(f"OpenAI Primary Failure: {oe}")
+
+    # --- ATTEMPT 2: GEMINI (Multi-Model Fallback) ---
+    if GOOGLE_API_KEY:
+        try:
+            models_to_try = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro']
+            for model_id in models_to_try:
+                try:
+                    model = genai.GenerativeModel(model_id)
+                    prompt = f"{system_prompt}\n\nUser Message: {message}\n\nIMPORTANT: Return ONLY valid JSON."
+                    response = model.generate_content(prompt)
+                    res_text = response.text.strip()
+                    
+                    import re
+                    match = re.search(r'\{.*\}', res_text, re.DOTALL)
+                    if match:
+                        data = json.loads(match.group())
+                        new_data = {**collected_data, **data.get("extracted_data", {})}
+                        new_context = {
+                            "step": data.get("next_step", current_step),
+                            "data": new_data,
+                            "last_msg": message,
+                            "v": "11.2",
+                            "engine": f"gemini-{model_id}"
+                        }
+                        return data["response"], new_context, data["summary"]
+                except:
+                    continue
+        except Exception as ge:
+            print(f"Gemini Secondary Failure: {ge}")
+
+    # --- FINAL FALLBACK: RELENTLESS SAFE MODE ---
+    error_msg = "Provider unreachable or key invalid"
+    new_step = min(current_step + 1, 9)
+    new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": error_msg}
+    return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific like an SUV or a Sedan? (Relentless Engine v11.3 Active)", new_context, "Auto-Advanced Summary"
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """
