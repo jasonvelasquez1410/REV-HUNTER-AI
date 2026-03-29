@@ -152,7 +152,7 @@ const LandingPageDemo = () => {
                             vapi.current.stop();
                         } else {
                             vapi.current.start(VAPI_ASSISTANT_ID, {
-                                firstMessage: "Hi! This is Elliot, the AI Sales Specialist for FilCan Cars. I saw you were looking at our inventory. How can I help you today?"
+                                firstMessage: "Hi! This is Elliot, the Digital Sales Specialist for FilCan Cars. I saw you were looking at our inventory. How can I help you today?"
                             });
                         }
                     }}
@@ -165,7 +165,7 @@ const LandingPageDemo = () => {
                         fontSize: '1.5rem', transition: 'all 0.3s',
                         animation: isCalling ? 'pulse-red 1.5s infinite' : 'none'
                     }}
-                    title={isCalling ? "End Call" : "Call AI Specialist"}
+                    title={isCalling ? "End Call" : "Call Specialist"}
                 >
                     {isCalling ? '🛑' : '📞'}
                 </button>
@@ -176,7 +176,7 @@ const LandingPageDemo = () => {
                         boxShadow: '0 2px 10px rgba(0,0,0,0.1)', whiteSpace: 'nowrap',
                         fontSize: '0.8rem', fontWeight: 'bold', color: '#333'
                     }}>
-                        Speak with AI Elliot
+                        Speak with Elliot 🌟
                     </div>
                 )}
             </div>

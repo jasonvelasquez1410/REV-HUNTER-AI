@@ -82,7 +82,7 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
                 <div className="chat-widget">
                     <div className="chat-header" style={{ backgroundColor: tenant.theme_color || '#D92027' }}>
                         <div>
-                            <div style={{ fontWeight: 'bold' }}>{tenant.name} Omni Hunter</div>
+                            <div style={{ fontWeight: 'bold' }}>{tenant.name} Digital Specialist</div>
                             <div style={{ fontSize: '0.65rem', opacity: 0.9 }}>
                                 ● {context.role || 'Receptionist'} Mode | v11.1
                             </div>
@@ -102,7 +102,7 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
                                         alignItems: 'center',
                                         gap: '5px'
                                     }}>
-                                        🤖 Elliot (AI Agent)
+                                        🌟 Elliot (Digital Specialist)
                                     </div>
                                 )}
                                 {msg.text}

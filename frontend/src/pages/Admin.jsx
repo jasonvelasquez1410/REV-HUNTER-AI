@@ -12,7 +12,7 @@ const MOCK_FALLBACK_LEADS = [
 const MOCK_CHATS = {
     101: [
         { sender: 'customer', text: "Hi, I saw your post about the 2024 VW Atlas. Is it still available?", time: "10:45 AM" },
-        { sender: 'ai', text: "Hi Marvin! 👋 Yes, we have two 2024 Atlas units in stock: a Platinum-Grey and an Aurora-Red. Which one catches your eye?", time: "10:46 AM" },
+        { sender: 'ai', text: "Hi Marvin! 👋 Yes, we have two 2024 Atlas units in stock: a Platinum-Grey and an Aurora-Red. Which one catches your eye? I'm the Digital Sales Specialist for FilCan Cars, here to help!", time: "10:46 AM" },
         { sender: 'customer', text: "The Grey one looks great. What's the monthly payment roughly?", time: "10:50 AM" },
         { sender: 'ai', text: "Great choice! The Atlas is perfect for families. Based on today's rates, we can get you into that for around $650/mo with your trade-in. Speaking of which, how is that 2018 RAV4 holding up?", time: "10:51 AM" },
         { sender: 'ai', text: "Hey Marvin, just following up! 🏆 I just ran a preliminary appraisal on your RAV4 and it might be worth more than you think. Want me to send the numbers?", time: "12:51 PM", isNudge: true }
@@ -1461,7 +1461,7 @@ const ChatModal = ({ lead, onClose, tenant }) => {
                                     borderBottomRightRadius: msg.sender === 'customer' ? '4px' : '18px'
                                 }}>
                                     {msg.sender === 'ai' && (
-                                        <div style={{ fontSize: '0.65rem', fontWeight: 'bold', marginBottom: '4px', opacity: 0.8 }}>🤖 Elliot (AI Agent)</div>
+                                        <div style={{ fontSize: '0.65rem', fontWeight: 'bold', marginBottom: '4px', opacity: 0.8 }}>🌟 Elliot (Digital Specialist)</div>
                                     )}
                                     {msg.text}
                                 </div>
