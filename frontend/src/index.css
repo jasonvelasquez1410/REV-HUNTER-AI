@@ -158,10 +158,10 @@ nav {
 /* Chat Widget Styles */
 .chat-widget {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 350px;
-  height: 500px;
+  bottom: 110px;
+  right: 30px;
+  width: 380px;
+  height: 550px;
   background: var(--white);
   border-radius: 15px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.15);

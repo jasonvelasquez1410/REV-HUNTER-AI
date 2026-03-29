@@ -68,7 +68,7 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
             <button 
                 onClick={() => setIsOpen(!isOpen)}
                 style={{
-                    position: 'fixed', bottom: '20px', right: '20px',
+                    position: 'fixed', bottom: '30px', right: '30px',
                     width: '60px', height: '60px', borderRadius: '50%',
                     backgroundColor: tenant.theme_color || '#0055a4', color: 'white', border: 'none',
                     fontSize: '1.5rem', cursor: 'pointer', zIndex: '2001',
