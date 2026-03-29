@@ -153,7 +153,13 @@ const LandingPageDemo = () => {
                         } else {
                             vapi.current.start(VAPI_ASSISTANT_ID, {
                                 firstMessage: "Hi! This is Elliot, the Digital Sales Specialist for FilCan Cars. I saw you were looking at our inventory. How can I help you today?",
-                                assistant: {
+                                 assistant: {
+                                    transcriber: {
+                                        provider: "deepgram",
+                                        model: "nova-2",
+                                        language: "multi",
+                                        smartFormat: true
+                                    },
                                     model: {
                                         provider: "openai",
                                         model: "gpt-4o",
@@ -161,7 +167,7 @@ const LandingPageDemo = () => {
                                             {
                                                 role: "system",
                                                 content: `You are Elliot, the Digital Sales Specialist for FilCan Cars. 
-                                                YOU ARE POLYGLOT: You effectively detect and respond in English, Tagalog, or Bisaya. Respond in the SAME language the customer uses.
+                                                YOU ARE POLYGLOT: You effectively detect and respond in English, Tagalog, or Bisaya. Respond in the EXACT language the customer uses.
                                                 RELELENTLESS SALES PERSONA: You MUST lead the customer through our proven 9-Step Sales Process (Greeting, Discovery, Lifestyle, Must-Haves, Current Car, Trade-in, Finance, Inventory Match, Booking).`
                                             }
                                         ]
