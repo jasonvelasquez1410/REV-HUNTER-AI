@@ -351,7 +351,7 @@ const Admin = () => {
             let greeting = `Hi ${lead.name.split(' ')[0]}! This is Elliot from FilCan Cars. I noticed you were looking at our ${lead.car || 'inventory'}. How can I help you today?`;
             
             if (lead.name.includes('Marvin')) {
-                greeting = `Boss, [STRICT: You are speaking to your Manager, NOT Marvin]. I've analyzed the lead DNA for Marvin Raymundo. He is a high-urgency buyer interested in the 2024 VW Atlas. I've confirmed his trade-in is a 2018 RAV4 and his monthly budget is $650. He is ready for a Monday showroom appointment. How would you like to proceed with his credit app?`;
+                greeting = `Boss, I've analyzed the lead DNA for Marvin Raymundo. He is a high-urgency buyer and I've successfully completed 6 of the 9 qualification steps. He's interested in the 2024 VW Atlas, trade-in is a 2018 RAV4, and budget is $650. He's ready for a Monday showroom appointment. How should we finalize his credit app?`;
             } else if (lead.name.includes('Jessica')) {
                 greeting = `Boss, [STRICT: You are speaking to your Manager, NOT Jessica]. Here is the status update on Jessica Chen. She is currently comparing the CX-5 and Atlas. Her primary drivers are safety and reliability. I have already nudged her for a Tuesday morning test drive. She is currently Qualified. What specific safety specs should I emphasize in our next follow-up?`;
             } else if (lead.intent === 'Hot' || lead.status === 'Qualified' || lead.step === 'STEP 1') {
@@ -1235,7 +1235,11 @@ const Admin = () => {
                                 <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
                                     <button onClick={() => setPresentationStep(0)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>← PREVIOUS</button>
                                     <button 
-                                        onClick={() => { setShowPresentation(false); setTimeout(() => alert("Demo: Open a lead chat to see the 9-steps in action!"), 500); }}
+                                        onClick={() => { 
+                                            setShowPresentation(false); 
+                                            const marvin = leads.find(l => l.name.includes('Marvin')) || MOCK_FALLBACK_LEADS[0];
+                                            setSelectedLeadChat(marvin); 
+                                        }}
                                         style={{ padding: '12px 30px', background: '#00b894', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
                                     >
                                         👁️ VIEW LIVE CHAT DEMO
@@ -1468,21 +1472,50 @@ const ChatModal = ({ lead, onClose, tenant }) => {
                         ))}
                     </div>
 
-                    {/* Persistence Log (Right Panel) */}
-                    <div style={{ flex: 1, borderLeft: '1px solid #eee', paddingLeft: '20px', background: '#fff', borderRadius: '15px', padding: '15px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {/* 9-Step Hunter Audit (Right Panel) */}
+                    <div style={{ flex: 1, borderLeft: '1px solid #eee', paddingLeft: '20px', background: '#fff', borderRadius: '15px', padding: '15px', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#003366', marginBottom: '15px', letterSpacing: '1px' }}>9-STEP HUNTER AUDIT</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
                             {[
-                                { t: "Day 1 10:45 AM", e: "Inbound Lead Acquired" },
-                                { t: "Day 1 10:46 AM", e: "Instant 0.2s Discovery Response" },
-                                { t: "Day 1 12:51 PM", e: "🔥 Proactive 2h Auto-Nudge sent" },
-                                { t: "Day 2 08:30 AM", e: "Awaiting Engagement Recovery" },
-                                { t: "NOW", e: "Relentless Mode: ACTIVE" }
-                            ].map((item, ix) => (
-                                <div key={ix} style={{ borderLeft: '2px solid #eee', paddingLeft: '10px', paddingBottom: '5px' }}>
-                                    <div style={{ fontSize: '0.6rem', color: '#999' }}>{item.t}</div>
-                                    <div style={{ fontSize: '0.75rem', color: '#333', fontWeight: '500' }}>{item.e}</div>
-                                </div>
-                            ))}
+                                { n: 1, label: "Greeting", icon: "👋" },
+                                { n: 2, label: "Discovery", icon: "🔍" },
+                                { n: 3, label: "Lifestyle", icon: "🏠" },
+                                { n: 4, label: "Must-Haves", icon: "⭐" },
+                                { n: 5, label: "Current Car", icon: "🚗" },
+                                { n: 6, label: "Trade-in Info", icon: "💰" },
+                                { n: 7, label: "Financing", icon: "🏦" },
+                                { n: 8, label: "Inventory Match", icon: "✅" },
+                                { n: 9, label: "Booking", icon: "📅" }
+                            ].map((s) => {
+                                const currentStep = lead.name.includes('Marvin') ? 6 : lead.name.includes('Jessica') ? 3 : 1;
+                                const isDone = s.n <= currentStep;
+                                const isCurrent = s.n === currentStep + 1;
+                                
+                                return (
+                                    <div key={s.n} style={{ 
+                                        display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 10px', 
+                                        borderRadius: '8px', background: isCurrent ? '#fff9eb' : 'transparent',
+                                        opacity: isDone || isCurrent ? 1 : 0.4
+                                    }}>
+                                        <div style={{ 
+                                            width: '20px', height: '20px', borderRadius: '50%', fontSize: '0.6rem',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            background: isDone ? '#00b894' : isCurrent ? '#f1c40f' : '#eee',
+                                            color: isDone || isCurrent ? 'white' : '#999',
+                                            fontWeight: 'bold'
+                                        }}>
+                                            {isDone ? '✓' : s.n}
+                                        </div>
+                                        <div style={{ fontSize: '0.75rem', fontWeight: isDone || isCurrent ? '600' : '400', color: isDone ? '#00b894' : isCurrent ? '#d35400' : '#888' }}>
+                                            {s.icon} {s.label}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div style={{ marginTop: '15px', padding: '10px', background: '#f8f9fa', borderRadius: '10px', fontSize: '0.65rem', color: '#666', border: '1px solid #eee' }}>
+                            <div style={{ fontWeight: 'bold', color: '#003366', marginBottom: '4px' }}>AI STRATEGY:</div>
+                            {lead.name.includes('Marvin') ? "Pushing for Monday appt. Emphasizing trade-in value." : "Discovery Phase. Qualifying lifestyle requirements."}
                         </div>
                     </div>
                 </div>
