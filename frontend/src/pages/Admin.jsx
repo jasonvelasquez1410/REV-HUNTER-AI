@@ -1189,8 +1189,8 @@ const Admin = () => {
                 <div style={{ 
                     position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', 
                     backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 9999, display: 'flex', 
-                    flexDirection: 'column', color: 'white', padding: '50px' 
-                }}>
+                    flexDirection: 'column', color: 'white', padding: '20px' 
+                }} className="presentation-overlay">
                     <button 
                         onClick={() => setShowPresentation(false)}
                         style={{ position: 'absolute', top: '30px', right: '30px', background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '1.2rem' }}
@@ -1235,7 +1235,7 @@ const Admin = () => {
                                 <p style={{ fontSize: '1.1rem', color: '#aaa', marginBottom: '30px' }}>
                                     Unlike a human receptionist, RevHunter AI never misses a beat. It follows a strict, proven 9-step qualification process.
                                 </p>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', textAlign: 'left', fontSize: '0.9rem', marginBottom: '30px', background: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '15px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', textAlign: 'left', fontSize: '0.9rem', marginBottom: '30px', background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '15px' }} className="nine-step-grid">
                                     <div>1. Greeting 👋</div>
                                     <div>2. Discovery 🔍</div>
                                     <div>3. Lifestyle 🏠</div>
@@ -1445,7 +1445,7 @@ const ChatModal = ({ lead, onClose, tenant }) => {
 
     return (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
-            <div style={{ width: '450px', height: '600px', background: 'white', borderRadius: '25px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'slideUp 0.3s ease-out' }}>
+            <div style={{ width: 'min(95vw, 450px)', height: 'min(90vh, 600px)', background: 'white', borderRadius: '25px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'slideUp 0.3s ease-out' }} className="modal-container">
                 <div style={{ background: tenant.theme_color || '#003366', padding: '20px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'white', color: tenant.theme_color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{lead.name.charAt(0)}</div>
@@ -1457,9 +1457,9 @@ const ChatModal = ({ lead, onClose, tenant }) => {
                     <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
                 </div>
                 
-                <div style={{ flex: 1, padding: '20px', overflowY: 'auto', background: '#f9f9fb', display: 'flex', gap: '20px' }}>
+                <div style={{ flex: 1, padding: '15px', overflowY: 'auto', background: '#f9f9fb', display: 'flex', gap: '20px' }} className="modal-content-wrapper">
                     {/* Chat Messages */}
-                    <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: '15px' }} className="chat-messages">
                         {chat.map((msg, i) => (
                             <div key={i} style={{ 
                                 alignSelf: msg.sender === 'ai' ? 'flex-start' : 'flex-end',
@@ -1487,7 +1487,7 @@ const ChatModal = ({ lead, onClose, tenant }) => {
                     </div>
 
                     {/* 9-Step Hunter Audit (Right Panel) */}
-                    <div style={{ flex: 1, borderLeft: '1px solid #eee', paddingLeft: '20px', background: '#fff', borderRadius: '15px', padding: '15px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ flex: 1, borderLeft: '1px solid #eee', paddingLeft: '20px', background: '#fff', borderRadius: '15px', padding: '15px', display: 'flex', flexDirection: 'column' }} className="audit-panel">
                         <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#003366', marginBottom: '15px', letterSpacing: '1px' }}>9-STEP HUNTER AUDIT</div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
                             {[
@@ -1546,6 +1546,17 @@ const ChatModal = ({ lead, onClose, tenant }) => {
                 .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
                 .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0,184,148,0.3); border-radius: 10px; }
                 .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,184,148,0.5); }
+
+                @media (max-width: 600px) {
+                    .modal-container { width: 95vw !important; height: 90vh !important; }
+                    .modal-content-wrapper { flex-direction: column !important; padding: 10px !important; }
+                    .chat-messages { order: 1 !important; }
+                    .audit-panel { border-left: none !important; border-top: 1px solid #eee !important; padding-left: 0 !important; padding-top: 15px !important; order: 2 !important; margin-top: 10px !important; }
+                    .presentation-overlay { padding: 15px !important; }
+                    .presentation-overlay h2 { font-size: 1.6rem !important; }
+                    .presentation-overlay p { font-size: 0.9rem !important; }
+                    .nine-step-grid { grid-template-columns: 1fr !important; gap: 8px !important; font-size: 0.8rem !important; }
+                }
             `}</style>
         </div>
     );
