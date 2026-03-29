@@ -131,7 +131,21 @@ const FacebookDemo = () => {
                             vapi.current.stop();
                         } else {
                             vapi.current.start(VAPI_ASSISTANT_ID, {
-                                firstMessage: "Hi! This is Elliot, the Digital Sales Specialist for FilCan Cars. I saw you were looking at our Facebook post. How can I help you today?"
+                                firstMessage: "Hi! This is Elliot, the Digital Sales Specialist for FilCan Cars. I saw you were looking at our Facebook post. How can I help you today?",
+                                assistant: {
+                                    model: {
+                                        provider: "openai",
+                                        model: "gpt-4o",
+                                        messages: [
+                                            {
+                                                role: "system",
+                                                content: `You are Elliot, the Digital Sales Specialist for FilCan Cars. 
+                                                YOU ARE POLYGLOT: You effectively detect and respond in English, Tagalog, or Bisaya. Respond in the SAME language the customer uses.
+                                                RELELENTLESS SALES PERSONA: You MUST lead the customer through our proven 9-Step Sales Process (Greeting, Discovery, Lifestyle, Must-Haves, Current Car, Trade-in, Finance, Inventory Match, Booking).`
+                                            }
+                                        ]
+                                    }
+                                }
                             });
                         }
                     }}
