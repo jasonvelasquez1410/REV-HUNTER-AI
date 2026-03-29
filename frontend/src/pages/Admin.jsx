@@ -155,12 +155,14 @@ const Admin = () => {
     // Persist voices to prevent mid-demo shifts
     const [availableVoices, setAvailableVoices] = useState([]);
     useEffect(() => {
-        const loadVoices = () => {
-            const voices = window.speechSynthesis.getVoices();
-            if (voices.length > 0) setAvailableVoices(voices);
-        };
-        loadVoices();
-        window.speechSynthesis.onvoiceschanged = loadVoices;
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            const loadVoices = () => {
+                const voices = window.speechSynthesis.getVoices();
+                if (voices.length > 0) setAvailableVoices(voices);
+            };
+            loadVoices();
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
     }, []);
 
     const fetchLeads = async () => {
@@ -409,7 +411,9 @@ const Admin = () => {
         if (isVoiceDemoPlaying) return;
         
         // Cancel any lingering speech to prevent the "simultaneous overlap" bug
-        window.speechSynthesis.cancel();
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
 
         const rileyVoice = getBestVoice('female');
         const customerVoice = getBestVoice('male', rileyVoice);
@@ -471,10 +475,20 @@ const Admin = () => {
                 speakNext();
             };
 
-            window.speechSynthesis.speak(utterance);
+            if (window.speechSynthesis) {
+                window.speechSynthesis.speak(utterance);
+            } else {
+                currentLine++;
+                speakNext();
+            }
         };
 
-        speakNext();
+        if (window.speechSynthesis) {
+            speakNext();
+        } else {
+            alert("Digital Sales Persona: Audio Case Study is not supported on this mobile browser's internal webview. Please use Chrome or Safari for the full voice experience.");
+            setIsVoiceDemoPlaying(false);
+        }
     };
 
     const handleAutoNudge = async (leadId) => {
