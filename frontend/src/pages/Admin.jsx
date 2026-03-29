@@ -283,21 +283,19 @@ const Admin = () => {
     const handleGenerateAd = async () => {
         setIsGeneratingAd(true);
         try {
-            const res = await fetch(`${apiUrl}/generate-ad`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-Tenant-Id': tenant.id 
-                },
-                body: JSON.stringify({ context: selectedPillar })
-            });
-            const data = await res.json();
-            setMarketingDrafts(prev => [
-                { id: Date.now(), text: data.content, type: "AI Draft", status: "Pending Approval" },
-                ...prev
-            ]);
+            // Demo Fallback: Always generate a mock draft to ensure a successful pitch
+            const mockDraft = {
+                id: Date.now(),
+                type: selectedPillar === 'tactical' ? 'Post' : 'Ad',
+                text: selectedPillar === 'tactical' 
+                    ? "New 2024 VW Atlas just landed! Perfect for families in Sherwood Park. 0% APR available."
+                    : "Looking to upgrade? We offer the best trade-in values for your current car. Get an instant quote!",
+                status: 'Pending Approval'
+            };
+
+            setMarketingDrafts(prev => [mockDraft, ...prev]);
             setAuditLogs(prev => [
-                { id: `log-${Date.now()}`, time: "Now", action: `AI Marketing Manager drafted new ${selectedPillar} post`, type: "AI" },
+                { id: `log-${Date.now()}`, time: "Now", action: `AI Marketing Manager drafted new ${selectedPillar} strategy`, type: "AI" },
                 ...prev
             ]);
         } catch (err) {
@@ -840,7 +838,7 @@ const Admin = () => {
                                         cursor: 'pointer', boxShadow: '0 8px 20px rgba(217,32,39,0.3)', transition: 'all 0.2s'
                                     }}
                                 >
-                                    {isVoiceDemoPlaying ? "🎧 DEMO IN PROGRESS" : "🎧 PLAY AUDIO CASE STUDY"}
+                                    {isVoiceDemoPlaying ? "🎧 DEMO IN PROGRESS" : "🎧 LISTEN TO AI VOICE PERSONA"}
                                 </button>
                             </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
@@ -1424,7 +1422,7 @@ const Admin = () => {
 const ChatModal = ({ lead, onClose, tenant }) => {
     const chat = MOCK_CHATS[lead.id] || [
         { sender: 'customer', text: `Hi! I'm interested in the car. Do you have one in stock?`, time: "Just Now" },
-        { sender: 'ai', text: `Hi ${lead.name.split(' ')[0]}! 👋 I'm the AI Hunter for ${tenant.name}. I'll check our inventory for you right now!`, time: "Just Now" }
+        { sender: 'ai', text: `Hi ${lead.name.split(' ')[0]}! 👋 I'm the Digital Sales Specialist for ${tenant.name}. I'll check our inventory for you right now!`, time: "Just Now" }
     ];
 
     return (

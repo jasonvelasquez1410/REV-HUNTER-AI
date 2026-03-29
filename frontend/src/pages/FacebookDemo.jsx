@@ -46,7 +46,7 @@ const FacebookDemo = () => {
     const [messages] = useState([
         { id: 1, user: tenant.name, text: `New arrival! 2024 VW Atlas. Financing available for all credit levels! #${initials}`, time: "2h ago", isPost: true },
         { id: 2, user: "John Doe", text: "How much is this per month?", time: "1h ago" },
-        { id: 3, user: `RevHunter AI Agent`, text: `Hi John! 👋 I'm the AI Agent for ${tenant.name}. I'll send you a private message to get you the lowest possible rate!`, time: "59m ago", isAI: true }
+        { id: 3, user: `FilCan Digital Specialist`, text: `Hi John! 👋 I'm the Digital Sales Specialist for ${tenant.name}. I'll send you a private message to get you the lowest possible rate!`, time: "59m ago", isAI: true }
     ]);
 
     return (
@@ -113,7 +113,7 @@ const FacebookDemo = () => {
                                         display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.6rem', fontWeight: 'bold' 
                                     }}>{m.user.charAt(0)}</div>
                                     <div style={{ backgroundColor: '#f0f2f5', padding: '8px 12px', borderRadius: '18px', position: 'relative' }}>
-                                        <div style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{m.user} {m.isAI && <span style={{ color: '#1877f2', fontSize: '0.7rem' }}>✔ Hunter Agent</span>}</div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{m.user} {m.isAI && <span style={{ color: '#1877f2', fontSize: '0.7rem' }}>✔ Digital Specialist</span>}</div>
                                         <div style={{ fontSize: '0.9rem' }}>{m.text}</div>
                                     </div>
                                 </div>
@@ -131,7 +131,7 @@ const FacebookDemo = () => {
                             vapi.current.stop();
                         } else {
                             vapi.current.start(VAPI_ASSISTANT_ID, {
-                                firstMessage: "Hi! This is Elliot, the AI Sales Assistant for FilCan Cars. I saw you were looking at our Facebook post. How can I help you today?"
+                                firstMessage: "Hi! This is Elliot, the Digital Sales Specialist for FilCan Cars. I saw you were looking at our Facebook post. How can I help you today?"
                             });
                         }
                     }}
@@ -144,7 +144,7 @@ const FacebookDemo = () => {
                         fontSize: '1.5rem', transition: 'all 0.3s',
                         animation: isCalling ? 'pulse-red-fb 1.5s infinite' : 'none'
                     }}
-                    title={isCalling ? "End Call" : "Call AI Specialist"}
+                    title={isCalling ? "End Call" : "Call Specialist"}
                 >
                     {isCalling ? '🛑' : '📞'}
                 </button>
@@ -155,7 +155,7 @@ const FacebookDemo = () => {
                         boxShadow: '0 2px 10px rgba(0,0,0,0.1)', whiteSpace: 'nowrap',
                         fontSize: '0.8rem', fontWeight: 'bold', color: '#333'
                     }}>
-                        Call AI Elliot
+                        Call Elliot 🌟
                     </div>
                 )}
             </div>
