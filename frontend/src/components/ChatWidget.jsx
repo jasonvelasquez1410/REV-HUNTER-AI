@@ -84,7 +84,7 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
                         <div>
                             <div style={{ fontWeight: 'bold' }}>{tenant.name} Digital Specialist</div>
                             <div style={{ fontSize: '0.65rem', opacity: 0.9 }}>
-                                ● {context.role || 'Receptionist'} Mode | v11.1
+                                ● {context.role || 'Digital Specialist'} Mode | v11.2 [HARDENED]
                             </div>
                         </div>
                         <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>✕</button>

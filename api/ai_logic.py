@@ -86,16 +86,22 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
 
     try:
         model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(f"{system_prompt}\n\nUser Message: {message}")
+        # Instruct Gemini to be strictly conversational but return JSON
+        prompt = f"{system_prompt}\n\nUser Message: {message}\n\nIMPORTANT: Return ONLY valid JSON."
+        response = model.generate_content(prompt)
         
-        # Parse JSON from response
         res_text = response.text.strip()
-        if "```json" in res_text:
-            res_text = res_text.split("```json")[1].split("```")[0].strip()
-        elif "```" in res_text:
-            res_text = res_text.split("```")[1].strip()
-            
-        data = json.loads(res_text)
+        
+        # Robust JSON Extraction using Regex
+        import re
+        match = re.search(r'\{.*\}', res_text, re.DOTALL)
+        if match:
+            try:
+                data = json.loads(match.group())
+            except:
+                raise ValueError("JSON matching failed")
+        else:
+            raise ValueError("No JSON found in response")
         
         # Update context
         new_data = {**collected_data, **data.get("extracted_data", {})}
@@ -110,8 +116,10 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
         
     except Exception as e:
         print(f"Gemini Error in Qualify: {e}")
-        # Fallback to simple response
-        return f"Thanks for that! I'm the AI for {tenant['name']}. Can you tell me more about what you're looking for?", context_str, "Fallback Summary"
+        # SMART FALLBACK: Increment step and acknowledge input to avoid repetition
+        new_step = min(current_step + 1, 9)
+        new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": str(e)[:50]}
+        return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific like an SUV or a Sedan? (Step {new_step} - Safe Mode)", json.dumps(new_context), "Auto-Advanced Summary"
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """
