@@ -145,7 +145,7 @@ const LandingPageDemo = () => {
             </div>
 
             {/* Floating AI Call Button */}
-            <div style={{ position: 'fixed', bottom: '100px', right: '20px', zIndex: 1000 }}>
+            <div style={{ position: 'fixed', bottom: '100px', right: '20px', zIndex: 2000 }}>
                 <button 
                     onClick={() => {
                         if (isCalling) {
@@ -153,25 +153,23 @@ const LandingPageDemo = () => {
                         } else {
                             vapi.current.start(VAPI_ASSISTANT_ID, {
                                 firstMessage: "Hi! This is Elliot, the Digital Sales Specialist for FilCan Cars. I saw you were looking at our inventory. How can I help you today?",
-                                 assistant: {
-                                    transcriber: {
-                                        provider: "deepgram",
-                                        model: "nova-2",
-                                        language: "multi",
-                                        smartFormat: true
-                                    },
-                                    model: {
-                                        provider: "openai",
-                                        model: "gpt-4o",
-                                        messages: [
-                                            {
-                                                role: "system",
-                                                content: `You are Elliot, the Digital Sales Specialist for FilCan Cars. 
-                                                YOU ARE POLYGLOT: You effectively detect and respond in English, Tagalog, or Bisaya. Respond in the EXACT language the customer uses.
-                                                RELELENTLESS SALES PERSONA: You MUST lead the customer through our proven 9-Step Sales Process (Greeting, Discovery, Lifestyle, Must-Haves, Current Car, Trade-in, Finance, Inventory Match, Booking).`
-                                            }
-                                        ]
-                                    }
+                                transcriber: {
+                                    provider: "deepgram",
+                                    model: "nova-2",
+                                    language: "multi",
+                                    smartFormat: true
+                                },
+                                model: {
+                                    provider: "openai",
+                                    model: "gpt-4o",
+                                    messages: [
+                                        {
+                                            role: "system",
+                                            content: `You are Elliot, the Digital Sales Specialist for FilCan Cars. 
+                                            YOU ARE POLYGLOT: You effectively detect and respond in English, Tagalog, or Bisaya. Respond in the EXACT language the customer uses.
+                                            RELELENTLESS SALES PERSONA: You MUST lead the customer through our proven 9-Step Sales Process (Greeting, Discovery, Lifestyle, Must-Haves, Current Car, Trade-in, Finance, Inventory Match, Booking).`
+                                        }
+                                    ]
                                 }
                             });
                         }
@@ -202,7 +200,7 @@ const LandingPageDemo = () => {
             </div>
 
             {/* Smart VDP Nudge Simulation */}
-            <div style={{ position: 'fixed', left: '20px', bottom: '100px', maxWidth: '300px', background: '#fff', borderRadius: '15px', padding: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', borderLeft: `5px solid ${tenant.theme_color || '#D92027'}`, zIndex: 1001, animation: 'slideRight 0.5s ease-out' }}>
+            <div style={{ position: 'fixed', left: '20px', bottom: '100px', maxWidth: '300px', background: '#fff', borderRadius: '15px', padding: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', borderLeft: `5px solid ${tenant.theme_color || '#D92027'}`, zIndex: 1500, animation: 'slideRight 0.5s ease-out' }}>
                 <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: tenant.theme_color || '#D92027', marginBottom: '5px' }}>ELLIOT (RELENTLESS NUDGE) 📱</div>
                 <div style={{ fontSize: '0.85rem', color: '#333', lineHeight: '1.4' }}>
                     Boss, I see you're looking at the Atlas. Want a <b>"Fast-Pass"</b> trade-in value for your car while you browse?

@@ -368,26 +368,24 @@ const Admin = () => {
                     customerName: isInsightCall ? 'Boss' : lead.name.split(' ')[0],
                     carModel: lead.car || 'vehicle'
                 },
-                assistant: {
-                    transcriber: {
-                        provider: "deepgram",
-                        model: "nova-2",
-                        language: "multi",
-                        smartFormat: true
-                    },
-                    model: {
-                        provider: "openai",
-                        model: "gpt-4o",
-                        messages: [
-                            {
-                                role: "system",
-                                content: `You are Elliot, the Digital Sales Specialist for ${tenant.name}. 
-                                YOU ARE POLYGLOT: You effectively detect and respond in English, Tagalog, or Bisaya. Respond in the EXACT language the customer uses.
-                                RELELENTLESS SALES PERSONA: You MUST lead the customer through our proven 9-Step Sales Process (Greeting, Discovery, Lifestyle, Must-Haves, Current Car, Trade-in, Finance, Inventory Match, Booking). 
-                                CURRENT CONTEXT: You are speaking with ${lead.name}. Your goal is a Monday showroom appointment for the ${lead.car || 'vehicle'}.`
-                            }
-                        ]
-                    }
+                transcriber: {
+                    provider: "deepgram",
+                    model: "nova-2",
+                    language: "multi",
+                    smartFormat: true
+                },
+                model: {
+                    provider: "openai",
+                    model: "gpt-4o",
+                    messages: [
+                        {
+                            role: "system",
+                            content: `You are Elliot, the Digital Sales Specialist for ${tenant.name}. 
+                            YOU ARE POLYGLOT: You effectively detect and respond in English, Tagalog, or Bisaya. Respond in the EXACT language the customer uses.
+                            RELELENTLESS SALES PERSONA: You MUST lead the customer through our proven 9-Step Sales Process (Greeting, Discovery, Lifestyle, Must-Haves, Current Car, Trade-in, Finance, Inventory Match, Booking). 
+                            CURRENT CONTEXT: You are speaking with ${lead.name}. Your goal is a Monday showroom appointment for the ${lead.car || 'vehicle'}.`
+                        }
+                    ]
                 }
             });
         } catch (err) {
