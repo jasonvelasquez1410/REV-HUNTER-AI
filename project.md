@@ -7,6 +7,7 @@ This file serves as a persistent record of the project's state to help future se
 - **Name**: RevHunter AI (The Relentless Sales Engine)
 - **Goal**: A multi-tenant AI SaaS Profit Engine for car dealerships to automate lead engagement, marketing, and reception.
 - **Current Tenant**: FilCan Cars (Sherwood Park)
+- **AI Persona**: **Elliot** (The AI Sales Specialist)
 
 ## Technical Architecture (V10)
 
@@ -25,6 +26,9 @@ This file serves as a persistent record of the project's state to help future se
 - **Sales Agent Mode**: 9-step qualification script and manual reply triggers.
 - **Marketing Strategy Hub**: AI-generated multi-pillar content (Inventory, Strategic, Seasonal) with visual image prompts.
 - **Accountability Audit Log**: Dynamic tracking of AI and human actions for transparency.
+- **Vapi Voice Integration (v2.x)**: Flattened assistant override schema for `vapi.start()`.
+- **AI Insight Mode**: High-impact "Why Hot?" / "Why Qualified?" briefings for the dealer.
+- **Voice Overlay UI**: Dual-panel display featuring **Live Transcript Memory** and **Lead DNA AI Analysis**.
 - **Health Diagnostic**: Live system status at `/api/status`.
 
 ## Deployment Status
@@ -68,3 +72,11 @@ This file serves as a persistent record of the project's state to help future se
   - **Frontend Fail-safe**: Implemented robust mock lead fallbacks in `Admin.jsx` to ensure a perfect demo even without API/DB keys.
   - **Instant UI Updates**: Refactored `handleInjectLead` to provide immediate visual feedback in the Inbox table.
   - **Offline Resilience**: Ensured the 'Relentless' simulation logic works flawlessly in disconnected/degraded states.
+- **2026-03-28 (V14.4)**: **REVHUNTER AI PRESENTATION POLISH**.
+  - **Rebranding**: Renamed AI assistant to **Elliot** across all interfaces (Admin, Landing, Chat Widget).
+  - **Branding Tags**: Added "🤖 Elliot (AI Agent)" label to all bot messages for clarity.
+  - **Vapi Integration**: Corrected assistant override schema to flattened format to avoid 400 errors.
+  - **AI Insight Mode**: Implemented "🎯 Why Hot?" / "🎯 Why Qualified?" buttons with executive briefing greetings.
+  - **Persona Hardening**: Integrated manual system-prompt overrides to ensure Elliot addresses the dealer as **"Boss"** or **"Manager"**.
+  - **Voice UI Refinement**: Added scrolling Transcript Memory and DNA Analysis panels with accessibility fixes for responsive layouts.
+  - **Error Sanitation**: Suppressed Vapi "Meeting has ended" (ejected) messages to ensure a clean demo experience.

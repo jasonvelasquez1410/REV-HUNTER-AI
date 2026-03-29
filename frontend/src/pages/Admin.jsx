@@ -141,6 +141,7 @@ const Admin = () => {
     const [isGeneratingAd, setIsGeneratingAd] = useState(false);
     const [isSyncingCRM, setIsSyncingCRM] = useState(null); 
     const [selectedLeadChat, setSelectedLeadChat] = useState(null);
+    const [isCommanding, setIsCommanding] = useState(null);
     const [isCalling, setIsCalling] = useState(null);
     const [vapiError, setVapiError] = useState(null);
     const [isVoiceDemoPlaying, setIsVoiceDemoPlaying] = useState(false);
@@ -306,25 +307,7 @@ const Admin = () => {
         }
     };
 
-    const handleManualReply = async (lead) => {
-        const message = prompt(`Enter manual reply for ${lead.name}:`);
-        if (!message) return;
-
-        try {
-            await fetch(`${apiUrl}/admin/manual-reply`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ recipient_id: lead.id, message: message })
-            });
-            setAuditLogs(prev => [
-                { id: `log-${Date.now()}`, time: "Now", action: `Manual Reply sent to ${lead.name}`, type: "REP" },
-                ...prev
-            ]);
-            alert("Reply sent via Relentless AI!");
-        } catch (err) {
-            console.error("Reply failed:", err);
-        }
-    };
+    // handleManualReply removed in favor of handleCommand
 
     const handleSyncCRM = async (lead) => {
         setIsSyncingCRM(lead.id);
@@ -767,10 +750,11 @@ const Admin = () => {
                                                 👁️ View
                                             </button>
                                             <button 
-                                                onClick={() => handleManualReply(lead)}
-                                                style={{ padding: '6px 12px', fontSize: '0.7rem', backgroundColor: '#eee', color: '#333', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                                                onClick={() => setIsCommanding(lead)}
+                                                style={{ padding: '6px 12px', fontSize: '0.7rem', backgroundColor: '#eee', color: '#1a1a1a', border: '1px solid #ddd', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                                                title="Issue Strategic Command to Elliot"
                                             >
-                                                📩 Reply
+                                                ⚡ Command
                                             </button>
                                             <button 
                                                 disabled={isSyncingCRM === lead.id}
@@ -1420,6 +1404,18 @@ const Admin = () => {
                     tenant={tenant} 
                 />
             )}
+            {isCommanding && (
+                <CommandModal 
+                    lead={isCommanding} 
+                    onClose={() => setIsCommanding(null)}
+                    onSuccess={(action) => {
+                        setAuditLogs(prev => [
+                            { id: `cmd-${Date.now()}`, time: "Now", action: `COMMAND: Elliot received instruction: '${action}' for ${isCommanding.name}`, type: "AI" },
+                            ...prev
+                        ]);
+                    }}
+                />
+            )}
         </div>
     );
 };
@@ -1445,36 +1441,57 @@ const ChatModal = ({ lead, onClose, tenant }) => {
                     <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
                 </div>
                 
-                <div style={{ flex: 1, padding: '20px', overflowY: 'auto', background: '#f9f9fb', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {chat.map((msg, i) => (
-                        <div key={i} style={{ 
-                            alignSelf: msg.sender === 'ai' ? 'flex-start' : 'flex-end',
-                            maxWidth: '80%',
-                            display: 'flex', flexDirection: 'column',
-                            alignItems: msg.sender === 'ai' ? 'flex-start' : 'flex-end'
-                        }}>
-                            <div style={{ 
-                                padding: '12px 16px', borderRadius: '18px', fontSize: '0.9rem',
-                                background: msg.sender === 'ai' ? (msg.isNudge ? '#D92027' : '#003366') : '#fff',
-                                color: msg.sender === 'ai' ? 'white' : '#333',
-                                border: msg.sender === 'customer' ? '1px solid #eee' : 'none',
-                                boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-                                borderBottomLeftRadius: msg.sender === 'ai' ? '4px' : '18px',
-                                borderBottomRightRadius: msg.sender === 'customer' ? '4px' : '18px'
+                <div style={{ flex: 1, padding: '20px', overflowY: 'auto', background: '#f9f9fb', display: 'flex', gap: '20px' }}>
+                    {/* Chat Messages */}
+                    <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        {chat.map((msg, i) => (
+                            <div key={i} style={{ 
+                                alignSelf: msg.sender === 'ai' ? 'flex-start' : 'flex-end',
+                                maxWidth: '90%',
+                                display: 'flex', flexDirection: 'column',
+                                alignItems: msg.sender === 'ai' ? 'flex-start' : 'flex-end'
                             }}>
-                                {msg.sender === 'ai' && (
-                                    <div style={{ fontSize: '0.65rem', fontWeight: 'bold', marginBottom: '4px', opacity: 0.8 }}>🤖 Elliot (AI Agent)</div>
-                                )}
-                                {msg.text}
+                                <div style={{ 
+                                    padding: '12px 16px', borderRadius: '18px', fontSize: '0.9rem',
+                                    background: msg.sender === 'ai' ? (msg.isNudge ? '#D92027' : '#003366') : '#fff',
+                                    color: msg.sender === 'ai' ? 'white' : '#333',
+                                    border: msg.sender === 'customer' ? '1px solid #eee' : 'none',
+                                    boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+                                    borderBottomLeftRadius: msg.sender === 'ai' ? '4px' : '18px',
+                                    borderBottomRightRadius: msg.sender === 'customer' ? '4px' : '18px'
+                                }}>
+                                    {msg.sender === 'ai' && (
+                                        <div style={{ fontSize: '0.65rem', fontWeight: 'bold', marginBottom: '4px', opacity: 0.8 }}>🤖 Elliot (AI Agent)</div>
+                                    )}
+                                    {msg.text}
+                                </div>
+                                <span style={{ fontSize: '0.65rem', color: '#aaa', marginTop: '4px' }}>{msg.time} {msg.isNudge && "🔥 AUTO-NUDGE"}</span>
                             </div>
-                            <span style={{ fontSize: '0.65rem', color: '#aaa', marginTop: '4px' }}>{msg.time} {msg.isNudge && "🔥 AUTO-NUDGE"}</span>
+                        ))}
+                    </div>
+
+                    {/* Persistence Log (Right Panel) */}
+                    <div style={{ flex: 1, borderLeft: '1px solid #eee', paddingLeft: '20px', background: '#fff', borderRadius: '15px', padding: '15px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {[
+                                { t: "Day 1 10:45 AM", e: "Inbound Lead Acquired" },
+                                { t: "Day 1 10:46 AM", e: "Instant 0.2s Discovery Response" },
+                                { t: "Day 1 12:51 PM", e: "🔥 Proactive 2h Auto-Nudge sent" },
+                                { t: "Day 2 08:30 AM", e: "Awaiting Engagement Recovery" },
+                                { t: "NOW", e: "Relentless Mode: ACTIVE" }
+                            ].map((item, ix) => (
+                                <div key={ix} style={{ borderLeft: '2px solid #eee', paddingLeft: '10px', paddingBottom: '5px' }}>
+                                    <div style={{ fontSize: '0.6rem', color: '#999' }}>{item.t}</div>
+                                    <div style={{ fontSize: '0.75rem', color: '#333', fontWeight: '500' }}>{item.e}</div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    </div>
                 </div>
 
                 <div style={{ padding: '20px', borderTop: '1px solid #eee', background: 'white', display: 'flex', gap: '10px' }}>
                     <input disabled placeholder="AI is lead-hunting..." style={{ flex: 1, padding: '12px', borderRadius: '25px', border: '1px solid #eee', backgroundColor: '#f5f5f5', fontSize: '0.85rem' }} />
-                    <button style={{ background: tenant.theme_color, color: 'white', border: 'none', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🏹</button>
+                    <button style={{ background: tenant.theme_color || '#003366', color: 'white', border: 'none', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🏹</button>
                 </div>
             </div>
             <style>{`
@@ -1485,6 +1502,72 @@ const ChatModal = ({ lead, onClose, tenant }) => {
                 .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0,184,148,0.3); border-radius: 10px; }
                 .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,184,148,0.5); }
             `}</style>
+        </div>
+    );
+};
+
+/* Command Modal Component */
+const CommandModal = ({ lead, onClose, onSuccess }) => {
+    const handleCommand = (action) => {
+        onSuccess(action);
+        onClose();
+        alert(`Elliot: Understood Boss. Command Acquired: "${action}". Initiating relentless execution...`);
+    };
+
+    return (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+            <div style={{ width: '500px', background: 'white', borderRadius: '25px', padding: '30px', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', animation: 'slideUp 0.3s ease-out' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h2 style={{ margin: 0, color: '#D92027', fontSize: '1.4rem' }}>COMMAND AI ELLIOT ⚡</h2>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+                </div>
+                
+                <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '25px' }}>
+                    Instruct Elliot to execute a proactive strategy for **{lead.name}**.
+                </p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '30px' }}>
+                    {[
+                        { icon: '🦁', label: 'Aggressive Nudge', desc: 'Push for immediate booking' },
+                        { icon: '💰', label: 'Trade-in Focus', desc: 'Ask about their current RAV4' },
+                        { icon: '🏦', label: 'Finance Qualification', desc: 'Verify credit score status' },
+                        { icon: '🚗', label: 'Inventory Hook', desc: 'Suggest the Grey Atlas variant' }
+                    ].map(cmd => (
+                        <button 
+                            key={cmd.label}
+                            onClick={() => handleCommand(cmd.label)}
+                            style={{ 
+                                padding: '15px', borderRadius: '15px', border: '1px solid #eee', background: '#f9f9fb', 
+                                textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.borderColor = '#D92027'}
+                            onMouseOut={(e) => e.currentTarget.style.borderColor = '#eee'}
+                        >
+                            <div style={{ fontSize: '1.5rem', marginBottom: '5px' }}>{cmd.icon}</div>
+                            <div style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{cmd.label}</div>
+                            <div style={{ fontSize: '0.65rem', color: '#888' }}>{cmd.desc}</div>
+                        </button>
+                    ))}
+                </div>
+
+                <div style={{ borderTop: '1px solid #eee', paddingTop: '20px' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '10px' }}>CUSTOM COMMAND</div>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <input 
+                            id="custom-command-input"
+                            placeholder="Instruct Elliot manually..." 
+                            style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #ddd', fontSize: '0.85rem' }} 
+                            onKeyPress={(e) => e.key === 'Enter' && handleCommand(e.target.value)}
+                        />
+                        <button 
+                            onClick={() => handleCommand(document.getElementById('custom-command-input').value)}
+                            style={{ padding: '0 20px', background: '#D92027', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                        >
+                            ISSUE 🏹
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
