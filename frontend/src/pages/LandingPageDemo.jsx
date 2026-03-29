@@ -195,11 +195,27 @@ const LandingPageDemo = () => {
                 )}
             </div>
 
+            {/* Smart VDP Nudge Simulation */}
+            <div style={{ position: 'fixed', left: '20px', bottom: '100px', maxWidth: '300px', background: '#fff', borderRadius: '15px', padding: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', borderLeft: `5px solid ${tenant.theme_color || '#D92027'}`, zIndex: 1001, animation: 'slideRight 0.5s ease-out' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: tenant.theme_color || '#D92027', marginBottom: '5px' }}>ELLIOT (RELENTLESS NUDGE) 📱</div>
+                <div style={{ fontSize: '0.85rem', color: '#333', lineHeight: '1.4' }}>
+                    Boss, I see you're looking at the Atlas. Want a <b>"Fast-Pass"</b> trade-in value for your car while you browse?
+                </div>
+                <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+                    <button style={{ flex: 1, padding: '5px', background: tenant.theme_color || '#D92027', color: '#fff', border: 'none', borderRadius: '5px', fontSize: '0.7rem', fontWeight: 'bold' }}>YES, GET VALUE</button>
+                    <button style={{ flex: 1, padding: '5px', background: '#eee', color: '#666', border: 'none', borderRadius: '5px', fontSize: '0.7rem' }}>MAYBE LATER</button>
+                </div>
+            </div>
+
             <style>{`
                 @keyframes pulse-red {
                     0% { box-shadow: 0 0 0 0 rgba(217,32,39, 0.7); }
                     70% { box-shadow: 0 0 0 15px rgba(217,32,39, 0); }
                     100% { box-shadow: 0 0 0 0 rgba(217,32,39, 0); }
+                }
+                @keyframes slideRight {
+                    from { transform: translateX(-100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
                 }
             `}</style>
 

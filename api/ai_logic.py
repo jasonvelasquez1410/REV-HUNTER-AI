@@ -54,9 +54,11 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     4. Must-Haves (Features like AWD, Sunroof, etc.)
     5. Current Car (What are they driving now?)
     6. Trade-in (Do they have a vehicle to trade in?)
-    7. Finance/Decision Makers (Budget and who makes the final call?)
-    8. Show Inventory (Explicitly match their needs to the inventory list above)
+    7. Finance & Credit (Extract Budget AND ask for SOFT CREDIT PRE-QUAL if step 6 is clear)
+    8. Show Inventory (Explicitly match their needs and credit potential to the inventory list above)
     9. Closing (Book the physical test drive at {tenant['location']})
+    
+    OMNICHANNEL DNA: You have full memory of this lead across Facebook, Voice Call, and Web. If the context shows a history, reference it to build trust.
     
     Current Progress: Step {current_step}/9
     What we know so far: {json.dumps(collected_data)}

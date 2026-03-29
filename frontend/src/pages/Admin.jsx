@@ -5,8 +5,8 @@ import LeadReportCard from '../components/LeadReportCard';
 import { useTenant } from '../context/TenantContext';
 
 const MOCK_FALLBACK_LEADS = [
-    { id: 101, name: "Marvin Raymundo", status: "Hot", car: "VW Atlas", quality_score: 98, follow_up_streak: 2, conversation_state: '{"step": 5}', conversation_summary: "Interested in VW Atlas. Trade-in: 2018 RAV4.", last_action_time: "Today 10:45 AM" },
-    { id: 102, name: "Jessica Chen", status: "Qualified", car: "Mazda CX-5", quality_score: 85, follow_up_streak: 1, conversation_state: '{"step": 3}', conversation_summary: "Looking for family SUV. CX-5 vs Atlas.", last_action_time: "Today 9:15 AM" }
+    { id: 101, name: "Marvin Raymundo", status: "Hot", car: "VW Atlas", quality_score: 98, follow_up_streak: 2, conversation_state: '{"step": 5}', conversation_summary: "Interested in VW Atlas. Trade-in: 2018 RAV4. Credit: PRE-APPROVED.", last_action_time: "Today 10:45 AM", credit_status: "PRE-APPROVED", source: "OMNICHANNEL (Web+FB+Voice)" },
+    { id: 102, name: "Jessica Chen", status: "Qualified", car: "Mazda CX-5", quality_score: 85, follow_up_streak: 1, conversation_state: '{"step": 3}', conversation_summary: "Looking for family SUV. CX-5 vs Atlas.", last_action_time: "Today 9:15 AM", source: "Facebook Messenger" }
 ];
 
 const MOCK_CHATS = {
@@ -38,7 +38,7 @@ const PRESENTATION_INSIGHTS = {
             { sender: "ai", text: "The Atlas is perfect for that! Speaking of budget, do you have a trade-in?" },
             { sender: "customer", text: "Yes, a 2018 RAV4. I'd like to see it on Monday." }
         ],
-        dna: { "Trade-in": "2018 RAV4 ✅", "Budget": "$650/mo ✅", "Priority": "Critical ✅" }
+        dna: { "Trade-in": "2018 RAV4 ✅", "Budget": "$650/mo ✅", "Credit": "PRE-APPROVED 🏦", "Priority": "Critical ✅" }
     },
     "Jessica Chen": {
         transcript: [
