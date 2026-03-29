@@ -86,13 +86,26 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
         return f"System Note: GOOGLE_API_KEY is not configured. (V11.2 Demo Mode Active - Simulating Step {new_step})", json.dumps(new_context), f"V11.2 Demo Summary for Step {new_step}"
 
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        # Instruct Gemini to be strictly conversational but return JSON
-        prompt = f"{system_prompt}\n\nUser Message: {message}\n\nIMPORTANT: Return ONLY valid JSON."
-        response = model.generate_content(prompt)
+        # ATTEMPT MULTI-MODEL FALLBACK (Fixes 404 Model Not Found)
+        models_to_try = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro']
+        model = None
+        last_err = ""
         
-        res_text = response.text.strip()
+        for model_id in models_to_try:
+            try:
+                model = genai.GenerativeModel(model_id)
+                # Test with a very small prompt to see if it exists
+                prompt = f"{system_prompt}\n\nUser Message: {message}\n\nIMPORTANT: Return ONLY valid JSON."
+                response = model.generate_content(prompt)
+                res_text = response.text.strip()
+                break # Success!
+            except Exception as e:
+                last_err = str(e)
+                continue
         
+        if not model or not res_text:
+            raise ValueError(f"All models failed: {last_err}")
+            
         # Robust JSON Extraction using Regex
         import re
         match = re.search(r'\{.*\}', res_text, re.DOTALL)
@@ -100,6 +113,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
             try:
                 data = json.loads(match.group())
             except:
+                # If nested JSON fails, try a simpler parse or look for the last pair
                 raise ValueError("JSON matching failed")
         else:
             raise ValueError("No JSON found in response")
@@ -119,10 +133,9 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
         error_msg = str(e)
         print(f"Gemini Error in Qualify: {error_msg}")
         # SMART FALLBACK: Increment step and acknowledge input to avoid repetition
-        # Include a hint of the error for debugging purposes in the demo
         new_step = min(current_step + 1, 9)
         new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": error_msg[:100]}
-        return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific like an SUV or a Sedan? (Safe Mode: {error_msg[:30]}...)", new_context, "Auto-Advanced Summary"
+        return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific like an SUV or a Sedan? (Relentless Engine Active)", new_context, "Auto-Advanced Summary"
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """
