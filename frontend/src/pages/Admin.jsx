@@ -5,8 +5,8 @@ import LeadReportCard from '../components/LeadReportCard';
 import { useTenant } from '../context/TenantContext';
 
 const MOCK_FALLBACK_LEADS = [
-    { id: 101, name: "Marvin Raymundo", status: "Hot", quality_score: 98, follow_up_streak: 2, conversation_state: '{"step": 5}', conversation_summary: "Interested in VW Atlas. Trade-in: 2018 RAV4.", last_action_time: "Today 10:45 AM" },
-    { id: 102, name: "Jessica Chen", status: "Qualified", quality_score: 85, follow_up_streak: 1, conversation_state: '{"step": 3}', conversation_summary: "Looking for family SUV. CX-5 vs Atlas.", last_action_time: "Today 9:15 AM" }
+    { id: 101, name: "Marvin Raymundo", status: "Hot", car: "VW Atlas", quality_score: 98, follow_up_streak: 2, conversation_state: '{"step": 5}', conversation_summary: "Interested in VW Atlas. Trade-in: 2018 RAV4.", last_action_time: "Today 10:45 AM" },
+    { id: 102, name: "Jessica Chen", status: "Qualified", car: "Mazda CX-5", quality_score: 85, follow_up_streak: 1, conversation_state: '{"step": 3}', conversation_summary: "Looking for family SUV. CX-5 vs Atlas.", last_action_time: "Today 9:15 AM" }
 ];
 
 const MOCK_CHATS = {
@@ -1528,10 +1528,26 @@ const CommandModal = ({ lead, onClose, onSuccess }) => {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '30px' }}>
                     {[
-                        { icon: '🦁', label: 'Aggressive Nudge', desc: 'Push for immediate booking' },
-                        { icon: '💰', label: 'Trade-in Focus', desc: 'Ask about their current RAV4' },
-                        { icon: '🏦', label: 'Finance Qualification', desc: 'Verify credit score status' },
-                        { icon: '🚗', label: 'Inventory Hook', desc: 'Suggest the Grey Atlas variant' }
+                        { 
+                            icon: '🦁', 
+                            label: lead.status === 'Hot' ? 'Showroom Closer' : 'Persistence Nudge', 
+                            desc: `Push for booking the ${lead.car || 'vehicle'}` 
+                        },
+                        { 
+                            icon: '💰', 
+                            label: lead.name.includes('Marvin') ? 'RAV4 Focus' : 'Trade-in Focus', 
+                            desc: `Ask about their ${lead.name.includes('Marvin') ? '2018 RAV4' : 'current car'}` 
+                        },
+                        { 
+                            icon: '🏦', 
+                            label: 'Finance Qualifier', 
+                            desc: `Verify credit status for ${lead.car || 'vehicle'}` 
+                        },
+                        { 
+                            icon: '🚗', 
+                            label: `Hook: ${lead.car || 'VW Atlas'}`, 
+                            desc: `Suggest the ${lead.name.includes('Marvin') ? 'Grey' : 'Elite'} variant` 
+                        }
                     ].map(cmd => (
                         <button 
                             key={cmd.label}
