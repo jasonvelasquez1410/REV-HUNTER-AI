@@ -91,16 +91,15 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
         try:
             import urllib.request
             import json as pyjson
+            import re
             
-            url = "https://api.openai.com/v1/chat/completions" # Groq is OpenAI compatible
-            # Wait, Groq uses api.groq.com
             url = "https://api.groq.com/openai/v1/chat/completions"
             headers = {
                 "Authorization": f"Bearer {GROQ_API_KEY}",
                 "Content-Type": "application/json"
             }
             payload = {
-                "model": "llama3-70b-8192", # High quality, high quota
+                "model": "llama3-70b-8192",
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": message}
@@ -113,17 +112,14 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
             with urllib.request.urlopen(req, timeout=8) as response:
                 res_data = pyjson.loads(response.read().decode())
                 content = res_data['choices'][0]['message']['content']
-                data = pyjson.loads(content)
                 
-                new_data = {**collected_data, **data.get("extracted_data", {})}
-                new_context = {
-                    "step": data.get("next_step", current_step),
-                    "data": new_data,
-                    "last_msg": message,
-                    "v": "11.3",
-                    "engine": "groq-llama3"
-                }
-                return data["response"], new_context, data["summary"]
+                # Robust Regex Extraction
+                match = re.search(r'\{.*\}', content, re.DOTALL)
+                if match:
+                    data = pyjson.loads(match.group())
+                    new_data = {**collected_data, **data.get("extracted_data", {})}
+                    new_context = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "11.4", "engine": "groq-llama3"}
+                    return data["response"], new_context, data["summary"]
         except Exception as ge:
             print(f"Groq Failure: {ge}")
 
@@ -133,6 +129,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
         try:
             import urllib.request
             import json as pyjson
+            import re
             
             url = "https://api.openai.com/v1/chat/completions"
             headers = {
@@ -140,7 +137,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                 "Content-Type": "application/json"
             }
             payload = {
-                "model": "gpt-4o-mini", # Use mini for even higher reliability/speed
+                "model": "gpt-4o-mini",
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": message}
@@ -152,12 +149,14 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
             with urllib.request.urlopen(req, timeout=10) as response:
                 res_data = pyjson.loads(response.read().decode())
                 content = res_data['choices'][0]['message']['content']
-                data = pyjson.loads(content)
                 
-                # ... same logic as above ...
-                new_data = {**collected_data, **data.get("extracted_data", {})}
-                new_context = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "11.3", "engine": "gpt-4o"}
-                return data["response"], new_context, data["summary"]
+                # Robust Regex Extraction
+                match = re.search(r'\{.*\}', content, re.DOTALL)
+                if match:
+                    data = pyjson.loads(match.group())
+                    new_data = {**collected_data, **data.get("extracted_data", {})}
+                    new_context = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "11.4", "engine": "gpt-4o"}
+                    return data["response"], new_context, data["summary"]
         except Exception as oe:
             print(f"OpenAI Failure: {oe}")
 
