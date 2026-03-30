@@ -49,11 +49,9 @@ function AppContent() {
   const [showInstallBtn, setShowInstallBtn] = useState(false);
   const [isIos, setIsIos] = useState(false);
   
-  useEffect(() => {
-    // Detect iOS
-    const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    setIsIos(isIosDevice);
+  const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
+  useEffect(() => {
     const handlePrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
