@@ -183,9 +183,10 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
         except: pass
 
     # --- FINAL FALLBACK: RELENTLESS OFFLINE LOGIC ---
+    error_msg = str(ge) if 'ge' in locals() else "Unknown Connectivity Error"
     new_step = min(current_step + 1, 9)
-    new_context = {"step": new_step, "data": collected_data, "last_msg": message, "v": "11.3"}
-    return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific lke an SUV or a Sedan? (Relentless Engine v11.3 - Offline Mode Active)", new_context, "Offline Logic Bridge"
+    new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": error_msg[:100]}
+    return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific lke an SUV or a Sedan? (Relentless Engine v11.4 Active: {error_msg[:40]}...)", new_context, "Offline Logic Bridge"
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """

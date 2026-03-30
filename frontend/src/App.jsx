@@ -45,6 +45,34 @@ class ErrorBoundary extends React.Component {
 function AppContent() {
   const [currentPage, setCurrentPage] = useState('home');
   const { tenant } = useTenant();
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallBtn, setShowInstallBtn] = useState(false);
+  const [isIos, setIsIos] = useState(false);
+  
+  useEffect(() => {
+    // Detect iOS
+    const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    setIsIos(isIosDevice);
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBtn(true);
+    });
+
+    window.addEventListener('appinstalled', () => {
+      setShowInstallBtn(false);
+      setDeferredPrompt(null);
+    });
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') setShowInstallBtn(false);
+    setDeferredPrompt(null);
+  };
 
     useEffect(() => {
     const syncRoute = () => {
@@ -91,6 +119,19 @@ function AppContent() {
             <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('landing'); }}>Demo Site</a>
             <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('facebook'); }}>Demo FB</a>
             <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('admin'); }}>Admin Portal</a>
+            {showInstallBtn && (
+              <button 
+                onClick={handleInstallClick}
+                style={{ marginLeft: '15px', padding: '5px 12px', background: '#00b894', color: 'white', border: 'none', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', animation: 'pulse 2s infinite' }}
+              >
+                📲 Install App
+              </button>
+            )}
+            {isIos && !window.navigator.standalone && (
+              <span style={{ marginLeft: '15px', fontSize: '0.6rem', color: '#666', border: '1px dashed #ccc', padding: '2px 8px', borderRadius: '10px' }}>
+                💡 iOS: Share > Add to Home
+              </span>
+            )}
           </div>
         </div>
       </nav>
