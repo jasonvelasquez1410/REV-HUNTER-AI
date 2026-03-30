@@ -147,10 +147,24 @@ const LandingPageDemo = () => {
             {/* Floating AI Call Button */}
             <div style={{ position: 'fixed', bottom: '100px', right: '20px', zIndex: 2000 }}>
                 <button 
-                    onClick={() => {
+                    onClick={async () => {
                         if (isCalling) {
                             vapi.current.stop();
                         } else {
+                            // MOBILE/PWA OPTIMIZATION: Explicitly resume audio context on user gesture
+                            if (typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
+                                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                                const context = new AudioCtx();
+                                if (context.state === 'suspended') {
+                                    await context.resume();
+                                }
+                            }
+
+                            if (!window.isSecureContext) {
+                                alert("Voice calls require a secure connection (HTTPS).");
+                                return;
+                            }
+
                             vapi.current.start(VAPI_ASSISTANT_ID, {
                                 firstMessage: "Hi! This is Elliot, the Digital Sales Specialist for FilCan Cars. I saw you were looking at our inventory. How can I help you today?",
                                 transcriber: {

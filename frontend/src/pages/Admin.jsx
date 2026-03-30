@@ -335,18 +335,35 @@ const Admin = () => {
         }
     };
 
-    const handleVoiceCall = (lead) => {
-        if (!vapi.current) return;
+    const handleVoiceCall = async (lead) => {
+        if (!vapi.current) {
+            setVapiError("AI Engine not initialized. Refresh the page.");
+            return;
+        }
         
         setIsCalling(lead);
         
-        // Start the real-time Vapi call - Using the most explicit structure for v2.x
         try {
             console.log("Attempting Vapi call to Assistant:", VAPI_ASSISTANT_ID);
             
-            // Check for microphone availability first
+            // MOBILE/PWA OPTIMIZATION: Explicitly resume audio context on user gesture
+            if (typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                const context = new AudioCtx();
+                if (context.state === 'suspended') {
+                    await context.resume();
+                    console.log("AudioContext resumed for mobile/PWA");
+                }
+            }
+
+            // Check for insecure context which blocks getUserMedia on mobile
+            if (!window.isSecureContext) {
+                throw new Error("Voice calls require a secure connection (HTTPS). PWAs cannot access the microphone on insecure origins.");
+            }
+
+            // Check for microphone availability
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                throw new Error("Microphone access is not supported by your browser or is blocked by security settings (HTTPS required).");
+                throw new Error("Microphone access is not supported by your browser or is blocked by privacy settings.");
             }
             
             // DYNAMIC PRESENTATION MODE: Call Recap Simulation (Executive Briefing)
