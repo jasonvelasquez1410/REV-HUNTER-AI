@@ -129,7 +129,7 @@ function AppContent() {
             )}
             {isIos && !window.navigator.standalone && (
               <span style={{ marginLeft: '15px', fontSize: '0.6rem', color: '#666', border: '1px dashed #ccc', padding: '2px 8px', borderRadius: '10px' }}>
-                💡 iOS: Share > Add to Home
+                💡 iOS: Share &gt; Add to Home
               </span>
             )}
           </div>

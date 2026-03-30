@@ -79,7 +79,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     }}
     """
     
-    if not GOOGLE_API_KEY and not os.getenv("OPENAI_API_KEY"):
+    if not GOOGLE_API_KEY and not os.getenv("OPENAI_API_KEY") and not os.getenv("GROQ_API_KEY"):
         # Simulate state transition for Demo Mode
         new_step = min(current_step + 1, 9)
         new_context = {"step": new_step, "data": collected_data, "last_msg": message, "v": "11.2"}
