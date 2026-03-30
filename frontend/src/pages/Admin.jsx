@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'; // V15.1 - Final Demo Build
+import React, { useState, useEffect, useRef } from 'react'; // v13.5 [ELITE]
 import { Vapi as VapiNamed } from '@vapi-ai/web';
 import VapiDefault from '@vapi-ai/web';
 import LeadReportCard from '../components/LeadReportCard';
@@ -598,7 +598,7 @@ const Admin = () => {
         <div className="container admin-container">
             <h1 style={{ marginBottom: '30px', color: '#003366', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <span style={{ background: '#003366', color: 'white', padding: '5px 12px', borderRadius: '8px', fontSize: '1rem' }}>REVHUNTER AI V11.2</span>
+                    <span style={{ background: '#D92027', color: 'white', padding: '5px 12px', borderRadius: '8px', fontSize: '1rem' }}>REVHUNTER AI v13.5 [ELITE]</span>
                     Marketing Command Center
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>

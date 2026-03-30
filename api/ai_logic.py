@@ -93,12 +93,28 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     
     error_log = []
     
-    # ---------------------------------------------------------
-    # PROVIDER 1: GROQ (Primary - High Speed & Quota)
+    # PROVIDER 1: GEMINI (Primary for v13.0 Test)
+    if GOOGLE_API_KEY:
+        try:
+            for model_id in ['gemini-1.5-flash', 'gemini-1.5-pro']:
+                try:
+                    model = genai.GenerativeModel(model_id)
+                    res = model.generate_content(f"{system_prompt}\n\nUser: {message}\n\nJSON ONLY.")
+                    match = re.search(r'\{.*\}', res.text, re.DOTALL)
+                    if match:
+                        data = json.loads(match.group())
+                        new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "13.5 [ELITE]", "engine": f"gemini-{model_id}"}
+                        return data["response"], new_ctx, data["summary"]
+                except Exception as inner_e: 
+                    error_log.append(f"Gemini-{model_id}: {str(inner_e)[:15]}")
+                    continue
+        except Exception as e: error_log.append(f"Gemini: {str(e)[:25]}")
+
+    # PROVIDER 2: GROQ (Secondary)
     # ---------------------------------------------------------
     import base64
-    fb_key = base64.b64decode("Z3NrX1FFejI2bVFLZ21RSjM5OThidEM5V0dyeW9mWXF5TTE3N0hXckwxdG11TDBFM1JrRXdaSg==").decode()
-    GROQ_KEY = os.getenv("GROQ_API_KEY") or fb_key
+    fb_key = base64.b64decode("Z3NrX1FFejI2bVFLZ21RSjM5OThidEM5V0dyeW9mWXF5TTE3N0hXckwxdG11TDBFM1JrRXdaSg==").decode().strip()
+    GROQ_KEY = (os.getenv("GROQ_API_KEY") or fb_key).strip()
     if GROQ_KEY and len(GROQ_KEY) > 10:
         try:
             import urllib.request, json as pyjson, re
@@ -106,13 +122,13 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
             headers = {
                 "Authorization": f"Bearer {GROQ_KEY}",
                 "Content-Type": "application/json",
-                "User-Agent": "RevHunterAI/12.5 (Automotive Sales Engine)",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
                 "Accept": "application/json"
             }
             payload = {
-                "model": "llama3-70b-8192",
-                "messages": [{"role": "system", "content": system_prompt + "\nIMPORTANT: JSON ONLY."}, {"role": "user", "content": message}],
-                "temperature": 0.5
+                "model": "mixtral-8x7b-32768",
+                "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": message}],
+                "temperature": 0.7
             }
             req = urllib.request.Request(url, data=pyjson.dumps(payload).encode(), headers=headers, method='POST')
             with urllib.request.urlopen(req, timeout=12) as response:
@@ -121,10 +137,29 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                 match = re.search(r'\{.*\}', content, re.DOTALL)
                 if match:
                     data = pyjson.loads(match.group())
-                    new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "12.5", "engine": "groq"}
+                    new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "13.5 [ELITE]", "engine": "groq"}
                     return data["response"], new_ctx, data["summary"]
-                else: error_log.append("Groq: Parse Fail")
-        except Exception as e: error_log.append(f"Groq: {str(e)[:40]}")
+                else: error_log.append("Groq: JSON Format Error")
+        except Exception as e: 
+            error_body = ""
+            if hasattr(e, 'read'):
+                try: error_body = e.read().decode()
+                except: pass
+            error_log.append(f"Groq: {str(e)[:20]} {error_body[:20]}")
+            # Final attempt with Llama 3.1 8B if Mixtral fails
+            try:
+                payload["model"] = "llama-3.1-8b-instant"
+                req = urllib.request.Request(url, data=pyjson.dumps(payload).encode(), headers=headers, method='POST')
+                with urllib.request.urlopen(req, timeout=8) as response:
+                    res_data = pyjson.loads(response.read().decode())
+                    content = res_data['choices'][0]['message']['content']
+                    match = re.search(r'\{.*\}', content, re.DOTALL)
+                    if match:
+                        data = pyjson.loads(match.group())
+                        new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "13.5 [ELITE]", "engine": "groq-fallback"}
+                        return data["response"], new_ctx, data["summary"]
+            except Exception as e2:
+                error_log.append(f"Groq-Retry: {str(e2)[:15]}")
 
     # PROVIDER 2: OPENAI (Secondary)
     OPENAI_KEY = os.getenv("OPENAI_API_KEY")
@@ -149,33 +184,18 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                 match = re.search(r'\{.*\}', content, re.DOTALL)
                 if match:
                     data = pyjson.loads(match.group())
-                    new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "12.5", "engine": "openai"}
+                    new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "13.5 [ELITE]", "engine": "openai"}
                     return data["response"], new_ctx, data["summary"]
                 else: error_log.append("OpenAI: Parse Fail")
         except Exception as e: error_log.append(f"OpenAI: {str(e)[:25]}")
 
-    # PROVIDER 3: GEMINI (Standard)
-    if GOOGLE_API_KEY:
-        try:
-            for model_id in ['gemini-1.5-flash', 'gemini-pro']:
-                try:
-                    model = genai.GenerativeModel(model_id)
-                    res = model.generate_content(f"{system_prompt}\n\nUser: {message}\n\nJSON ONLY.")
-                    match = re.search(r'\{.*\}', res.text, re.DOTALL)
-                    if match:
-                        data = json.loads(match.group())
-                        new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "12.5", "engine": f"gemini-{model_id}"}
-                        return data["response"], new_ctx, data["summary"]
-                except: continue
-            error_log.append("Gemini: Quota")
-        except Exception as e: error_log.append(f"Gemini: {str(e)[:25]}")
 
     # --- FINAL FALLBACK: RELENTLESS OFFLINE LOGIC ---
     err_summary = " | ".join(error_log) if error_log else "No keys found"
     k_status = f"Keys: {', '.join(keys_available) if keys_available else 'NONE'}"
     new_step = min(current_step + 1, 9)
     new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": err_summary[:100]}
-    return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific like an SUV or a Sedan? (Relentless v12.5 | {k_status} | {err_summary[:40]})", new_context, "Offline Logic Bridge"
+    return f"RevHunter AI v13.5 [ELITE] Active. I'm connecting to our inventory... (Diagnostic: {k_status} | {err_summary[:60]})", new_context, "Offline Logic Bridge"
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """

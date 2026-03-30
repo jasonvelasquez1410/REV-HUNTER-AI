@@ -176,7 +176,7 @@ class Storage:
                 session.commit()
 
     def get_tenant_config(self, tenant_id: str = "filcan") -> Dict:
-        # V11.2 Pitch Resilience: Comprehensive error wrapping to prevent 500 errors
+        # v13.0-FINAL Pitch Resilience: Comprehensive error wrapping to prevent 500 errors
         fallback_config = {
             "id": tenant_id,
             "name": "FilCan Cars" if tenant_id == "filcan" else "Demo Motors",
@@ -317,7 +317,7 @@ class Storage:
     def update_lead_state(self, lead_id: int, state: Dict, summary: str) -> bool:
         if not self.session_factory: return False
         
-        # V11.2: Added basic retry logic for DB resilience
+        # v13.0-FINAL: Added basic retry logic for DB resilience
         max_retries = 2
         for attempt in range(max_retries):
             try:
