@@ -85,9 +85,15 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
         new_context = {"step": new_step, "data": collected_data, "last_msg": message, "v": "11.2"}
         return f"System Note: GOOGLE_API_KEY is not configured. (V11.2 Demo Mode Active - Simulating Step {new_step})", json.dumps(new_context), f"V11.2 Demo Summary for Step {new_step}"
 
+    # DIAGNOSTIC: Check which keys are actually available in the runtime
+    keys_available = []
+    if GOOGLE_API_KEY: keys_available.append("GEMINI")
+    if os.getenv("OPENAI_API_KEY"): keys_available.append("OPENAI")
+    if os.getenv("GROQ_API_KEY"): keys_available.append("GROQ")
+    
     # --- ATTEMPT 1: GROQ (The High-Speed, High-Quota Engine) ---
-    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-    if GROQ_API_KEY:
+    GROQ_KEY = os.getenv("GROQ_API_KEY")
+    if GROQ_KEY:
         try:
             import urllib.request
             import json as pyjson
@@ -95,9 +101,10 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
             
             url = "https://api.groq.com/openai/v1/chat/completions"
             headers = {
-                "Authorization": f"Bearer {GROQ_API_KEY}",
+                "Authorization": f"Bearer {GROQ_KEY}",
                 "Content-Type": "application/json"
             }
+            # ... rest of Groq logic ...
             payload = {
                 "model": "llama3-70b-8192",
                 "messages": [
@@ -183,10 +190,12 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
         except: pass
 
     # --- FINAL FALLBACK: RELENTLESS OFFLINE LOGIC ---
-    error_msg = str(ge) if 'ge' in locals() else "Unknown Connectivity Error"
+    k_status = f"Keys Found: {', '.join(keys_available) if keys_available else 'NONE'}"
+    error_msg = str(ge) if 'ge' in locals() else "Wait for Vercel Sync"
     new_step = min(current_step + 1, 9)
     new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": error_msg[:100]}
-    return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific lke an SUV or a Sedan? (Relentless Engine v11.4 Active: {error_msg[:40]}...)", new_context, "Offline Logic Bridge"
+    return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific like an SUV or a Sedan? (Relentless v11.5 | {k_status} | {error_msg[:20]})", new_context, "Offline Logic Bridge"
+LineContent:     return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific lke an SUV or a Sedan? (Relentless Engine v11.4 Active: {error_msg[:40]}...)", new_context, "Offline Logic Bridge"
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """

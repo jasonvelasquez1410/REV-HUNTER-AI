@@ -54,16 +54,19 @@ function AppContent() {
     const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     setIsIos(isIosDevice);
 
-    window.addEventListener('beforeinstallprompt', (e) => {
+    const handlePrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setShowInstallBtn(true);
-    });
+    };
 
+    window.addEventListener('beforeinstallprompt', handlePrompt);
     window.addEventListener('appinstalled', () => {
       setShowInstallBtn(false);
       setDeferredPrompt(null);
     });
+    
+    return () => window.removeEventListener('beforeinstallprompt', handlePrompt);
   }, []);
 
   const handleInstallClick = async () => {
