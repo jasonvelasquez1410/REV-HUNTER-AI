@@ -85,7 +85,49 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
         new_context = {"step": new_step, "data": collected_data, "last_msg": message, "v": "11.2"}
         return f"System Note: GOOGLE_API_KEY is not configured. (V11.2 Demo Mode Active - Simulating Step {new_step})", json.dumps(new_context), f"V11.2 Demo Summary for Step {new_step}"
 
-    # --- ATTEMPT 1: OPENAI (GPT-4o) - The "Smart" Hunter Brain ---
+    # --- ATTEMPT 1: GROQ (The High-Speed, High-Quota Engine) ---
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+    if GROQ_API_KEY:
+        try:
+            import urllib.request
+            import json as pyjson
+            
+            url = "https://api.openai.com/v1/chat/completions" # Groq is OpenAI compatible
+            # Wait, Groq uses api.groq.com
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {GROQ_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "model": "llama3-70b-8192", # High quality, high quota
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": message}
+                ],
+                "response_format": {"type": "json_object"},
+                "temperature": 0.7
+            }
+            
+            req = urllib.request.Request(url, data=pyjson.dumps(payload).encode(), headers=headers, method='POST')
+            with urllib.request.urlopen(req, timeout=8) as response:
+                res_data = pyjson.loads(response.read().decode())
+                content = res_data['choices'][0]['message']['content']
+                data = pyjson.loads(content)
+                
+                new_data = {**collected_data, **data.get("extracted_data", {})}
+                new_context = {
+                    "step": data.get("next_step", current_step),
+                    "data": new_data,
+                    "last_msg": message,
+                    "v": "11.3",
+                    "engine": "groq-llama3"
+                }
+                return data["response"], new_context, data["summary"]
+        except Exception as ge:
+            print(f"Groq Failure: {ge}")
+
+    # --- ATTEMPT 2: OPENAI (The "Smart" Hunter Brain) ---
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
     if OPENAI_API_KEY:
         try:
@@ -98,13 +140,12 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                 "Content-Type": "application/json"
             }
             payload = {
-                "model": "gpt-4o",
+                "model": "gpt-4o-mini", # Use mini for even higher reliability/speed
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": message}
                 ],
-                "response_format": {"type": "json_object"},
-                "temperature": 0.7
+                "response_format": {"type": "json_object"}
             }
             
             req = urllib.request.Request(url, data=pyjson.dumps(payload).encode(), headers=headers, method='POST')
@@ -113,20 +154,16 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                 content = res_data['choices'][0]['message']['content']
                 data = pyjson.loads(content)
                 
+                # ... same logic as above ...
                 new_data = {**collected_data, **data.get("extracted_data", {})}
-                new_context = {
-                    "step": data.get("next_step", current_step),
-                    "data": new_data,
-                    "last_msg": message,
-                    "v": "11.2",
-                    "engine": "gpt-4o"
-                }
+                new_context = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "11.3", "engine": "gpt-4o"}
                 return data["response"], new_context, data["summary"]
         except Exception as oe:
-            print(f"OpenAI Primary Failure: {oe}")
+            print(f"OpenAI Failure: {oe}")
 
-    # --- ATTEMPT 2: GEMINI (Multi-Model Fallback) ---
+    # --- ATTEMPT 3: GEMINI (Multi-Model Legacy Fallback) ---
     if GOOGLE_API_KEY:
+        # ... existing Gemini logic ...
         try:
             models_to_try = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro']
             for model_id in models_to_try:
@@ -141,24 +178,15 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                     if match:
                         data = json.loads(match.group())
                         new_data = {**collected_data, **data.get("extracted_data", {})}
-                        new_context = {
-                            "step": data.get("next_step", current_step),
-                            "data": new_data,
-                            "last_msg": message,
-                            "v": "11.2",
-                            "engine": f"gemini-{model_id}"
-                        }
+                        new_context = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "11.3", "engine": f"gemini-{model_id}"}
                         return data["response"], new_context, data["summary"]
-                except:
-                    continue
-        except Exception as ge:
-            print(f"Gemini Secondary Failure: {ge}")
+                except: continue
+        except: pass
 
-    # --- FINAL FALLBACK: RELENTLESS SAFE MODE ---
-    error_msg = "Provider unreachable or key invalid"
+    # --- FINAL FALLBACK: RELENTLESS OFFLINE LOGIC ---
     new_step = min(current_step + 1, 9)
-    new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": error_msg}
-    return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific like an SUV or a Sedan? (Relentless Engine v11.3 Active)", new_context, "Auto-Advanced Summary"
+    new_context = {"step": new_step, "data": collected_data, "last_msg": message, "v": "11.3"}
+    return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific lke an SUV or a Sedan? (Relentless Engine v11.3 - Offline Mode Active)", new_context, "Offline Logic Bridge"
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """
