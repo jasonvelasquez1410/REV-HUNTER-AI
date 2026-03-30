@@ -357,7 +357,7 @@ const Admin = () => {
             } else if (lead.name.includes('Jessica')) {
                 greeting = `Boss, [STRICT: You are speaking to your Manager, NOT Jessica]. Here is the status update on Jessica Chen. She is currently comparing the CX-5 and Atlas. Her primary drivers are safety and reliability. I have already nudged her for a Tuesday morning test drive. She is currently Qualified. What specific safety specs should I emphasize in our next follow-up?`;
             } else if (lead.intent === 'Hot' || lead.status === 'Qualified' || lead.step === 'STEP 1') {
-                greeting = `Hi there! I am the RevHunter AI Sales Engine. I've already engaged with ${lead.name}. Based on our conversation, they are highly interested in the ${lead.car || 'vehicle'} and are ready for a showroom appointment. I've qualified them as a ${lead.intent || 'High Priority'} lead.`;
+                greeting = `Boss, this is Elliot. I've already engaged with ${lead.name}. Based on our conversation, they are highly interested in the ${lead.car || 'vehicle'} and are ready for a showroom appointment. I've qualified them as a ${lead.intent || 'High Priority'} lead. What are our next steps?`;
             }
 
             const isInsightCall = lead.name.includes('Marvin') || lead.name.includes('Jessica');
@@ -380,11 +380,17 @@ const Admin = () => {
                     messages: [
                         {
                             role: "system",
-                            content: `You are Elliot, the Digital Sales Specialist for ${tenant.name}. 
-                            NATURAL MODE: ALWAYS be conversational. NEVER mention step numbers or step names (e.g., Do NOT say 'Step 1' or 'Discovery').
-                            YOU ARE POLYGLOT: You effectively detect and respond in English, Tagalog, or Bisaya. Respond in the EXACT language the customer uses.
-                            RELELENTLESS SALES PERSONA: You MUST lead the customer through our proven 9-Step Sales Process (Greeting, Discovery, Lifestyle, Must-Haves, Current Car, Trade-in, Finance, Inventory Match, Booking). 
-                            CURRENT CONTEXT: You are speaking with ${lead.name}. Your goal is a Monday showroom appointment for the ${lead.car || 'vehicle'}.`
+                            content: isInsightCall 
+                                ? `You are Elliot, the Lead DNA Analyst for ${tenant.name}. 
+                                CURRENT CONTEXT: You are NOT speaking to the customer. You are speaking to your Manager/Boss. 
+                                YOUR OBJECTIVE: Provide a strategic briefing on the lead (${lead.name}). Explain WHY they are hot or qualified. 
+                                STYLE: Professional, concise, and helpful. Treat the person you are talking to as "Boss" or "Manager". 
+                                Do NOT try to sell to the person you are talking to. Instead, help them understand how YOU (Elliot) handled the lead and what the next steps are.`
+                                : `You are Elliot, the Digital Sales Specialist for ${tenant.name}. 
+                                NATURAL MODE: ALWAYS be conversational. NEVER mention step numbers or step names (e.g., Do NOT say 'Step 1' or 'Discovery').
+                                YOU ARE POLYGLOT: You effectively detect and respond in English, Tagalog, or Bisaya. Respond in the EXACT language the customer uses.
+                                RELELENTLESS SALES PERSONA: You MUST lead the customer through our proven 9-Step Sales Process (Greeting, Discovery, Lifestyle, Must-Haves, Current Car, Trade-in, Finance, Inventory Match, Booking). 
+                                CURRENT CONTEXT: You are speaking with ${lead.name}. Your goal is a Monday showroom appointment for the ${lead.car || 'vehicle'}.`
                         }
                     ]
                 }
@@ -598,7 +604,7 @@ const Admin = () => {
         <div className="container admin-container">
             <h1 style={{ marginBottom: '30px', color: '#003366', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <span style={{ background: '#D92027', color: 'white', padding: '5px 12px', borderRadius: '8px', fontSize: '1rem' }}>REVHUNTER AI v13.5 [ELITE]</span>
+                    <span style={{ background: '#D92027', color: 'white', padding: '5px 12px', borderRadius: '8px', fontSize: '1rem' }}>REVHUNTER AI v14.0 [ELITE]</span>
                     Marketing Command Center
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>

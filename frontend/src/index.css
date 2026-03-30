@@ -19,6 +19,14 @@ body {
   background-color: var(--bg-light);
   color: var(--text-dark);
   line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .container {
@@ -53,6 +61,7 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .logo {
@@ -62,8 +71,17 @@ nav {
   text-decoration: none;
 }
 
+.nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .nav-links a {
-  margin-left: 25px;
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-top: 5px;
+  margin-bottom: 5px;
   text-decoration: none;
   color: var(--text-dark);
   font-weight: 500;
@@ -121,7 +139,7 @@ nav {
 
 .inventory-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 30px;
   margin-top: 40px;
 }
@@ -159,9 +177,11 @@ nav {
 .chat-widget {
   position: fixed;
   bottom: 110px;
-  right: 30px;
-  width: 380px;
+  right: 20px;
+  width: calc(100% - 40px);
+  max-width: 400px;
   height: 550px;
+  max-height: 70vh;
   background: var(--white);
   border-radius: 15px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.15);

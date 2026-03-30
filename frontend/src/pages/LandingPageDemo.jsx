@@ -102,7 +102,7 @@ const LandingPageDemo = () => {
                 color: '#fff',
                 textAlign: 'center'
             }}>
-                <h1 style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '20px' }}>YOUR DRIVE, REIMAGINED.</h1>
+                <h1 className="hero-title" style={{ fontSize: '3.5rem', fontWeight: '900', marginBottom: '20px' }}>YOUR DRIVE, REIMAGINED.</h1>
                 <p style={{ fontSize: '1.2rem', maxWidth: '600px', marginBottom: '30px' }}>Premium pre-owned vehicles in {tenant.location}. Approved financing for every credit level.</p>
                 <button style={{ 
                     backgroundColor: tenant.theme_color || '#D92027', 
@@ -117,9 +117,9 @@ const LandingPageDemo = () => {
             </section>
 
             {/* Content & Inventory */}
-            <div style={{ padding: '60px 5%', display: 'grid', gridTemplateColumns: '250px 1fr', gap: '40px' }}>
+            <div className="main-content-section" style={{ padding: '40px 5%', display: 'flex', flexWrap: 'wrap', gap: '40px' }}>
                 {/* Search Bar & Filters */}
-                <aside>
+                <aside className="search-aside" style={{ flex: '0 0 250px' }}>
                     <div style={{ marginBottom: '30px' }}>
                         <h3 style={{ fontSize: '1rem', marginBottom: '15px', borderLeft: `4px solid ${tenant.theme_color || '#D92027'}`, paddingLeft: '10px' }}>SEARCH</h3>
                         <input type="text" placeholder="Year, Make, Model..." style={{ width: '100%', padding: '10px', border: '1px solid #ddd' }} />
@@ -127,8 +127,8 @@ const LandingPageDemo = () => {
                 </aside>
 
                 {/* Grid */}
-                <main>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px' }}>
+                <main style={{ flex: '1 1 500px', minWidth: '0' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px' }}>
                         {cars.map(car => (
                             <div key={car.id} style={{ border: '1px solid #eee', transition: 'box-shadow 0.3s' }} className="car-card">
                                 <img src={car.image} alt={car.model} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
@@ -221,6 +221,14 @@ const LandingPageDemo = () => {
                 @keyframes slideRight {
                     from { transform: translateX(-100%); opacity: 0; }
                     to { transform: translateX(0); opacity: 1; }
+                }
+                
+                @media (max-width: 768px) {
+                    .hero h1 { font-size: 2.2rem !important; }
+                    .main-content-section { flex-direction: column !important; }
+                    .search-aside { flex: 1 1 auto !important; width: 100% !important; }
+                    header nav { display: none !important; }
+                    header { padding: 10px 15px !important; }
                 }
             `}</style>
 

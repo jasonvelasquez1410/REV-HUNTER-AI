@@ -43,7 +43,12 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     
     NATURAL CONVERSATION: DO NOT mention step numbers or step names (e.g., Do NOT say 'Step 1' or 'Discovery Phase'). Be smooth and human-like while ensuring you follow the methodology.
     
-    POLYGLOT MODE: You must detect the customer's language (English, Tagalog, Spanish, etc.) and respond perfectly in the EXACT same language (including Tagalog/Bisaya). Respond formatted for the channel (conversational for voice, concise for chat).
+    POLYGLOT MODE (STRICT MIRRORING): You must detect the customer's language (English, Tagalog, Bisaya, Spanish, etc.) and respond in the EXACT same language/dialect. 
+    - DEFAULT: START in English. If the user says 'hi', 'hello', or speaks English, you MUST respond in English. 
+    - DO NOT assume Tagalog just because of the name 'FilCan Cars'.
+    - If the user speaks Tagalog, respond in Tagalog.
+    - If the user speaks Bisaya (Cebuano/Davao/etc.), you MUST respond in Bisaya. DO NOT MIX Tagalog and Bisaya.
+    - Always mirror the user's specific linguistic style and dialect.
     
     Inventory:
     {inventory_str}
@@ -103,7 +108,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                     match = re.search(r'\{.*\}', res.text, re.DOTALL)
                     if match:
                         data = json.loads(match.group())
-                        new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "13.5 [ELITE]", "engine": f"gemini-{model_id}"}
+                        new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "14.0 [ELITE]", "engine": f"gemini-{model_id}"}
                         return data["response"], new_ctx, data["summary"]
                 except Exception as inner_e: 
                     error_log.append(f"Gemini-{model_id}: {str(inner_e)[:15]}")
@@ -137,7 +142,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                 match = re.search(r'\{.*\}', content, re.DOTALL)
                 if match:
                     data = pyjson.loads(match.group())
-                    new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "13.5 [ELITE]", "engine": "groq"}
+                    new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "14.0 [ELITE]", "engine": "groq"}
                     return data["response"], new_ctx, data["summary"]
                 else: error_log.append("Groq: JSON Format Error")
         except Exception as e: 
@@ -156,7 +161,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                     match = re.search(r'\{.*\}', content, re.DOTALL)
                     if match:
                         data = pyjson.loads(match.group())
-                        new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "13.5 [ELITE]", "engine": "groq-fallback"}
+                        new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "14.0 [ELITE]", "engine": "groq-fallback"}
                         return data["response"], new_ctx, data["summary"]
             except Exception as e2:
                 error_log.append(f"Groq-Retry: {str(e2)[:15]}")
@@ -184,7 +189,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                 match = re.search(r'\{.*\}', content, re.DOTALL)
                 if match:
                     data = pyjson.loads(match.group())
-                    new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "13.5 [ELITE]", "engine": "openai"}
+                    new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "14.0 [ELITE]", "engine": "openai"}
                     return data["response"], new_ctx, data["summary"]
                 else: error_log.append("OpenAI: Parse Fail")
         except Exception as e: error_log.append(f"OpenAI: {str(e)[:25]}")
@@ -195,7 +200,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     k_status = f"Keys: {', '.join(keys_available) if keys_available else 'NONE'}"
     new_step = min(current_step + 1, 9)
     new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": err_summary[:100]}
-    return f"RevHunter AI v13.5 [ELITE] Active. I'm connecting to our inventory... (Diagnostic: {k_status} | {err_summary[:60]})", new_context, "Offline Logic Bridge"
+    return f"RevHunter AI v14.0 [ELITE] Active. (Diagnostic: {k_status} | {err_summary[:60]})", new_context, "Offline Logic Bridge"
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """
