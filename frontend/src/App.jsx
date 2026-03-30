@@ -47,8 +47,6 @@ function AppContent() {
   const { tenant } = useTenant();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBtn, setShowInstallBtn] = useState(false);
-  const [isIos, setIsIos] = useState(false);
-  
   const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
   useEffect(() => {
