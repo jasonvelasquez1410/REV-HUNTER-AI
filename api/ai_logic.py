@@ -91,114 +91,96 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     if os.getenv("OPENAI_API_KEY"): keys_available.append("OPENAI")
     if os.getenv("GROQ_API_KEY"): keys_available.append("GROQ")
     
-    last_err = "Init"
+    last_err = "No engine responded"
     
-    # --- ATTEMPT 1: GROQ (The High-Speed, High-Quota Engine) ---
+    # ---------------------------------------------------------
+    # PROVIDER 1: GROQ (Primary - High Speed & Quota)
+    # ---------------------------------------------------------
     GROQ_KEY = os.getenv("GROQ_API_KEY")
     if GROQ_KEY:
         try:
             import urllib.request
             import json as pyjson
             import re
-            
             url = "https://api.groq.com/openai/v1/chat/completions"
-            headers = {
-                "Authorization": f"Bearer {GROQ_KEY}",
-                "Content-Type": "application/json"
-            }
+            headers = {"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"}
             payload = {
                 "model": "llama3-70b-8192",
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": message}
-                ],
+                "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": message}],
                 "response_format": {"type": "json_object"},
                 "temperature": 0.7
             }
-            
             req = urllib.request.Request(url, data=pyjson.dumps(payload).encode(), headers=headers, method='POST')
-            with urllib.request.urlopen(req, timeout=10) as response:
+            with urllib.request.urlopen(req, timeout=8) as response:
                 res_data = pyjson.loads(response.read().decode())
                 content = res_data['choices'][0]['message']['content']
-                
-                # Robust Regex Extraction
                 match = re.search(r'\{.*\}', content, re.DOTALL)
                 if match:
                     data = pyjson.loads(match.group())
                     new_data = {**collected_data, **data.get("extracted_data", {})}
-                    new_context = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "11.6", "engine": "groq-llama3"}
-                    return data["response"], new_context, data["summary"]
+                    new_ctx = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "12.0", "engine": "groq"}
+                    return data["response"], new_ctx, data["summary"]
                 else:
-                    last_err = f"Groq JSON Match Fail: {content[:30]}..."
+                    last_err = f"Groq Parsing Error: {content[:30]}"
         except Exception as e:
-            last_err = f"Groq Error: {str(e)[:40]}"
-            print(last_err)
+            last_err = f"Groq Net Error: {str(e)[:40]}"
 
-    # --- ATTEMPT 2: OPENAI (The "Smart" Hunter Brain) ---
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    if OPENAI_API_KEY:
+    # ---------------------------------------------------------
+    # PROVIDER 2: OPENAI (Secondary - High Intelligence)
+    # ---------------------------------------------------------
+    OPENAI_KEY = os.getenv("OPENAI_API_KEY")
+    if OPENAI_KEY:
         try:
             import urllib.request
             import json as pyjson
             import re
-            
             url = "https://api.openai.com/v1/chat/completions"
-            headers = {
-                "Authorization": f"Bearer {OPENAI_API_KEY}",
-                "Content-Type": "application/json"
-            }
+            headers = {"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type": "application/json"}
             payload = {
                 "model": "gpt-4o-mini",
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": message}
-                ],
+                "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": message}],
                 "response_format": {"type": "json_object"}
             }
-            
             req = urllib.request.Request(url, data=pyjson.dumps(payload).encode(), headers=headers, method='POST')
             with urllib.request.urlopen(req, timeout=10) as response:
                 res_data = pyjson.loads(response.read().decode())
                 content = res_data['choices'][0]['message']['content']
-                
-                # Robust Regex Extraction
                 match = re.search(r'\{.*\}', content, re.DOTALL)
                 if match:
                     data = pyjson.loads(match.group())
                     new_data = {**collected_data, **data.get("extracted_data", {})}
-                    new_context = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "11.4", "engine": "gpt-4o"}
-                    return data["response"], new_context, data["summary"]
-        except Exception as oe:
-            print(f"OpenAI Failure: {oe}")
+                    new_ctx = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "12.0", "engine": "openai"}
+                    return data["response"], new_ctx, data["summary"]
+                else: 
+                    last_err = f"OpenAI Parsing Error: {content[:30]}"
+        except Exception as e:
+            last_err = f"OpenAI Net Error: {str(e)[:40]}"
 
-    # --- ATTEMPT 3: GEMINI (Multi-Model Legacy Fallback) ---
+    # ---------------------------------------------------------
+    # PROVIDER 3: GEMINI (Legacy - Standard)
+    # ---------------------------------------------------------
     if GOOGLE_API_KEY:
-        # ... existing Gemini logic ...
         try:
-            models_to_try = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro']
-            for model_id in models_to_try:
+            for model_id in ['gemini-1.5-flash', 'gemini-pro']:
                 try:
                     model = genai.GenerativeModel(model_id)
-                    prompt = f"{system_prompt}\n\nUser Message: {message}\n\nIMPORTANT: Return ONLY valid JSON."
-                    response = model.generate_content(prompt)
-                    res_text = response.text.strip()
-                    
-                    import re
-                    match = re.search(r'\{.*\}', res_text, re.DOTALL)
+                    res = model.generate_content(f"{system_prompt}\n\nUser: {message}\n\nReturn JSON.")
+                    match = re.search(r'\{.*\}', res.text, re.DOTALL)
                     if match:
                         data = json.loads(match.group())
                         new_data = {**collected_data, **data.get("extracted_data", {})}
-                        new_context = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "11.3", "engine": f"gemini-{model_id}"}
-                        return data["response"], new_context, data["summary"]
+                        new_ctx = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "12.0", "engine": f"gemini-{model_id}"}
+                        return data["response"], new_ctx, data["summary"]
                 except: continue
-        except: pass
+            last_err = "Gemini Quota Exceeded"
+        except Exception as e:
+            last_err = f"Gemini Error: {str(e)[:40]}"
 
     # --- FINAL FALLBACK: RELENTLESS OFFLINE LOGIC ---
     k_status = f"Keys Found: {', '.join(keys_available) if keys_available else 'NONE'}"
-    error_msg = str(ge) if 'ge' in locals() else "Wait for Vercel Sync"
     new_step = min(current_step + 1, 9)
-    new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": error_msg[:100]}
-    return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific like an SUV or a Sedan? (Relentless v11.5 | {k_status} | {error_msg[:20]})", new_context, "Offline Logic Bridge"
+    new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": last_err[:100]}
+    return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific like an SUV or a Sedan? (Relentless v12.0 | {k_status} | {last_err[:30]})", new_context, "Offline Logic Bridge"
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """
