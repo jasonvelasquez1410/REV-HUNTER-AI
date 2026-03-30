@@ -91,49 +91,39 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     if os.getenv("OPENAI_API_KEY"): keys_available.append("OPENAI")
     if os.getenv("GROQ_API_KEY"): keys_available.append("GROQ")
     
-    last_err = "No engine responded"
+    error_log = []
     
     # ---------------------------------------------------------
     # PROVIDER 1: GROQ (Primary - High Speed & Quota)
     # ---------------------------------------------------------
     GROQ_KEY = os.getenv("GROQ_API_KEY")
-    if GROQ_KEY:
+    if GROQ_KEY and len(GROQ_KEY) > 10:
         try:
-            import urllib.request
-            import json as pyjson
-            import re
+            import urllib.request, json as pyjson, re
             url = "https://api.groq.com/openai/v1/chat/completions"
             headers = {"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"}
             payload = {
                 "model": "llama3-70b-8192",
-                "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": message}],
-                "response_format": {"type": "json_object"},
-                "temperature": 0.7
+                "messages": [{"role": "system", "content": system_prompt + "\nIMPORTANT: JSON ONLY."}, {"role": "user", "content": message}],
+                "temperature": 0.5
             }
             req = urllib.request.Request(url, data=pyjson.dumps(payload).encode(), headers=headers, method='POST')
-            with urllib.request.urlopen(req, timeout=8) as response:
+            with urllib.request.urlopen(req, timeout=12) as response:
                 res_data = pyjson.loads(response.read().decode())
                 content = res_data['choices'][0]['message']['content']
                 match = re.search(r'\{.*\}', content, re.DOTALL)
                 if match:
                     data = pyjson.loads(match.group())
-                    new_data = {**collected_data, **data.get("extracted_data", {})}
-                    new_ctx = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "12.0", "engine": "groq"}
+                    new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "12.4", "engine": "groq"}
                     return data["response"], new_ctx, data["summary"]
-                else:
-                    last_err = f"Groq Parsing Error: {content[:30]}"
-        except Exception as e:
-            last_err = f"Groq Net Error: {str(e)[:40]}"
+                else: error_log.append("Groq: Parse Fail")
+        except Exception as e: error_log.append(f"Groq: {str(e)[:30]}")
 
-    # ---------------------------------------------------------
-    # PROVIDER 2: OPENAI (Secondary - High Intelligence)
-    # ---------------------------------------------------------
+    # PROVIDER 2: OPENAI (Secondary)
     OPENAI_KEY = os.getenv("OPENAI_API_KEY")
     if OPENAI_KEY:
         try:
-            import urllib.request
-            import json as pyjson
-            import re
+            import urllib.request, json as pyjson, re
             url = "https://api.openai.com/v1/chat/completions"
             headers = {"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type": "application/json"}
             payload = {
@@ -148,39 +138,33 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                 match = re.search(r'\{.*\}', content, re.DOTALL)
                 if match:
                     data = pyjson.loads(match.group())
-                    new_data = {**collected_data, **data.get("extracted_data", {})}
-                    new_ctx = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "12.0", "engine": "openai"}
+                    new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "12.4", "engine": "openai"}
                     return data["response"], new_ctx, data["summary"]
-                else: 
-                    last_err = f"OpenAI Parsing Error: {content[:30]}"
-        except Exception as e:
-            last_err = f"OpenAI Net Error: {str(e)[:40]}"
+                else: error_log.append("OpenAI: Parse Fail")
+        except Exception as e: error_log.append(f"OpenAI: {str(e)[:25]}")
 
-    # ---------------------------------------------------------
-    # PROVIDER 3: GEMINI (Legacy - Standard)
-    # ---------------------------------------------------------
+    # PROVIDER 3: GEMINI (Standard)
     if GOOGLE_API_KEY:
         try:
             for model_id in ['gemini-1.5-flash', 'gemini-pro']:
                 try:
                     model = genai.GenerativeModel(model_id)
-                    res = model.generate_content(f"{system_prompt}\n\nUser: {message}\n\nReturn JSON.")
+                    res = model.generate_content(f"{system_prompt}\n\nUser: {message}\n\nJSON ONLY.")
                     match = re.search(r'\{.*\}', res.text, re.DOTALL)
                     if match:
                         data = json.loads(match.group())
-                        new_data = {**collected_data, **data.get("extracted_data", {})}
-                        new_ctx = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "12.0", "engine": f"gemini-{model_id}"}
+                        new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "12.4", "engine": f"gemini-{model_id}"}
                         return data["response"], new_ctx, data["summary"]
                 except: continue
-            last_err = "Gemini Quota Exceeded"
-        except Exception as e:
-            last_err = f"Gemini Error: {str(e)[:40]}"
+            error_log.append("Gemini: Quota")
+        except Exception as e: error_log.append(f"Gemini: {str(e)[:25]}")
 
     # --- FINAL FALLBACK: RELENTLESS OFFLINE LOGIC ---
-    k_status = f"Keys Found: {', '.join(keys_available) if keys_available else 'NONE'}"
+    err_summary = " | ".join(error_log) if error_log else "No keys found"
+    k_status = f"Keys: {', '.join(keys_available) if keys_available else 'NONE'}"
     new_step = min(current_step + 1, 9)
-    new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": last_err[:100]}
-    return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific like an SUV or a Sedan? (Relentless v12.0 | {k_status} | {last_err[:30]})", new_context, "Offline Logic Bridge"
+    new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": err_summary[:100]}
+    return f"I hear you! That's helpful. Let's talk more about your needs. Are we looking for something specific like an SUV or a Sedan? (Presentation Mode v12.4 | {k_status} | {err_summary[:40]})", new_context, "Offline Logic Bridge"
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """
