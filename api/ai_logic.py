@@ -91,6 +91,8 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     if os.getenv("OPENAI_API_KEY"): keys_available.append("OPENAI")
     if os.getenv("GROQ_API_KEY"): keys_available.append("GROQ")
     
+    last_err = "Init"
+    
     # --- ATTEMPT 1: GROQ (The High-Speed, High-Quota Engine) ---
     GROQ_KEY = os.getenv("GROQ_API_KEY")
     if GROQ_KEY:
@@ -104,7 +106,6 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                 "Authorization": f"Bearer {GROQ_KEY}",
                 "Content-Type": "application/json"
             }
-            # ... rest of Groq logic ...
             payload = {
                 "model": "llama3-70b-8192",
                 "messages": [
@@ -116,7 +117,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
             }
             
             req = urllib.request.Request(url, data=pyjson.dumps(payload).encode(), headers=headers, method='POST')
-            with urllib.request.urlopen(req, timeout=8) as response:
+            with urllib.request.urlopen(req, timeout=10) as response:
                 res_data = pyjson.loads(response.read().decode())
                 content = res_data['choices'][0]['message']['content']
                 
@@ -125,10 +126,13 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                 if match:
                     data = pyjson.loads(match.group())
                     new_data = {**collected_data, **data.get("extracted_data", {})}
-                    new_context = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "11.4", "engine": "groq-llama3"}
+                    new_context = {"step": data.get("next_step", current_step), "data": new_data, "last_msg": message, "v": "11.6", "engine": "groq-llama3"}
                     return data["response"], new_context, data["summary"]
-        except Exception as ge:
-            print(f"Groq Failure: {ge}")
+                else:
+                    last_err = f"Groq JSON Match Fail: {content[:30]}..."
+        except Exception as e:
+            last_err = f"Groq Error: {str(e)[:40]}"
+            print(last_err)
 
     # --- ATTEMPT 2: OPENAI (The "Smart" Hunter Brain) ---
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")

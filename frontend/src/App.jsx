@@ -118,17 +118,24 @@ function AppContent() {
             <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('landing'); }}>Demo Site</a>
             <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('facebook'); }}>Demo FB</a>
             <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('admin'); }}>Admin Portal</a>
-            {showInstallBtn && (
+            {showInstallBtn ? (
               <button 
                 onClick={handleInstallClick}
                 style={{ marginLeft: '15px', padding: '5px 12px', background: '#00b894', color: 'white', border: 'none', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', animation: 'pulse 2s infinite' }}
               >
                 📲 Install App
               </button>
+            ) : (
+              <button 
+                onClick={() => alert("RevHunter AI PWA Installation:\n\n1. Use Chrome or Safari\n2. Tap 'Share' or 'Menu'\n3. Select 'Add to Home Screen'\n\nResult: Fixed icon on your home screen for instant lead tracking!")}
+                style={{ marginLeft: '15px', padding: '5px 10px', background: '#e0e0e0', color: '#666', border: '1px solid #ccc', borderRadius: '20px', fontSize: '0.7rem', cursor: 'pointer' }}
+              >
+                📲 App Info
+              </button>
             )}
             {isIos && !window.navigator.standalone && (
-              <span style={{ marginLeft: '15px', fontSize: '0.6rem', color: '#666', border: '1px dashed #ccc', padding: '2px 8px', borderRadius: '10px' }}>
-                💡 iOS: Share &gt; Add to Home
+              <span style={{ marginLeft: '15px', fontSize: '0.6rem', color: '#666' }}>
+                 (iOS: Share &gt; Home)
               </span>
             )}
           </div>
