@@ -31,6 +31,9 @@ export default function Admin() {
     const [isHunting, setIsHunting] = useState(false);
     const [availableVoices, setAvailableVoices] = useState([]);
     const [isVoiceDemoPlaying, setIsVoiceDemoPlaying] = useState(false);
+    const [showAdModal, setShowAdModal] = useState(false);
+    const [pendingAd, setPendingAd] = useState(null);
+    const [isGeneratingAd, setIsGeneratingAd] = useState(false);
 
     // Refs
     const vapi = useRef(null);
@@ -139,9 +142,34 @@ export default function Admin() {
         }, 1500);
     }
 
-    function handleGenerateAd() {
-        alert("Generating Relentless AI Ad Campaign...\n\nTargeting: Sherwood Park (50km radius)\nInterest: Large SUVs, Financing\nHook: $1,500 Trade-in Bonus");
-        setAuditLogs(prev => [{ id: `ad-${Date.now()}`, time: "Now", action: "MARKETING: AI deployed 'Relentless Trade-in' campaign [FB/IG]", type: "Marketing" }, ...prev]);
+    async function handleGenerateAd() {
+        setIsGeneratingAd(true);
+        setAuditLogs(prev => [{ id: `ad-start-${Date.now()}`, time: "Now", action: "MARKETING: AI is analyzing current inventory for high-converting hooks...", type: "Marketing" }, ...prev]);
+        
+        try {
+            // Real API Call if possible, otherwise mock
+            const res = await fetch(`${apiUrl}/generate-ad`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': tenant.id },
+                body: JSON.stringify({ context: 'tactical' })
+            });
+            const data = await res.json();
+            
+            // Artificial delay for "Elite AI" feel
+            setTimeout(() => {
+                setPendingAd({
+                    content: data.content || "🚀 MASSIVE TRADE-IN EVENT! Get up to $1,500 over book value for your ride this week only at FilCan Cars. DM us to lock in your appraisal! #RevHunter #SherwoodPark",
+                    imagePrompt: "A high-end car dealership showroom at sunset with a 'TRADE-IN BONUS' glowing neon sign, cinematic lighting, 8k resolution.",
+                    id: Math.floor(Math.random() * 10000)
+                });
+                setIsGeneratingAd(false);
+                setShowAdModal(true);
+                setAuditLogs(prev => [{ id: `ad-gen-${Date.now()}`, time: "Now", action: "MARKETING: Elite Ad draft generated. Awaiting human approval...", type: "Marketing" }, ...prev]);
+            }, 2000);
+        } catch (err) {
+            setIsGeneratingAd(false);
+            alert("Marketing Hub temporarily offline. Please check your keys.");
+        }
     }
 
     function handleInjectLead() {
@@ -478,7 +506,24 @@ export default function Admin() {
                                             <span>Engagement: 8.4%</span>
                                             <span style={{ color: '#00b894' }}>ROAS: 12.5x</span>
                                         </div>
-                                        <button onClick={handleGenerateAd} style={{ width: '100%', marginTop: '20px', padding: '12px', background: '#003366', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>GENERATE NEW ELITE AD</button>
+                                        <button 
+                                            onClick={handleGenerateAd} 
+                                            disabled={isGeneratingAd}
+                                            style={{ 
+                                                width: '100%', marginTop: '20px', padding: '15px', 
+                                                background: isGeneratingAd ? '#ccc' : '#003366', 
+                                                color: 'white', border: 'none', borderRadius: '10px', 
+                                                fontWeight: 'bold', cursor: isGeneratingAd ? 'wait' : 'pointer',
+                                                boxShadow: '0 5px 15px rgba(0,51,102,0.2)'
+                                            }}
+                                        >
+                                            {isGeneratingAd ? "⏳ GENERATING ELITE AD..." : "🚀 GENERATE NEW ELITE AD"}
+                                        </button>
+                                        {isGeneratingAd && (
+                                            <div style={{ marginTop: '15px', height: '4px', background: '#eee', borderRadius: '2px', overflow: 'hidden' }}>
+                                                <div className="shimmer" style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, #003366, #D92027, #003366)', backgroundSize: '200% 100%' }}></div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                            </div>
@@ -663,6 +708,50 @@ export default function Admin() {
                         onClick={() => vapi.current?.stop()}
                         style={{ marginTop: '40px', padding: '12px 30px', background: '#D92027', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
                     >END CALL</button>
+                </div>
+            )}
+
+            {/* Ad Approval Modal */}
+            {showAdModal && pendingAd && (
+                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', zIndex: 20000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)', padding: '20px' }}>
+                    <div style={{ background: 'white', width: '100%', maxWidth: '600px', borderRadius: '30px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.3)', animation: 'slideUp 0.4s ease-out' }}>
+                        <div style={{ padding: '30px', background: 'linear-gradient(135deg, #003366 0%, #001a33 100%)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h2 style={{ margin: 0, fontSize: '1.4rem' }}>Review AI-Generated Ad 🤖</h2>
+                            <button onClick={() => setShowAdModal(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+                        </div>
+                        <div style={{ padding: '30px' }}>
+                            <div style={{ marginBottom: '25px' }}>
+                                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', color: '#666', marginBottom: '10px', textTransform: 'uppercase' }}>AD COPY (FACEBOOK/INSTAGRAM)</label>
+                                <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '15px', border: '1px solid #eee', fontSize: '0.95rem', lineHeight: '1.6', color: '#333' }}>
+                                    {pendingAd.content}
+                                </div>
+                            </div>
+                            <div style={{ marginBottom: '30px' }}>
+                                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', color: '#666', marginBottom: '10px', textTransform: 'uppercase' }}>VISUAL MAPPING (IMAGE PROMPT)</label>
+                                <div style={{ background: '#333', color: '#00ff00', padding: '15px', borderRadius: '15px', fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                                    /imagine: {pendingAd.imagePrompt}
+                                </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <button 
+                                    onClick={() => handleGenerateAd()} 
+                                    style={{ padding: '15px', background: '#f0f2f5', color: '#333', border: 'none', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer' }}
+                                >
+                                    🔄 REGENERATE
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        setShowAdModal(false);
+                                        setAuditLogs(prev => [{ id: `ad-live-${Date.now()}`, time: "Now", action: `MARKETING: Campaign #${pendingAd.id} is now LIVE targeted to Sherwood Park.`, type: "Marketing" }, ...prev]);
+                                        alert("🚀 RELENTLESS CAMPAIGN LIVE!\n\nTargeting: Sherwood Park (50km)\nPlatform: Facebook / Instagram\nBudget: Optimization Active");
+                                    }} 
+                                    style={{ padding: '15px', background: '#00b894', color: 'white', border: 'none', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,184,148,0.3)' }}
+                                >
+                                    ✅ APPROVE & GO LIVE
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
