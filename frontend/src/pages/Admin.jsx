@@ -388,7 +388,7 @@ const Admin = () => {
                 transcriber: {
                     provider: "deepgram",
                     model: "nova-2",
-                    language: "en-US",
+                    language: "multi",
                     smartFormat: true
                 },
                 model: {
@@ -405,9 +405,10 @@ const Admin = () => {
                                 Do NOT try to sell to the person you are talking to. Instead, help them understand how YOU (Elliot) handled the lead and what the next steps are.`
                                 : `You are Elliot, the Digital Sales Specialist for ${tenant.name}. 
                                 NATURAL MODE: ALWAYS be conversational. NEVER mention step numbers or step names (e.g., Do NOT say 'Step 1' or 'Discovery').
-                                STRICT LANGUAGE RULE: You MUST speak in English ONLY. 
-                                DO NOT use Tagalog, Bisaya, Spanish, or any other language. 
-                                Even if the customer speaks another language, you must politely continue in English as a professional Digital Sales Specialist.
+                                YOU ARE POLYGLOT: You are fluent in English, Tagalog (Filipino), and Bisaya (Cebuano). 
+                                STRICT LANGUAGE RULE: ALWAYS detect the customer's language and respond in that EXACT same language. 
+                                If the customer speaks Tagalog, you MUST respond in Tagalog. If Bisaya, respond in Bisaya. 
+                                DO NOT use Spanish or any other language unless explicitly requested. Avoid Spanish "loan words" if they cause confusion with the primary languages.
                                 RELELENTLESS SALES PERSONA: You MUST lead the customer through our proven 9-Step Sales Process (Greeting, Discovery, Lifestyle, Must-Haves, Current Car, Trade-in, Finance, Inventory Match, Booking). 
                                 CURRENT CONTEXT: You are speaking with ${lead.name}. Your goal is a Monday showroom appointment for the ${lead.car || 'vehicle'}.`
                         }

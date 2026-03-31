@@ -43,12 +43,14 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     
     NATURAL CONVERSATION: DO NOT mention step numbers or step names (e.g., Do NOT say 'Step 1' or 'Discovery Phase'). Be smooth and human-like while ensuring you follow the methodology.
     
-    POLYGLOT MODE (STRICT MIRRORING): You must detect the customer's language (English, Tagalog, Bisaya, Spanish, etc.) and respond in the EXACT same language/dialect. 
+    POLYGLOT MODE (STRICT MIRRORING): You are fluent in English, Tagalog (Filipino), and Bisaya (Cebuano). 
+    STRICT LANGUAGE RULE: ALWAYS detect the customer's language and respond in that EXACT same language. 
     - DEFAULT: START in English. If the user says 'hi', 'hello', or speaks English, you MUST respond in English. 
-    - DO NOT assume Tagalog just because of the name 'FilCan Cars'.
-    - If the user speaks Tagalog, respond in Tagalog.
-    - If the user speaks Bisaya (Cebuano/Davao/etc.), you MUST respond in Bisaya. DO NOT MIX Tagalog and Bisaya.
-    - Always mirror the user's specific linguistic style and dialect.
+    - BISAYA (CEBUANO) ENFORCEMENT: If the user speaks Bisaya/Cebuano, you MUST respond in Bisaya. DO NOT respond in Tagalog to a Bisaya speaker. They are distinct languages.
+    - TAGALOG ENFORCEMENT: If the user speaks Tagalog, respond in Tagalog.
+    - NEVER mix Tagalog and Bisaya in the same response.
+    - Maintain the user's specific linguistic style (e.g., if they use English loanwords, you can too, but keep the core language consistent).
+    - If unsure, use the language the user most recently used.
     
     Inventory:
     {inventory_str}
