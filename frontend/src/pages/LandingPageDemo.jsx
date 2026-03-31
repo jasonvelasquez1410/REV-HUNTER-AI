@@ -10,7 +10,8 @@ const VAPI_ASSISTANT_ID = '5921ac52-3ea4-443f-a531-993b5e43fddf';
 const LandingPageDemo = () => {
     const { tenant } = useTenant();
     const [cars, setCars] = useState([]);
-    const [isCalling, setIsCalling] = useState(false);
+    const [showNudge, setShowNudge] = useState(true);
+    const [nudgeStep, setNudgeStep] = useState('initial'); // 'initial', 'loading', 'result'
     const vapi = useRef(null);
 
     useEffect(() => {
@@ -222,16 +223,67 @@ const LandingPageDemo = () => {
             </div>
 
             {/* Smart VDP Nudge Simulation */}
-            <div style={{ position: 'fixed', left: '20px', bottom: '100px', maxWidth: '300px', background: '#fff', borderRadius: '15px', padding: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', borderLeft: `5px solid ${tenant.theme_color || '#D92027'}`, zIndex: 1500, animation: 'slideRight 0.5s ease-out' }}>
-                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: tenant.theme_color || '#D92027', marginBottom: '5px' }}>ELLIOT (RELENTLESS NUDGE) 📱</div>
-                <div style={{ fontSize: '0.85rem', color: '#333', lineHeight: '1.4' }}>
-                    Boss, I see you're looking at the Atlas. Want a <b>"Fast-Pass"</b> trade-in value for your car while you browse?
+            {showNudge && (
+                <div style={{ position: 'fixed', left: '20px', bottom: '100px', maxWidth: '300px', background: '#fff', borderRadius: '15px', padding: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', borderLeft: `5px solid ${tenant.theme_color || '#D92027'}`, zIndex: 1500, animation: 'slideRight 0.5s ease-out' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: tenant.theme_color || '#D92027', marginBottom: '5px' }}>ELLIOT (RELENTLESS NUDGE) 📱</div>
+                        <button onClick={() => setShowNudge(false)} style={{ border: 'none', background: 'none', fontSize: '0.8rem', cursor: 'pointer', color: '#999' }}>✕</button>
+                    </div>
+                    
+                    {nudgeStep === 'initial' && (
+                        <>
+                            <div style={{ fontSize: '0.85rem', color: '#333', lineHeight: '1.4' }}>
+                                Boss, I see you're looking at the Atlas. Want a <b>"Fast-Pass"</b> trade-in value for your car while you browse?
+                            </div>
+                            <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+                                <button 
+                                    onClick={() => {
+                                        setNudgeStep('loading');
+                                        setTimeout(() => setNudgeStep('result'), 2000);
+                                    }}
+                                    style={{ flex: 1, padding: '8px', background: tenant.theme_color || '#D92027', color: '#fff', border: 'none', borderRadius: '5px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer' }}
+                                >
+                                    YES, GET VALUE
+                                </button>
+                                <button 
+                                    onClick={() => setShowNudge(false)}
+                                    style={{ flex: 1, padding: '8px', background: '#eee', color: '#666', border: 'none', borderRadius: '5px', fontSize: '0.7rem', cursor: 'pointer' }}
+                                >
+                                    MAYBE LATER
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {nudgeStep === 'loading' && (
+                        <div style={{ textAlign: 'center', padding: '10px' }}>
+                            <div className="nudge-spinner" style={{ border: '3px solid #f3f3f3', borderTop: `3px solid ${tenant.theme_color || '#D92027'}`, borderRadius: '50%', width: '20px', height: '20px', animation: 'spin 1s linear infinite', margin: '0 auto 10px' }}></div>
+                            <div style={{ fontSize: '0.75rem', color: '#666' }}>AI is calculating trade-in value...</div>
+                        </div>
+                    )}
+
+                    {nudgeStep === 'result' && (
+                        <>
+                            <div style={{ fontSize: '0.85rem', color: '#333', lineHeight: '1.4' }}>
+                                📊 **Value Detected!** Your 2018 Toyota RAV4 is estimated at **$21,450**.
+                                <br/><br/>
+                                Should I add this to your dealer file?
+                            </div>
+                            <div style={{ marginTop: '10px' }}>
+                                <button 
+                                    onClick={() => {
+                                        setShowNudge(false);
+                                        alert("Success! Your trade-in value has been synced to the dealer CRM.");
+                                    }}
+                                    style={{ width: '100%', padding: '8px', background: '#00b894', color: '#fff', border: 'none', borderRadius: '5px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer' }}
+                                >
+                                    YES, SYNC TO CRM
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
-                <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-                    <button style={{ flex: 1, padding: '5px', background: tenant.theme_color || '#D92027', color: '#fff', border: 'none', borderRadius: '5px', fontSize: '0.7rem', fontWeight: 'bold' }}>YES, GET VALUE</button>
-                    <button style={{ flex: 1, padding: '5px', background: '#eee', color: '#666', border: 'none', borderRadius: '5px', fontSize: '0.7rem' }}>MAYBE LATER</button>
-                </div>
-            </div>
+            )}
 
             <style>{`
                 @keyframes pulse-red {
@@ -242,6 +294,10 @@ const LandingPageDemo = () => {
                 @keyframes slideRight {
                     from { transform: translateX(-100%); opacity: 0; }
                     to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
                 }
                 
                 @media (max-width: 768px) {
