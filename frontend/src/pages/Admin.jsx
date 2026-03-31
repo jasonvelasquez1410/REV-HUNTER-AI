@@ -124,10 +124,52 @@ const Admin = () => {
             console.log('Vapi Message:', msg);
         });
 
+        // Request notification permission
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+
         return () => {
             if (vapi.current) vapi.current.stop();
         };
     }, []);
+
+    // 30-Second Polling Loop for Real-time consistency
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (tenant.id) fetchAllLeads();
+        }, 30000);
+        return () => clearInterval(interval);
+    }, [tenant.id]);
+
+    // NEW: Notification Trigger on Lead Count Increase
+    const prevLeadsCount = useRef(0);
+    useEffect(() => {
+        if (leads.length > prevLeadsCount.current && prevLeadsCount.current > 0) {
+            const newLead = leads[0]; // Assuming newest lead is first
+            if (Notification.permission === "granted") {
+                new Notification(`🔥 NEW HOT LEAD: ${newLead.name}`, {
+                    body: `Interested in ${newLead.car || 'a vehicle'}. Click to view details.`,
+                    icon: '/favicon.ico'
+                });
+            }
+        }
+        prevLeadsCount.current = leads.length;
+    }, [leads]);
+
+    const triggerTestNotification = () => {
+        if (Notification.permission === "granted") {
+            new Notification("🚀 REVHUNTER: Test Alert Successful", {
+                body: "This is how you will be notified of new high-intent leads instantly on your phone or desktop.",
+                icon: '/favicon.ico'
+            });
+        } else {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") triggerTestNotification();
+                else alert("Please enable notifications in your browser settings to test this feature.");
+            });
+        }
+    };
 
 
     const [showPresentation, setShowPresentation] = useState(false);
@@ -183,31 +225,30 @@ const Admin = () => {
         }
     };
 
-    useEffect(() => {
-
-        const fetchAllLeads = async () => {
-            try {
-                const [leadsRes, agedRes] = await Promise.all([
-                    fetch(`${apiUrl}/leads`, { headers: { 'X-Tenant-Id': tenant.id } }),
-                    fetch(`${apiUrl}/leads/aged`, { headers: { 'X-Tenant-Id': tenant.id } })
-                ]);
-                const leadsData = await leadsRes.json();
-                const agedData = await agedRes.json();
-                if (leadsData && leadsData.length > 0) {
-                    setLeads(leadsData);
-                } else {
-                    setLeads(MOCK_FALLBACK_LEADS);
-                }
-                setAgedLeads(agedData);
-            } catch (_err) {
-                console.error("Failed to fetch leads:", _err);
-                console.warn("Using Pitch Fail-safe (Offline Mode)");
+    const fetchAllLeads = React.useCallback(async () => {
+        try {
+            const [leadsRes, agedRes] = await Promise.all([
+                fetch(`${apiUrl}/leads`, { headers: { 'X-Tenant-Id': tenant.id } }),
+                fetch(`${apiUrl}/leads/aged`, { headers: { 'X-Tenant-Id': tenant.id } })
+            ]);
+            const leadsData = await leadsRes.json();
+            const agedData = await agedRes.json();
+            if (leadsData && leadsData.length > 0) {
+                setLeads(leadsData);
+            } else {
                 setLeads(MOCK_FALLBACK_LEADS);
             }
-        };
-        
+            setAgedLeads(agedData);
+        } catch (_err) {
+            console.error("Failed to fetch leads:", _err);
+            console.warn("Using Pitch Fail-safe (Offline Mode)");
+            setLeads(MOCK_FALLBACK_LEADS);
+        }
+    }, [apiUrl, tenant.id]);
+
+    useEffect(() => {
         if (tenant.id) fetchAllLeads();
-    }, [tenant.id, apiUrl]);
+    }, [tenant.id, fetchAllLeads]);
 
     const handleReport = async (leadId) => {
         try {
@@ -688,6 +729,12 @@ const Admin = () => {
                             style={{ background: '#00b894', color: 'white', border: 'none', padding: '4px 12px', borderRadius: '15px', fontSize: '0.7rem', cursor: 'pointer' }}
                         >
                             🧪 Inject Lead
+                        </button>
+                        <button 
+                            onClick={triggerTestNotification}
+                            style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '15px', fontSize: '0.7rem', cursor: 'pointer' }}
+                        >
+                            🔔 Test Alert
                         </button>
                         <button 
                             onClick={() => {
