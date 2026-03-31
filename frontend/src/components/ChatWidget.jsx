@@ -6,7 +6,7 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isOpen, setIsOpen] = useState(defaultOpen);
-    const [context, setContext] = useState({ stage: "receptionist_greet", role: "Receptionist" });
+    const [context, setContext] = useState({ stage: "receptionist_greet", role: "Digital Sales Specialist" });
     const messagesEndRef = useRef(null);
 
     // Initialize with tenant welcome message
