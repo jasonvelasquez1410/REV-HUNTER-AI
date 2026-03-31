@@ -1,6 +1,6 @@
 import React from 'react';
 
-const LeadReportCard = ({ lead, onCharge }) => {
+export default function LeadReportCard({ lead, onCharge }) {
     return (
         <div className="lead-report-card" style={{
             background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
@@ -88,6 +88,4 @@ const LeadReportCard = ({ lead, onCharge }) => {
             </div>
         </div>
     );
-};
-
-export default LeadReportCard;
+}
