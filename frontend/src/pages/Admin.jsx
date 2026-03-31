@@ -5,7 +5,7 @@ import LeadReportCard from '../components/LeadReportCard';
 import ChatModal from '../components/ChatModal';
 import CommandModal from '../components/CommandModal';
 import { useTenant } from '../context/TenantContext';
-import { MOCK_FALLBACK_LEADS, MOCK_APPOINTMENTS, PRESENTATION_INSIGHTS } from '../utils/mockData';
+import { MOCK_FALLBACK_LEADS, MOCK_APPOINTMENTS, PRESENTATION_INSIGHTS, MOCK_AGENTS } from '../utils/mockData';
 
 const VAPI_PUBLIC_KEY = '012fbe2f-192f-44f3-a1b3-76db83ce299c';
 const VAPI_ASSISTANT_ID = '5921ac52-3ea4-443f-a531-993b5e43fddf';
@@ -269,7 +269,7 @@ export default function Admin() {
             )}
 
             <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
-                {['inbox', 'analytics', 'hunters', 'showroom'].map(tab => (
+                {['inbox', 'agents', 'analytics', 'hunters', 'showroom'].map(tab => (
                     <button 
                         key={tab} 
                         onClick={() => setActiveTab(tab)}
@@ -318,16 +318,92 @@ export default function Admin() {
                                                 </span>
                                             </div>
                                         </div>
-                                    </div>
                                     <div style={{ display: 'flex', gap: '10px' }}>
-                                        <button onClick={() => setSelectedLeadChat(lead)} style={{ padding: '10px 18px', background: '#f0f2f5', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>💬 VIEW CHAT</button>
-                                        <button onClick={() => handleAutoNudge(lead.id)} style={{ padding: '10px 18px', background: '#003366', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>🦁 NUDGE</button>
-                                        <button onClick={() => setIsCommanding(lead)} style={{ padding: '10px 18px', background: '#D92027', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>🏹 COMMAND</button>
-                                        <button onClick={() => handleVoiceCall(lead)} style={{ padding: '10px 18px', background: '#00b894', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>📞 CALL</button>
-                                        <button onClick={() => handleSyncCRM(lead)} style={{ padding: '10px 18px', background: '#eee', color: '#333', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>🔄 SYNC</button>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                                {MOCK_AGENTS.map(agent => (
+                                                    <button 
+                                                        key={agent.id}
+                                                        onClick={() => {
+                                                            setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, assigned_to: agent.id } : l));
+                                                            setAuditLogs(prev => [{ id: `assign-${Date.now()}`, time: "Now", action: `System: Assigned lead ${lead.name} to ${agent.name}`, type: "System" }, ...prev]);
+                                                        }}
+                                                        title={`Assign to ${agent.name}`}
+                                                        style={{ 
+                                                            width: '32px', height: '32px', borderRadius: '50%', background: agent.color, color: 'white', 
+                                                            border: lead.assigned_to === agent.id ? '3px solid #000' : 'none', cursor: 'pointer',
+                                                            fontSize: '0.7rem', fontWeight: 'bold'
+                                                        }}
+                                                    >
+                                                        {agent.avatar}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <div style={{ fontSize: '0.65rem', color: '#999', textAlign: 'center' }}>
+                                                {lead.assigned_to ? `Assigned: ${MOCK_AGENTS.find(a => a.id === lead.assigned_to)?.name}` : 'Unassigned'}
+                                            </div>
+                                        </div>
+                                        <button onClick={() => setSelectedLeadChat(lead)} style={{ padding: '10px 18px', background: '#f0f2f5', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>💬</button>
+                                        <button onClick={() => handleAutoNudge(lead.id)} style={{ padding: '10px 18px', background: '#003366', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>🦁</button>
+                                        <button onClick={() => setIsCommanding(lead)} style={{ padding: '10px 18px', background: '#D92027', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>🏹</button>
+                                        <button onClick={() => handleVoiceCall(lead)} style={{ padding: '10px 18px', background: '#00b894', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>📞</button>
                                     </div>
+                                  </div>
                                 </div>
                             ))}
+                        </div>
+                    )}
+
+                    {activeTab === 'agents' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
+                                {MOCK_AGENTS.map(agent => {
+                                    const agentLeads = leads.filter(l => l.assigned_to === agent.id);
+                                    return (
+                                        <div key={agent.id} style={{ background: 'white', padding: '25px', borderRadius: '25px', boxShadow: '0 8px 25px rgba(0,0,0,0.05)', position: 'relative', overflow: 'hidden' }}>
+                                            <div style={{ position: 'absolute', top: 0, right: 0, width: '100px', height: '100px', background: `${agent.color}10`, borderRadius: '0 0 0 100%', zIndex: 0 }} />
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px', position: 'relative', zIndex: 1 }}>
+                                                <div style={{ width: '60px', height: '60px', borderRadius: '20px', background: agent.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '900', boxShadow: `0 10px 20px ${agent.color}40` }}>
+                                                    {agent.avatar}
+                                                </div>
+                                                <div>
+                                                    <h4 style={{ margin: 0, color: '#333' }}>{agent.name}</h4>
+                                                    <div style={{ fontSize: '0.8rem', color: '#00b894', fontWeight: 'bold' }}>● {agent.status}</div>
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '15px' }}>
+                                                    <div style={{ fontSize: '0.7rem', color: '#999', marginBottom: '5px' }}>CLOSING RATE</div>
+                                                    <div style={{ fontSize: '1.2rem', fontWeight: '900', color: agent.color }}>{agent.closing_rate}</div>
+                                                </div>
+                                                <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '15px' }}>
+                                                    <div style={{ fontSize: '0.7rem', color: '#999', marginBottom: '5px' }}>LOAD / STATS</div>
+                                                    <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{agent.deals_this_month}</div>
+                                                </div>
+                                            </div>
+                                            <div style={{ marginTop: '20px' }}>
+                                                <div style={{ fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '10px', color: '#666' }}>CURRENTLY HANDLING:</div>
+                                                {agentLeads.length === 0 ? (
+                                                    <div style={{ fontSize: '0.75rem', color: '#999', padding: '10px', border: '1px dashed #ddd', borderRadius: '10px', textAlign: 'center' }}>No leads assigned</div>
+                                                ) : (
+                                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                        {agentLeads.map(l => (
+                                                            <span key={l.id} style={{ fontSize: '0.7rem', background: '#eef', padding: '5px 12px', borderRadius: '20px', color: '#003366', fontWeight: 'bold' }}>{l.name}</span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div style={{ background: 'linear-gradient(135deg, #003366 0%, #001a33 100%)', color: 'white', padding: '30px', borderRadius: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 15px 35px rgba(0,51,102,0.2)' }}>
+                                <div>
+                                    <h3 style={{ margin: 0 }}>AUTO-DISPATCHER ACTIVE ⚡</h3>
+                                    <p style={{ margin: '5px 0 0', opacity: 0.7, fontSize: '0.9rem' }}>RevHunter is currently using **Round-Robin** to assign new Facebook and Web leads.</p>
+                                </div>
+                                <button style={{ padding: '12px 25px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }} onClick={() => alert("Auto-Dispatcher Setting: Round-Robin (Active)")}>CONFIGURE RULES</button>
+                            </div>
                         </div>
                     )}
 

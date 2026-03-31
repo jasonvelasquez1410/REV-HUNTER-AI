@@ -1,8 +1,14 @@
 import React from 'react';
 
+export const MOCK_AGENTS = [
+    { id: 'agent-1', name: "Sarah Johnson", role: "Senior Closer", status: "Online", avatar: "SJ", color: "#6c5ce7", closing_rate: "98%", deals_this_month: 24 },
+    { id: 'agent-2', name: "Mike Miller", role: "SUV Specialist", status: "On Call", avatar: "MM", color: "#e67e22", closing_rate: "89%", deals_this_month: 18 },
+    { id: 'agent-3', name: "Elliot (AI)", role: "Digital Assistant", status: "Hunting", avatar: "🤖", color: "#D92027", closing_rate: "N/A", deals_this_month: "142 Leads Qualified" }
+];
+
 export const MOCK_FALLBACK_LEADS = [
-    { id: 101, name: "Marvin Raymundo", status: "Hot", car: "VW Atlas", quality_score: 98, follow_up_streak: 2, conversation_state: '{"step": 5}', conversation_summary: "Interested in VW Atlas. Trade-in: 2018 RAV4. Credit: PRE-APPROVED.", last_action_time: "Today 10:45 AM", credit_status: "PRE-APPROVED", source: "OMNICHANNEL (Web+FB+Voice)" },
-    { id: 102, name: "Jessica Chen", status: "Qualified", car: "Mazda CX-5", quality_score: 85, follow_up_streak: 1, conversation_state: '{"step": 3}', conversation_summary: "Looking for family SUV. CX-5 vs Atlas.", last_action_time: "Today 9:15 AM", source: "Facebook Messenger" }
+    { id: 101, name: "Marvin Raymundo", status: "Hot", car: "VW Atlas", quality_score: 98, follow_up_streak: 2, conversation_state: '{"step": 5}', conversation_summary: "Interested in VW Atlas. Trade-in: 2018 RAV4. Credit: PRE-APPROVED.", last_action_time: "Today 10:45 AM", credit_status: "PRE-APPROVED", source: "OMNICHANNEL (Web+FB+Voice)", assigned_to: 'agent-3' },
+    { id: 102, name: "Jessica Chen", status: "Qualified", car: "Mazda CX-5", quality_score: 85, follow_up_streak: 1, conversation_state: '{"step": 3}', conversation_summary: "Looking for family SUV. CX-5 vs Atlas.", last_action_time: "Today 9:15 AM", source: "Facebook Messenger", assigned_to: null }
 ];
 
 export const MOCK_CHATS = {
