@@ -43,6 +43,7 @@ class ErrorBoundary extends React.Component {
 }
 
 function AppContent() {
+  window.isCalling = window.isCalling || false;
   const [currentPage, setCurrentPage] = useState('home');
   const { tenant } = useTenant();
   const [deferredPrompt, setDeferredPrompt] = useState(null);

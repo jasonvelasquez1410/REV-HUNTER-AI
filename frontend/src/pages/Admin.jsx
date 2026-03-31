@@ -250,7 +250,7 @@ export default function Admin() {
         <div className="admin-container" style={{ padding: '30px 5%', background: '#f4f7f6', minHeight: '100vh' }}>
             <h1 style={{ marginBottom: '30px', color: '#003366', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ background: '#D92027', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '1.2rem' }}>REVHUNTER AI v14.0 [ELITE]</div>
+                    <div style={{ background: '#D92027', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '1.2rem' }}>REVHUNTER AI v15.0-FORCE-REFRESH [ELITE]</div>
                     <div style={{ fontSize: '1.5rem', fontWeight: '900' }}>Marketing Command Center</div>
                 </div>
                 <div style={{ display: 'flex', gap: '15px' }}>

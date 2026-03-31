@@ -46,8 +46,9 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     BUSINESS ENGLISH DEFAULT: FilCan Cars is a professional Canadian business. English is the ABSOLUTE primary language.
     STRICT MIRRORING RULE:
     - If the user's sentence structure is English, you MUST respond in 100% English.
-    - NEVER switch to Tagalog because of a single word or typo (e.g., 'di you have sedans' is clearly English—do NOT treat 'di' as Tagalog negation).
+    - NEVER switch to Tagalog because of a single word, typo, or abbreviation (e.g., 'di', 'gtg', 'brb', 'k', 'np' are ALL English in this context).
     - ONLY switch to Tagalog if the user provides a CLEAR, full Tagalog sentence (at least 6 distinct Tagalog words).
+    - If the user's message is 4 words or fewer, ALWAYS default to English.
     - If the user asks about 'inventory', 'sedans', 'SUVs', 'finance', or 'trade-in', ALWAYS respond in English unless the entire query was in Tagalog.
     - If unsure, stick to English. NO TAGALOG unless 100% certain.
     - NEVER provide translations. Use ONLY ONE language per response.
@@ -110,7 +111,8 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     # PROVIDER 1: GEMINI (Primary for v13.0 Test)
     if GOOGLE_API_KEY:
         try:
-            for model_id in ['gemini-1.5-flash', 'gemini-1.5-pro']:
+            # Try both short and long model names for robustness
+            for model_id in ['gemini-1.5-flash', 'models/gemini-1.5-flash', 'gemini-1.5-pro']:
                 try:
                     model = genai.GenerativeModel(model_id)
                     res = model.generate_content(f"{system_prompt}\n\nUser: {message}\n\nJSON ONLY.")
@@ -120,9 +122,9 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                         new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "14.0 [ELITE]", "engine": f"gemini-{model_id}"}
                         return data["response"], new_ctx, data["summary"]
                 except Exception as inner_e: 
-                    error_log.append(f"Gemini-{model_id}: {str(inner_e)[:15]}")
+                    error_log.append(f"Gemini-{model_id}: {str(inner_e)[:100]}")
                     continue
-        except Exception as e: error_log.append(f"Gemini: {str(e)[:25]}")
+        except Exception as e: error_log.append(f"Gemini: {str(e)[:100]}")
 
     # PROVIDER 2: GROQ (Secondary)
     # ---------------------------------------------------------
@@ -159,7 +161,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
             if hasattr(e, 'read'):
                 try: error_body = e.read().decode()
                 except: pass
-            error_log.append(f"Groq: {str(e)[:20]} {error_body[:20]}")
+            error_log.append(f"Groq: {str(e)[:50]} {error_body[:50]}")
             # Final attempt with Llama 3.1 8B if Mixtral fails
             try:
                 payload["model"] = "llama-3.1-8b-instant"
@@ -205,11 +207,22 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
 
 
     # --- FINAL FALLBACK: RELENTLESS OFFLINE LOGIC ---
+    # --- FINAL FALLBACK: PROFESSIONAL RESPONSE ---
     err_summary = " | ".join(error_log) if error_log else "No keys found"
     k_status = f"Keys: {', '.join(keys_available) if keys_available else 'NONE'}"
     new_step = min(current_step + 1, 9)
-    new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": err_summary[:100]}
-    return f"RevHunter AI v14.0 [ELITE] Active. (Diagnostic: {k_status} | {err_summary[:60]})", new_context, "Offline Logic Bridge"
+    new_context = {"step": new_step, "data": collected_data, "last_msg": message, "error": err_summary[:500]}
+    
+    # User-facing polite message
+    fallback_msg = "I'm currently experiencing high traffic and having a moment to think. Could you please try again in a few seconds?"
+    
+    # We still return the diagnostic version for developers if they are the ones testing, 
+    # but let's make it cleaner. 
+    # If it's a known admin user or if we want to be safe, we could check a flag.
+    # For now, let's keep the diagnostic but make it shorter and less ugly.
+    diagnostic_info = f"[Note: {k_status} | {err_summary[:100]}]"
+    
+    return f"{fallback_msg}\n\n{diagnostic_info}", new_context, "Offline Logic Bridge"
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """

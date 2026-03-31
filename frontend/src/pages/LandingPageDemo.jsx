@@ -12,6 +12,7 @@ const LandingPageDemo = () => {
     const [cars, setCars] = useState([]);
     const [showNudge, setShowNudge] = useState(true);
     const [nudgeStep, setNudgeStep] = useState('initial'); // 'initial', 'loading', 'result'
+    const [isCalling, setIsCalling] = useState(false);
     const vapi = useRef(null);
 
     useEffect(() => {

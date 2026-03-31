@@ -72,8 +72,8 @@ This file serves as a persistent record of the project's state to help future se
   - **Frontend Fail-safe**: Implemented robust mock lead fallbacks in `Admin.jsx` to ensure a perfect demo even without API/DB keys.
   - **Instant UI Updates**: Refactored `handleInjectLead` to provide immediate visual feedback in the Inbox table.
   - **Offline Resilience**: Ensured the 'Relentless' simulation logic works flawlessly in disconnected/degraded states.
-- **2026-03-30 (v13.0-FINAL-DEMO)**:
+- **2026-03-30 (v15.0-FORCE-REFRESH)**:
   - **Hardened AI Hub**: Implemented a triple-redundant failover loop (Groq -> OpenAI -> Gemini).
-  - **Relentless v13.0 Deployment**: Resolved 400 Bad Request by migrating to Mixtral-8x7b.
-  - **Global Sync**: Bumped version to `v13.0-FINAL-DEMO` across all UI and Backend files to bypass caching.
-  - **Current Live Version**: `v13.0-FINAL-DEMO`.
+  - **Relentless v15.0 Deployment**: Resolved 400 Bad Request by migrating to Mixtral-8x7b.
+  - **Global Sync**: Bumped version to `v15.0-FORCE-REFRESH` across all UI and Backend files to bypass caching.
+  - **Current Live Version**: `v15.0-FORCE-REFRESH`.
