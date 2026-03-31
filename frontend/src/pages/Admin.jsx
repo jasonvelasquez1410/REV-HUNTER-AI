@@ -140,7 +140,7 @@ const Admin = () => {
             if (tenant.id) fetchAllLeads();
         }, 30000);
         return () => clearInterval(interval);
-    }, [tenant.id]);
+    }, [tenant.id, fetchAllLeads]);
 
     // NEW: Notification Trigger on Lead Count Increase
     const prevLeadsCount = useRef(0);
@@ -189,7 +189,12 @@ const Admin = () => {
     const [isVoiceDemoPlaying, setIsVoiceDemoPlaying] = useState(false);
     const [activeTab, setActiveTab] = useState('inbox'); // 'inbox', 'showroom', or 'pipeline'
     const [selectedPillar, setSelectedPillar] = useState('tactical');
-    const PILLARS = ['New', 'Discovery', 'Qualified', 'Follow-up', 'Closed'];
+    const PILLARS = ['Lead Hunter Agent', 'Discovery', 'Qualified', 'Follow-up', 'Closed'];
+
+    const [huntLog, setHuntLog] = useState([
+        { id: 1, time: "Just Now", text: "AI scanning local Facebook groups for 'VW Atlas' intent...", type: "scan" },
+        { id: 2, time: "1m ago", text: "Identified 3 high-intent lookalikes in Sherwood Park.", type: "match" }
+    ]);
 
     const dailyLeads = leads.filter(l => l.is_reported);
     const apiUrl = import.meta.env.VITE_API_URL || '/api';
@@ -321,6 +326,27 @@ const Admin = () => {
         } catch (err) {
             console.error("Move failed:", err);
         }
+    };
+
+    const runHuntSimulation = () => {
+        const huntSteps = [
+            "AI Agent scanning Marketplace for VW Atlas competitive pricing...",
+            "Scrubbing local FB comment sections for 'trade-in' keywords...",
+            "Targeting lookalike audience in 25km radius of Sherwood Park...",
+            "Generating high-intent 'Limited Time' scarcity hook...",
+            "REVENUE PLAN READY: 24h Tactical Strategy deployed."
+        ];
+        
+        let step = 0;
+        const interval = setInterval(() => {
+            if (step < huntSteps.length) {
+                setHuntLog(prev => [{ id: Date.now(), time: "Now", text: huntSteps[step], type: "hunt" }, ...prev.slice(0, 5)]);
+                step++;
+            } else {
+                clearInterval(interval);
+                handleGenerateAd();
+            }
+        }, 800);
     };
 
     const handleGenerateAd = async () => {
@@ -1207,12 +1233,12 @@ const Admin = () => {
                     </div>
                 </section>
             </div>
-            {/* Marketing Strategy Hub (The Marketing Manager Role) */}
+            {/* Lead Hunter Hub (Proactive Revenue Engine) */}
             <section style={{ marginBottom: '30px', background: 'linear-gradient(135deg, #003366 0%, #001f3f 100%)', color: 'white', padding: '25px', borderRadius: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                     <div>
-                        <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'white' }}>Marketing Strategy Hub</h2>
-                        <p style={{ margin: '5px 0 0', fontSize: '0.8rem', color: '#aaa' }}>Command your AI Marketing Manager to generate high-performing content.</p>
+                        <h2 style={{ margin: 0, fontSize: '1.4rem', color: 'white', fontWeight: '900', letterSpacing: '1px' }}>LEAD HUNTER AI™</h2>
+                        <p style={{ margin: '5px 0 0', fontSize: '0.8rem', color: '#00b894', fontWeight: 'bold' }}>PROACTIVE REVENUE MACHINE ACTIVE</p>
                     </div>
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <select 
@@ -1226,23 +1252,42 @@ const Admin = () => {
                         </select>
                         <button 
                             disabled={isGeneratingAd}
-                            onClick={handleGenerateAd}
+                            onClick={runHuntSimulation}
                             style={{ 
                                 padding: '8px 25px', background: '#00b894', color: 'white', border: 'none', borderRadius: '8px', 
-                                fontWeight: 'bold', cursor: 'pointer', opacity: isGeneratingAd ? 0.7 : 1 
+                                fontWeight: 'bold', cursor: 'pointer', opacity: isGeneratingAd ? 0.7 : 1,
+                                boxShadow: '0 0 15px rgba(0, 184, 148, 0.4)'
                             }}
                         >
-                            {isGeneratingAd ? "🤖 Drafting..." : "🚀 Generate Contextual Ad"}
+                            {isGeneratingAd ? "🏹 HUNTING..." : "🎯 START LEAD HUNT"}
                         </button>
                     </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
-                    {['Inventory Focus', 'Finance Deals', 'Trade-In Promo', 'Brand Story'].map(label => (
-                        <div key={label} style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
-                            <div style={{ fontSize: '1.2rem', marginBottom: '5px' }}>{label === 'Inventory Focus' ? '🚗' : label === 'Finance Deals' ? '🏦' : label === 'Trade-In Promo' ? '💰' : '📖'}</div>
-                            <div style={{ fontSize: '0.7rem', fontWeight: '600' }}>{label}</div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
+                        {['Inventory Focus', 'Finance Deals', 'Trade-In Promo', 'Brand Story'].map(label => (
+                            <div key={label} style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.2rem', marginBottom: '5px' }}>{label === 'Inventory Focus' ? '🚗' : label === 'Finance Deals' ? '🏦' : label === 'Trade-In Promo' ? '💰' : '📖'}</div>
+                                <div style={{ fontSize: '0.7rem', fontWeight: '600' }}>{label}</div>
+                            </div>
+                        ))}
+                    </div>
+                    {/* Live Hunt Log Visualizer */}
+                    <div style={{ background: 'rgba(0,0,0,0.3)', padding: '15px', borderRadius: '10px', borderLeft: '3px solid #00b894' }}>
+                        <div style={{ fontSize: '0.65rem', color: '#00b894', fontWeight: 'bold', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                            <span>LIVE HUNT LOG</span>
+                            <span className="pulse">● SCANNING</span>
                         </div>
-                    ))}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {huntLog.map(log => (
+                                <div key={log.id} style={{ fontSize: '0.7rem', color: '#ccc', fontStyle: 'italic', display: 'flex', gap: '8px' }}>
+                                    <span style={{ color: '#666' }}>[{log.time}]</span>
+                                    <span>{log.text}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -1311,10 +1356,10 @@ const Admin = () => {
                                         <h4 style={{ margin: '10px 0' }}>The Sales Agent</h4>
                                         <p style={{ fontSize: '0.8rem', color: '#888' }}>9-Step Relentless Qualifying Script</p>
                                     </div>
-                                    <div style={{ padding: '20px', border: '1px solid #444', borderRadius: '15px' }}>
-                                        <div style={{ fontSize: '2rem' }}>📈</div>
-                                        <h4 style={{ margin: '10px 0' }}>The Marketing Manager</h4>
-                                        <p style={{ fontSize: '0.8rem', color: '#888' }}>Social Growth with Owner Control</p>
+                                    <div style={{ padding: '20px', border: '1px solid #444', borderRadius: '15px', background: 'rgba(0, 184, 148, 0.1)' }}>
+                                        <div style={{ fontSize: '2rem' }}>🎯</div>
+                                        <h4 style={{ margin: '10px 0' }}>The Lead Hunter</h4>
+                                        <p style={{ fontSize: '0.8rem', color: '#888' }}>Proactive 10-Lead-A-Day Revenue Machine</p>
                                     </div>
                                 </div>
                                 <button 
