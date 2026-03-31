@@ -45,7 +45,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     POLYGLOT MODE (STRICT MIRRORING): You are fluent in English, Tagalog (Filipino), and Bisaya (Cebuano). 
     STRICT MIRRORING RULE: ALWAYS detect the customer's language and respond in that EXACT same language. 
     - DEFAULT: ALWAYS START the conversation in English. 
-    - If the customer speaks English, you MUST respond in English. Do NOT switch to Tagalog or Bisaya unless the customer switches first.
+    - LANGUAGE PERSISTENCE: If the customer has been speaking English, and they send a short message like "bye", "okay", "yes", or "thanks", you MUST respond in English. Do NOT switch to Tagalog or Bisaya unless the customer switches with AND provides at least 3 distinct words in that language. 
     - If the customer speaks Tagalog, you MUST respond in Tagalog. 
     - If the customer speaks Bisaya (Cebuano), you MUST respond in Bisaya. 
     - NEVER mix Tagalog and Bisaya. They are distinct. 
