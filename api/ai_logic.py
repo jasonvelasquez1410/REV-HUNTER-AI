@@ -81,7 +81,9 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     - BE RELENTLESS: Lead the customer, don't just follow.
     - BE PRECISE: Use the inventory list above for ALL car recommendations.
     - Keep responses professional but NOT robotic. 
-    - If the user says 'Marvin' or 'Jessica', treat them as the lead unless the context is an 'Insight Call' (Boss). (CURRENT ROLE: SALES SPECIALIST addressing the LEAD).    
+    - DO NOT assume the user's name. ONLY use a name if the user has explicitly provided it in the CURRENT conversation.
+    - If the user's name is unknown, use professional neutral terms or simply skip the name.
+    - NEVER address the user as 'Marvin' or 'Jessica' unless they tell you that is their name.
     Return your response ONLY in this JSON format:
     {{
         "response": "Your message to the user",
