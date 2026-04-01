@@ -1,4 +1,4 @@
-# RevHunter AI - Project Memory (V10 Final)
+# RevHunter AI - Project Memory (V17.0 Scale-Up)
 
 This file serves as a persistent record of the project's state to help future sessions continue seamlessly.
 
@@ -46,6 +46,7 @@ This file serves as a persistent record of the project's state to help future se
 2. [x] **Database Integration**: Supabase/PostgreSQL connectivity enabled with local fallbacks.
 3. [x] **Omni-Hunter Control Center**: Full lead engagement, manual replies, and marketing generation live.
 4. [x] **Stateful Intelligence (V11)**: AI now tracks 9-step qualification progress and persists insights to the DB.
+5. [x] **Demo Stabilization (v16.0)**: Fixed runtime crashes and implemented Agent Management & Ad Approval Hub.
 
 ## Memory Log
 
@@ -77,3 +78,10 @@ This file serves as a persistent record of the project's state to help future se
   - **Relentless v15.0 Deployment**: Resolved 400 Bad Request by migrating to Mixtral-8x7b.
   - **Global Sync**: Bumped version to `v15.0-FORCE-REFRESH` across all UI and Backend files to bypass caching.
   - **Current Live Version**: `v15.0-FORCE-REFRESH`.
+- **2026-04-01 (V17.0)**: **SCALE-UP EDITION DEPLOYED**.
+  - Implemented **ROI Dashboard** with high-impact visual charts (Recharts).
+  - Added **Google Ads Integration** webhook support for lead forms.
+  - Deployed **Multi-Dealer Branding** system allowing dealers to customize AI names, colors, and logos.
+  - Created **SaaS Landing Page** for RevHunter AI with private beta waitlist.
+  - Engineered **CRM Import Utility** to sync DealerSocket Excel data (Revenue Radar) directly into the AI calling engine.
+  - Bumped version to `v17.0-SCALE-UP`.

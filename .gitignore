@@ -23,6 +23,14 @@ ENV/
 .vscode/
 .idea/
 
+# Performance Logs
+stderr.txt
+stdout.txt
+stderr_s.txt
+stdout_s.txt
+tmp/
+frontend/tmp_inspect.js
+
 # OS
 .DS_Store
 Thumbs.db

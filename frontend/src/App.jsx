@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Admin from './pages/Admin';
 import LandingPageDemo from './pages/LandingPageDemo';
 import FacebookDemo from './pages/FacebookDemo';
+import LandingPage from './pages/LandingPage';
 import { TenantProvider, useTenant } from './context/TenantContext';
 
 // Safe-guarding the pitch from any unexpected runtime regressions
@@ -43,7 +44,6 @@ class ErrorBoundary extends React.Component {
 }
 
 function AppContent() {
-  window.isCalling = window.isCalling || false;
   const [currentPage, setCurrentPage] = useState('home');
   const { tenant } = useTenant();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -86,6 +86,8 @@ function AppContent() {
         setCurrentPage('landing');
       } else if (activeRoute === '/facebook' || activeRoute === 'facebook') {
         setCurrentPage('facebook');
+      } else if (activeRoute === '/revhunter' || activeRoute === 'revhunter') {
+        setCurrentPage('revhunter');
       } else {
         setCurrentPage('home');
       }
@@ -148,6 +150,7 @@ function AppContent() {
         {currentPage === 'admin' && <Admin />}
         {currentPage === 'landing' && <LandingPageDemo />}
         {currentPage === 'facebook' && <FacebookDemo />}
+        {currentPage === 'revhunter' && <LandingPage />}
       </main>
 
       <ChatWidget />

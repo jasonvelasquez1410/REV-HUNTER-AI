@@ -57,6 +57,9 @@ class TenantTable(Base):
     address = Column(String, nullable=True)
     welcome_message = Column(Text)
     theme_color = Column(String)
+    ai_name = Column(String, default="Elliot")
+    tagline = Column(String, nullable=True)
+    logo_url = Column(String, nullable=True)
 
 class CarTable(Base):
     __tablename__ = "inventory"
@@ -90,6 +93,7 @@ class LeadTable(Base):
     is_aged = Column(Boolean, default=False)
     conversation_state = Column(Text, default="{}")  # JSON string of the current qualification state
     conversation_summary = Column(Text, default="New Lead - Discovery Phase")
+    source = Column(String, default="Website")
 
 class AdTable(Base):
     __tablename__ = "ads"

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Vapi as VapiNamed } from '@vapi-ai/web';
 import VapiDefault from '@vapi-ai/web';
-import LeadReportCard from '../components/LeadReportCard';
 import ChatModal from '../components/ChatModal';
 import CommandModal from '../components/CommandModal';
+import ROIDashboard from '../components/ROIDashboard';
+import SettingsPortal from '../components/SettingsPortal';
 import { useTenant } from '../context/TenantContext';
 import { MOCK_FALLBACK_LEADS, MOCK_APPOINTMENTS, PRESENTATION_INSIGHTS, MOCK_AGENTS } from '../utils/mockData';
 
@@ -65,23 +66,10 @@ export default function Admin() {
             if (!res.ok) throw new Error("API Failure");
             const data = await res.json();
             setLeads(data);
-        } catch (err) {
+        } catch {
             setLeads(MOCK_FALLBACK_LEADS);
         }
     }, [apiUrl, tenant.id]);
-
-    function handleSyncCRM(lead) {
-        fetch(`${apiUrl}/leads/${lead.id}/sync-gsheets`, {
-            method: 'POST',
-            headers: { 'X-Tenant-Id': tenant.id }
-        }).then(() => {
-            alert(`Syncing ${lead.name} to CDK/CRM...`);
-            setAuditLogs(prev => [{ id: `sync-${Date.now()}`, time: "Now", action: `CRM: Synced ${lead.name} data to Central CRM`, type: "CRM" }, ...prev]);
-        }).catch(err => {
-            console.error("CRM Sync Error:", err);
-            setAuditLogs(prev => [{ id: `err-${Date.now()}`, time: "Error", action: `CRM: Sync failed for ${lead.name}`, type: "System" }, ...prev]);
-        });
-    }
 
     function handleVoiceDemo() {
         if (isVoiceDemoPlaying || !window.speechSynthesis) return;
@@ -311,7 +299,7 @@ export default function Admin() {
             )}
 
             <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
-                {['inbox', 'agents', 'analytics', 'hunters', 'showroom'].map(tab => (
+                {['inbox', 'analytics', 'roi', 'hunters', 'showroom', 'settings'].map(tab => (
                     <button 
                         key={tab} 
                         onClick={() => setActiveTab(tab)}
@@ -581,6 +569,9 @@ export default function Admin() {
                             </div>
                         </div>
                     )}
+
+                    {activeTab === 'roi' && <ROIDashboard tenant={tenant} />}
+                    {activeTab === 'settings' && <SettingsPortal tenant={tenant} onUpdate={(data) => setAuditLogs(prev => [{ id: `set-${Date.now()}`, time: "Now", action: `SYSTEM: Dealer config updated (${data.name})`, type: "System" }, ...prev])} />}
                 </main>
 
                 <aside>

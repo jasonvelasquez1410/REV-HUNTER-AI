@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from .models import UserMessage, Lead, AdApproval, Car
 from .ai_logic import qualify_lead, generate_ad_copy, generate_ad_image_prompt
+from .import_leads import import_dealer_socket_excel
 from pydantic import BaseModel
 from typing import List, Optional, Annotated
 import os
@@ -211,6 +212,49 @@ async def get_report():
         "impressions": "15,420",
         "reach": "9,850",
         "performance": "EXCEPTIONAL"
+    }
+
+@api_router.post("/webhooks/google-ads/{tenant_id}")
+async def google_ads_webhook(tenant_id: str, request: Request):
+    """Webhook for Google Ads Lead Form Extensions."""
+    data = await request.json()
+    try:
+        # Google Ads webhook fields mapping
+        user_column_data = data.get("user_column_data", [])
+        email = next((x["string_value"] for x in user_column_data if x["column_name"] == "EMAIL"), "Unknown")
+        name = next((x["string_value"] for x in user_column_data if x["column_name"] == "FULL_NAME"), "Google Lead")
+        phone = next((x["string_value"] for x in user_column_data if x["column_name"] == "PHONE_NUMBER"), None)
+        
+        db.get_or_create_lead(tenant_id, name=f"{name} (G-Ads)", phone=phone)
+        print(f"GOOGLE ADS: Captured lead {name} for {tenant_id}")
+        return {"status": "success"}
+    except Exception as e:
+        print(f"Google Ads Webhook Error: {e}")
+        return {"status": "error", "message": str(e)}
+
+@api_router.post("/import/crm")
+async def import_crm_leads(tenant_id: str = Depends(get_tenant_id)):
+    """Triggers the Excel import for DealerSocket/Revenue Radar leads."""
+    try:
+        count = import_dealer_socket_excel("../Revenue Radar (R-Jay).xlsx", tenant_id)
+        return {"status": "success", "imported": count}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/roi-analytics")
+async def get_roi_analytics(tenant_id: str = Depends(get_tenant_id)):
+    """Advanced analytics for the ROI Dashboard."""
+    leads = db.get_leads(tenant_id)
+    return {
+        "total_leads": len(leads),
+        "qualified_leads": sum(1 for l in leads if l.quality_score > 70),
+        "appointments": sum(1 for l in leads if l.status == "Hot"),
+        "revenue_influenced": sum(1 for l in leads if l.is_billed) * 1500, # Mock $1500 per sale
+        "source_breakdown": {
+            "Facebook": sum(1 for l in leads if "FB" in l.name),
+            "Google Ads": sum(1 for l in leads if "G-Ads" in l.name),
+            "Website": sum(1 for l in leads if "G-Ads" not in l.name and "FB" not in l.name)
+        }
     }
 
 app.include_router(api_router, prefix="/api")
