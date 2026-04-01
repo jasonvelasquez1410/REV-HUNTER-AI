@@ -6,6 +6,8 @@ import ChatModal from '../components/ChatModal';
 import CommandModal from '../components/CommandModal';
 import ROIDashboard from '../components/ROIDashboard';
 import SettingsPortal from '../components/SettingsPortal';
+import SEOModule from '../components/SEOModule';
+import BillingDashboard from '../components/BillingDashboard';
 import { useTenant } from '../context/TenantContext';
 import { MOCK_FALLBACK_LEADS, MOCK_APPOINTMENTS, PRESENTATION_INSIGHTS, MOCK_AGENTS } from '../utils/mockData';
 
@@ -301,7 +303,7 @@ export default function Admin() {
             )}
 
             <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
-                {['inbox', 'analytics', 'roi', 'hunters', 'showroom', 'settings'].map(tab => (
+                {['inbox', 'analytics', 'roi', 'hunters', 'showroom', 'seo', 'billing', 'settings'].map(tab => (
                     <button 
                         key={tab} 
                         onClick={() => setActiveTab(tab)}
@@ -573,6 +575,8 @@ export default function Admin() {
                     )}
 
                     {activeTab === 'roi' && <ROIDashboard tenant={tenant} />}
+                    {activeTab === 'seo' && <SEOModule tenant={tenant} />}
+                    {activeTab === 'billing' && <BillingDashboard tenant={tenant} />}
                     {activeTab === 'settings' && <SettingsPortal tenant={tenant} onUpdate={(data) => setAuditLogs(prev => [{ id: `set-${Date.now()}`, time: "Now", action: `SYSTEM: Dealer config updated (${data.name})`, type: "System" }, ...prev])} />}
                 </main>
 

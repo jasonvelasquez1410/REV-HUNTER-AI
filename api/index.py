@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from .models import UserMessage, Lead, AdApproval, Car
-from .ai_logic import qualify_lead, generate_ad_copy, generate_ad_image_prompt
+from .ai_logic import qualify_lead, generate_ad_copy, generate_ad_image_prompt, generate_seo_content
 from .import_leads import import_dealer_socket_excel
 from pydantic import BaseModel
 from typing import List, Optional, Annotated
@@ -247,15 +247,54 @@ async def get_roi_analytics(tenant_id: str = Depends(get_tenant_id)):
     leads = db.get_leads(tenant_id)
     return {
         "total_leads": len(leads),
-        "qualified_leads": sum(1 for l in leads if l.quality_score > 70),
+        "qualified_leads": sum(1 for l in leads if l.quality_score >= 80),
         "appointments": sum(1 for l in leads if l.status == "Hot"),
-        "revenue_influenced": sum(1 for l in leads if l.is_billed) * 1500, # Mock $1500 per sale
+        "revenue_influenced": sum(1 for l in leads if l.is_billed) * 1500,
         "source_breakdown": {
             "Facebook": sum(1 for l in leads if "FB" in l.name),
             "Google Ads": sum(1 for l in leads if "G-Ads" in l.name),
             "Website": sum(1 for l in leads if "G-Ads" not in l.name and "FB" not in l.name)
         }
     }
+
+@api_router.get("/billing")
+async def get_billing_data(tenant_id: str = Depends(get_tenant_id)):
+    """Fetches unbilled qualified leads and calculates current balance."""
+    leads = db.get_leads(tenant_id)
+    unbilled = [l for l in leads if l.quality_score >= 80 and not getattr(l, 'is_billed', False)]
+    return {
+        "unbilled_leads": [
+            {"id": l.id, "name": l.name, "score": l.quality_score, "source": l.source or "Website", "date": l.last_action_time}
+            for l in unbilled
+        ],
+        "total_owed": len(unbilled) * 20,
+        "lead_rate": 20,
+        "history": [
+            {"id": "inv-001", "date": "2026-03-01", "amount": 840, "leads": 42, "status": "Paid"},
+            {"id": "inv-002", "date": "2026-02-01", "amount": 620, "leads": 31, "status": "Paid"}
+        ]
+    }
+
+class BillRequest(BaseModel):
+    lead_ids: List[int]
+
+@api_router.post("/leads/mark-billed")
+async def mark_billed(req: BillRequest):
+    """Marks leads as billed."""
+    with db.session_factory() as session:
+        from .storage import LeadTable
+        session.query(LeadTable).filter(LeadTable.id.in_(req.lead_ids)).update({"is_billed": True}, synchronize_session=False)
+        session.commit()
+    return {"status": "success", "billed": len(req.lead_ids)}
+
+class SEORequest(BaseModel):
+    topic: str
+    location: str = "Sherwood Park"
+
+@api_router.post("/seo-generate")
+async def seo_generate(req: SEORequest):
+    """Generates SEO content kit."""
+    return generate_seo_content(req.topic, req.location)
 
 app.include_router(api_router, prefix="/api")
 app.include_router(api_router)

@@ -288,3 +288,41 @@ def get_simulated_quality_leads():
         {"name": "Piper McLean", "intent": "Medium", "score": 85, "summary": "Comparing SUVs, budget $500/mo."},
         {"name": "Jason Grace", "intent": "High", "score": 92, "summary": "Need quick approval for work truck."}
     ]
+
+def generate_seo_content(topic: str, location: str = "Sherwood Park"):
+    """
+    Generates SEO-optimized content using Gemini.
+    """
+    prompt = f"""
+    You are an Elite Automotive SEO Specialist.
+    Generate a complete SEO starter kit for a car dealership in {location} targeting the topic: {topic}.
+    
+    Return your response ONLY in this JSON format:
+    {{
+        "title_tag": "SEO Optimized Title Tag (under 60 chars)",
+        "meta_description": "Compelling meta description (under 160 chars)",
+        "h1": "The main headline for the page",
+        "blog_snippet": "A 150-word SEO-optimized blog snippet about {topic} in {location} with natural keyword placement.",
+        "keywords": ["keyword1", "keyword2", "keyword3"]
+    }}
+    """
+    
+    if not GOOGLE_API_KEY:
+        return {
+            "title_tag": f"Best {topic} in {location} | FilCan Cars",
+            "meta_description": f"Looking for {topic} in {location}? Visit FilCan Cars for the best deals and financing options.",
+            "h1": f"Top Quality {topic} in {location}",
+            "blog_snippet": "Demo SEO content. Please configure GOOGLE_API_KEY for real AI generation.",
+            "keywords": [topic, location, "Car Dealership"]
+        }
+
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt)
+        import json, re
+        match = re.search(r'\{.*\}', response.text, re.DOTALL)
+        if match:
+            return json.loads(match.group())
+    except Exception as e:
+        print(f"SEO Generation Error: {e}")
+        return {"error": str(e)}
