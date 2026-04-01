@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Zap, Target, Mic, MessageSquare, HelpCircle } from 'lucide-react';
 import { Vapi as VapiNamed } from '@vapi-ai/web';
 import VapiDefault from '@vapi-ai/web';
 import ChatModal from '../components/ChatModal';
@@ -284,6 +285,7 @@ export default function Admin() {
                     <div style={{ fontSize: '1.5rem', fontWeight: '900' }}>Marketing Command Center</div>
                 </div>
                 <div style={{ display: 'flex', gap: '15px' }}>
+                    <button onClick={() => alert("RELENTLESS STRATEGY GUIDE:\n\n1. Leads arrive automatically from FB, Google Ads, Website, or CRM.\n2. AI Elliot instantly text/chats to qualify them.\n3. USE ZAP: Force Elliot to send an unprompted follow-up text.\n4. USE TARGET: Manually tell Elliot what to pitch next.\n5. USE MIC: Trigger an instant outbound AI Voice Call to the lead.")} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', background: 'rgba(0,0,0,0.05)', color: '#003366', border: '1px solid #ddd', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}><HelpCircle size={18} /> STRATEGY GUIDE</button>
                     <button onClick={() => setPresentationMode(true)} style={{ padding: '12px 25px', background: '#003366', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,51,102,0.3)' }}>🚀 DEMO PITCH MODE</button>
                     {Notification.permission !== 'granted' && (
                         <button onClick={() => Notification.requestPermission()} style={{ padding: '12px 25px', background: '#00b894', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}>🔔 ENABLE NOTIFICATIONS</button>
@@ -373,10 +375,10 @@ export default function Admin() {
                                                 {lead.assigned_to ? `Assigned: ${MOCK_AGENTS.find(a => a.id === lead.assigned_to)?.name}` : 'Unassigned'}
                                             </div>
                                         </div>
-                                        <button onClick={() => setSelectedLeadChat(lead)} style={{ padding: '10px 18px', background: '#f0f2f5', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>💬</button>
-                                        <button onClick={() => handleAutoNudge(lead.id)} style={{ padding: '10px 18px', background: '#003366', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>🦁</button>
-                                        <button onClick={() => setIsCommanding(lead)} style={{ padding: '10px 18px', background: '#D92027', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>🏹</button>
-                                        <button onClick={() => handleVoiceCall(lead)} style={{ padding: '10px 18px', background: '#00b894', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>📞</button>
+                                        <button title="View SMS/Chat Logs" onClick={() => setSelectedLeadChat(lead)} style={{ padding: '10px 14px', background: '#f0f2f5', border: 'none', borderRadius: '12px', color: '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><MessageSquare size={18} /></button>
+                                        <button title="Zap (Relentless Nudge): Trigger AI to send a follow-up text instantly" onClick={() => handleAutoNudge(lead.id)} style={{ padding: '10px 14px', background: '#003366', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Zap size={18} /></button>
+                                        <button title="Target (Command Mode): Manually instruct the AI on the next move" onClick={() => setIsCommanding(lead)} style={{ padding: '10px 14px', background: '#D92027', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Target size={18} /></button>
+                                        <button title="Mic (Voice Agent): Have AI Elliot start an outbound call to this lead" onClick={() => handleVoiceCall(lead)} style={{ padding: '10px 14px', background: '#00b894', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Mic size={18} /></button>
                                     </div>
                                   </div>
                                 </div>
