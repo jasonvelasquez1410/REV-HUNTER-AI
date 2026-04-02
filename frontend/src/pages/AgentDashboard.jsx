@@ -1,42 +1,174 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Zap, Phone, TrendingUp, Users, Clock, Star, ChevronRight, Upload } from 'lucide-react';
+import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Bell, LogOut } from 'lucide-react';
 import { useTenant } from '../context/TenantContext';
 
-const AGENT_PROFILE = {
-    name: 'R-Jay Velasquez',
-    role: 'Senior Sales Consultant',
-    avatar: 'RJ',
-    color: '#D92027'
-};
+// ── PUSH NOTIFICATION HELPER ──────────────────────
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+}
 
+function sendPushNotification(title, body) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, {
+            body,
+            icon: '/icons/icon-192.png',
+            badge: '/icons/icon-192.png',
+            vibrate: [200, 100, 200],
+            tag: 'revhunter-lead'
+        });
+    }
+}
+
+// ── LOGIN SCREEN ──────────────────────────────────
+function AgentLogin({ onLogin }) {
+    const [name, setName] = useState('');
+    const [pin, setPin] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const apiUrl = import.meta.env.VITE_API_URL || '/api';
+
+    const handleLogin = async () => {
+        if (!name || !pin) return setError('Enter your name and PIN');
+        setLoading(true);
+        setError('');
+        try {
+            const res = await fetch(`${apiUrl}/agents/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, pin })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                onLogin(data.agent);
+            } else {
+                setError('Invalid name or PIN. Try again.');
+            }
+        } catch {
+            // Demo fallback login
+            const demoAgents = [
+                { id: 1, name: 'R-Jay Velasquez', pin: '1234', avatar: 'RJ', role: 'Senior Sales Consultant' },
+                { id: 2, name: 'Mark Santos', pin: '5678', avatar: 'MS', role: 'Sales Consultant' },
+                { id: 3, name: 'Jessica Cruz', pin: '9012', avatar: 'JC', role: 'Junior Sales Consultant' }
+            ];
+            const match = demoAgents.find(a => a.name.toLowerCase() === name.toLowerCase() && a.pin === pin);
+            if (match) { onLogin(match); }
+            else { setError('Invalid credentials. Demo PINs: R-Jay=1234, Mark=5678, Jessica=9012'); }
+        }
+        setLoading(false);
+    };
+
+    return (
+        <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+            <div style={{ width: '100%', maxWidth: '400px', padding: '0 20px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>⚡</div>
+                    <h1 style={{ color: 'white', fontSize: '1.5rem', fontWeight: '900', margin: 0 }}>REVHUNTER AGENT</h1>
+                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', marginTop: '8px' }}>Sign in to access your leads</p>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '30px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <input
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        placeholder="Your Full Name"
+                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '1rem', marginBottom: '12px', boxSizing: 'border-box' }}
+                    />
+                    <input
+                        value={pin}
+                        onChange={e => setPin(e.target.value)}
+                        placeholder="4-Digit PIN"
+                        type="password"
+                        maxLength={4}
+                        onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '1.5rem', textAlign: 'center', letterSpacing: '15px', marginBottom: '20px', boxSizing: 'border-box' }}
+                    />
+                    {error && <div style={{ color: '#D92027', fontSize: '0.8rem', marginBottom: '15px', textAlign: 'center' }}>{error}</div>}
+                    <button
+                        onClick={handleLogin}
+                        disabled={loading}
+                        style={{ width: '100%', padding: '16px', background: loading ? 'rgba(217,32,39,0.3)' : 'linear-gradient(135deg, #D92027, #a01820)', color: 'white', border: 'none', borderRadius: '14px', fontWeight: '800', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 8px 25px rgba(217,32,39,0.3)' }}
+                    >
+                        {loading ? 'SIGNING IN...' : 'SIGN IN'}
+                    </button>
+                </div>
+                <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)' }}>
+                    Powered by RevHunter AI
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ── MAIN AGENT DASHBOARD ──────────────────────────
 export default function AgentDashboard() {
     const { tenant } = useTenant();
     const apiUrl = import.meta.env.VITE_API_URL || '/api';
+    const [agent, setAgent] = useState(() => {
+        const saved = localStorage.getItem('revhunter_agent');
+        return saved ? JSON.parse(saved) : null;
+    });
     const [leads, setLeads] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeView, setActiveView] = useState('leads');
     const [nudging, setNudging] = useState(null);
+    const [newLeadAlert, setNewLeadAlert] = useState(null);
+
+    const handleLogin = (agentData) => {
+        setAgent(agentData);
+        localStorage.setItem('revhunter_agent', JSON.stringify(agentData));
+        requestNotificationPermission();
+    };
+
+    const handleLogout = () => {
+        setAgent(null);
+        localStorage.removeItem('revhunter_agent');
+    };
 
     const fetchLeads = useCallback(async () => {
+        if (!agent) return;
         try {
-            const res = await fetch(`${apiUrl}/leads`, { headers: { 'x-tenant-id': tenant?.id || 'filcan' } });
+            const res = await fetch(`${apiUrl}/agents/${encodeURIComponent(agent.name)}/leads`, {
+                headers: { 'x-tenant-id': tenant?.id || 'filcan' }
+            });
             const data = await res.json();
-            setLeads(data.leads || data || []);
+            const newLeads = data.leads || data || [];
+
+            // Check for new leads and trigger notification
+            if (leads.length > 0 && newLeads.length > leads.length) {
+                const newest = newLeads.find(nl => !leads.some(ol => ol.id === nl.id));
+                if (newest) {
+                    sendPushNotification(
+                        '🔥 New Lead Assigned!',
+                        `${newest.name} (Score: ${newest.quality_score || '??'}%) has been assigned to you.`
+                    );
+                    setNewLeadAlert(newest);
+                    setTimeout(() => setNewLeadAlert(null), 5000);
+                }
+            }
+            setLeads(newLeads);
         } catch {
+            // Demo fallback: show sample leads assigned to this agent
             setLeads([
-                { id: 1, name: 'Jan Marc Santos', car: '2024 VW Atlas', quality_score: 92, status: 'Hot', source: 'CRM', last_action_time: '2 hrs ago', follow_up_streak: 3 },
-                { id: 2, name: 'Leo Valdez', car: '2023 Honda CR-V', quality_score: 98, status: 'Hot', source: 'Facebook', last_action_time: '30 min ago', follow_up_streak: 5 },
-                { id: 3, name: 'Maria Cruz', car: '2022 Toyota RAV4', quality_score: 85, status: 'Warm', source: 'Google Ads', last_action_time: '1 hr ago', follow_up_streak: 2 },
-                { id: 4, name: 'Piper McLean', car: '2024 Mazda CX-5', quality_score: 78, status: 'Warm', source: 'Website', last_action_time: '3 hrs ago', follow_up_streak: 1 },
-                { id: 5, name: 'Jason Grace', car: '2023 Ford F-150', quality_score: 95, status: 'Hot', source: 'CRM', last_action_time: '15 min ago', follow_up_streak: 4 }
+                { id: 1, name: 'Jan Marc Santos', car: '2024 VW Atlas', quality_score: 92, status: 'Hot', source: 'CRM', last_action_time: '2 hrs ago', follow_up_streak: 3, assigned_agent: agent.name },
+                { id: 2, name: 'Leo Valdez', car: '2023 Honda CR-V', quality_score: 98, status: 'Hot', source: 'Facebook', last_action_time: '30 min ago', follow_up_streak: 5, assigned_agent: agent.name },
+                { id: 3, name: 'Maria Cruz', car: '2022 Toyota RAV4', quality_score: 85, status: 'Warm', source: 'Google Ads', last_action_time: '1 hr ago', follow_up_streak: 2, assigned_agent: agent.name },
+                { id: 4, name: 'Piper McLean', car: '2024 Mazda CX-5', quality_score: 78, status: 'Warm', source: 'Website', last_action_time: '3 hrs ago', follow_up_streak: 1, assigned_agent: agent.name },
+                { id: 5, name: 'Jason Grace', car: '2023 Ford F-150', quality_score: 95, status: 'Hot', source: 'CRM', last_action_time: '15 min ago', follow_up_streak: 4, assigned_agent: agent.name }
             ]);
         }
         setLoading(false);
-    }, [apiUrl, tenant?.id]);
+    }, [agent, apiUrl, tenant?.id]);
 
     useEffect(() => {
-        fetchLeads();
-    }, [fetchLeads]);
+        if (agent) {
+            fetchLeads();
+            requestNotificationPermission();
+            // Poll for new leads every 30 seconds
+            const interval = setInterval(fetchLeads, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [agent, fetchLeads]);
 
     const handleNudge = (leadId) => {
         setNudging(leadId);
@@ -46,8 +178,13 @@ export default function AgentDashboard() {
         }, 1500);
     };
 
-    const hotLeads = leads.filter(l => l.quality_score >= 80);
-    const warmLeads = leads.filter(l => l.quality_score >= 50 && l.quality_score < 80);
+    // ── RENDER LOGIN IF NOT AUTHENTICATED ─────────
+    if (!agent) {
+        return <AgentLogin onLogin={handleLogin} />;
+    }
+
+    const hotLeads = leads.filter(l => (l.quality_score || 0) >= 80);
+    const warmLeads = leads.filter(l => (l.quality_score || 0) >= 50 && (l.quality_score || 0) < 80);
     const totalFollowUps = leads.reduce((s, l) => s + (l.follow_up_streak || 0), 0);
 
     if (loading) {
@@ -55,7 +192,7 @@ export default function AgentDashboard() {
             <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
                 <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '2rem', marginBottom: '15px' }}>⚡</div>
-                    <div style={{ fontWeight: 'bold' }}>Loading your leads...</div>
+                    <div style={{ fontWeight: 'bold' }}>Loading your leads, {agent.name.split(' ')[0]}...</div>
                 </div>
             </div>
         );
@@ -63,19 +200,36 @@ export default function AgentDashboard() {
 
     return (
         <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%)', color: 'white', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+            
+            {/* New Lead Alert Banner */}
+            {newLeadAlert && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, background: 'linear-gradient(135deg, #D92027, #a01820)', padding: '15px 5%', display: 'flex', alignItems: 'center', gap: '12px', animation: 'slideDown 0.3s ease' }}>
+                    <Bell size={20} />
+                    <div>
+                        <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>🔥 New Lead Assigned!</div>
+                        <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>{newLeadAlert.name} — Score: {newLeadAlert.quality_score || '??'}%</div>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div style={{ padding: '20px 5%', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <div style={{ width: '45px', height: '45px', borderRadius: '14px', background: `linear-gradient(135deg, ${AGENT_PROFILE.color}, ${AGENT_PROFILE.color}88)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.9rem' }}>{AGENT_PROFILE.avatar}</div>
+                        <div style={{ width: '45px', height: '45px', borderRadius: '14px', background: 'linear-gradient(135deg, #D92027, #D9202788)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.9rem' }}>{agent.avatar || agent.name.charAt(0)}</div>
                         <div>
-                            <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>{AGENT_PROFILE.name}</div>
-                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>{AGENT_PROFILE.role} • {tenant?.name || 'FilCan Cars'}</div>
+                            <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>{agent.name}</div>
+                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>{agent.role} • {tenant?.name || 'FilCan Cars'}</div>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00b894', boxShadow: '0 0 8px #00b894' }} />
-                        <span style={{ fontSize: '0.7rem', color: '#00b894' }}>ELLIOT ACTIVE</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00b894', boxShadow: '0 0 8px #00b894' }} />
+                            <span style={{ fontSize: '0.65rem', color: '#00b894' }}>ELLIOT LIVE</span>
+                        </div>
+                        <button onClick={handleLogout} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'rgba(255,255,255,0.4)', borderRadius: '10px', padding: '8px', cursor: 'pointer' }} title="Sign Out">
+                            <LogOut size={16} />
+                        </button>
                     </div>
                 </div>
             </div>
@@ -86,7 +240,7 @@ export default function AgentDashboard() {
                     { icon: <Users size={18} />, label: 'My Leads', value: leads.length, color: '#6c5ce7' },
                     { icon: <Star size={18} />, label: 'Hot Leads', value: hotLeads.length, color: '#D92027' },
                     { icon: <Zap size={18} />, label: 'AI Follow-Ups', value: totalFollowUps, color: '#fdcb6e' },
-                    { icon: <TrendingUp size={18} />, label: 'Close Rate', value: '34%', color: '#00b894' }
+                    { icon: <TrendingUp size={18} />, label: 'Close Rate', value: leads.length > 0 ? Math.round((hotLeads.length / leads.length) * 100) + '%' : '0%', color: '#00b894' }
                 ].map((stat, i) => (
                     <div key={i} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
                         <div style={{ color: stat.color, marginBottom: '8px' }}>{stat.icon}</div>
@@ -115,49 +269,52 @@ export default function AgentDashboard() {
             </div>
 
             {/* Main Content */}
-            <div style={{ padding: '0 5%', paddingBottom: '40px' }}>
+            <div style={{ padding: '0 5%', paddingBottom: '80px' }}>
                 {activeView === 'leads' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {leads.length === 0 && (
+                            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.3)' }}>
+                                <Bell size={40} style={{ marginBottom: '15px', opacity: 0.3 }} />
+                                <div style={{ fontWeight: '700', marginBottom: '8px' }}>No Leads Assigned Yet</div>
+                                <div style={{ fontSize: '0.8rem' }}>When leads are assigned to you, they'll appear here with a push notification.</div>
+                            </div>
+                        )}
+
                         {/* Hot Leads Section */}
                         {hotLeads.length > 0 && (
                             <div style={{ marginBottom: '10px' }}>
                                 <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#D92027', marginBottom: '12px', letterSpacing: '2px' }}>🔥 READY TO CLOSE ({hotLeads.length})</div>
                                 {hotLeads.map(lead => (
-                                    <div key={lead.id} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '18px', marginBottom: '10px', border: '1px solid rgba(217,32,39,0.15)', transition: 'all 0.2s' }}>
+                                    <div key={lead.id} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '18px', marginBottom: '10px', border: '1px solid rgba(217,32,39,0.15)' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
                                                     <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(217,32,39,0.15)', color: '#D92027', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.8rem' }}>{lead.name.charAt(0)}</div>
                                                     <div>
                                                         <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>{lead.name}</div>
-                                                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>{lead.car || 'Interested'} • {lead.source}</div>
+                                                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>{lead.car || lead.conversation_summary || 'Interested'} • {lead.source}</div>
                                                     </div>
                                                 </div>
-                                                <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                                                <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
                                                     <span style={{ fontSize: '0.65rem', background: 'rgba(0,184,148,0.15)', color: '#00b894', padding: '3px 10px', borderRadius: '20px', fontWeight: 'bold' }}>SCORE: {lead.quality_score}%</span>
                                                     <span style={{ fontSize: '0.65rem', background: 'rgba(253,203,110,0.15)', color: '#fdcb6e', padding: '3px 10px', borderRadius: '20px', fontWeight: 'bold' }}>
                                                         <Clock size={10} style={{ verticalAlign: 'middle', marginRight: '3px' }} />{lead.last_action_time}
                                                     </span>
-                                                    {lead.follow_up_streak > 0 && (
+                                                    {(lead.follow_up_streak || 0) > 0 && (
                                                         <span style={{ fontSize: '0.65rem', background: 'rgba(108,92,231,0.15)', color: '#a29bfe', padding: '3px 10px', borderRadius: '20px', fontWeight: 'bold' }}>⚡ {lead.follow_up_streak}x nudged</span>
+                                                    )}
+                                                    {lead.phone && (
+                                                        <span style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', padding: '3px 10px', borderRadius: '20px' }}>📞 {lead.phone}</span>
                                                     )}
                                                 </div>
                                             </div>
                                             <div style={{ display: 'flex', gap: '8px' }}>
-                                                <button
-                                                    title="AI Auto-Nudge: Elliot sends a follow-up text"
-                                                    onClick={() => handleNudge(lead.id)}
-                                                    disabled={nudging === lead.id}
-                                                    style={{ width: '40px', height: '40px', borderRadius: '12px', background: nudging === lead.id ? 'rgba(255,255,255,0.05)' : 'rgba(108,92,231,0.15)', border: 'none', color: '#a29bfe', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                >
+                                                <button title="AI Auto-Nudge" onClick={() => handleNudge(lead.id)} disabled={nudging === lead.id} style={{ width: '40px', height: '40px', borderRadius: '12px', background: nudging === lead.id ? 'rgba(255,255,255,0.05)' : 'rgba(108,92,231,0.15)', border: 'none', color: '#a29bfe', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                     <Zap size={18} />
                                                 </button>
-                                                <button
-                                                    title="Call this lead"
-                                                    style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(0,184,148,0.15)', border: 'none', color: '#00b894', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                >
+                                                <a href={lead.phone ? `tel:${lead.phone}` : '#'} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(0,184,148,0.15)', border: 'none', color: '#00b894', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
                                                     <Phone size={18} />
-                                                </button>
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
@@ -179,11 +336,7 @@ export default function AgentDashboard() {
                                                     <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>{lead.car || 'Browsing'} • Score: {lead.quality_score}%</div>
                                                 </div>
                                             </div>
-                                            <button
-                                                onClick={() => handleNudge(lead.id)}
-                                                disabled={nudging === lead.id}
-                                                style={{ padding: '8px 14px', borderRadius: '10px', background: 'rgba(253,203,110,0.1)', border: 'none', color: '#fdcb6e', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}
-                                            >
+                                            <button onClick={() => handleNudge(lead.id)} disabled={nudging === lead.id} style={{ padding: '8px 14px', borderRadius: '10px', background: 'rgba(253,203,110,0.1)', border: 'none', color: '#fdcb6e', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                                 <Zap size={14} /> NUDGE
                                             </button>
                                         </div>
@@ -197,7 +350,7 @@ export default function AgentDashboard() {
                 {activeView === 'import' && (
                     <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '30px', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
                         <Upload size={40} style={{ color: 'rgba(255,255,255,0.2)', marginBottom: '15px' }} />
-                        <h3 style={{ margin: '0 0 10px', fontWeight: '800' }}>Import Your Leads</h3>
+                        <h3 style={{ margin: '0 0 10px', fontWeight: '800', color: 'white' }}>Import Your Leads</h3>
                         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem', marginBottom: '25px' }}>Upload your DealerSocket or CRM export and let Elliot start working them.</p>
                         <button
                             onClick={() => alert('CRM Import triggered! Elliot will begin qualifying your imported leads.')}
@@ -211,12 +364,16 @@ export default function AgentDashboard() {
             </div>
 
             {/* Bottom Bar */}
-            <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 5%', display: 'flex', justifyContent: 'center', gap: '8px' }}>
+            <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 5%', display: 'flex', justifyContent: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>
                     <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00b894' }} />
-                    Elliot is monitoring {leads.length} leads • Last sync: Just now
+                    Elliot is monitoring {leads.length} leads for {agent.name.split(' ')[0]} • Polling every 30s
                 </div>
             </div>
+
+            <style>{`
+                @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+            `}</style>
         </div>
     );
 }

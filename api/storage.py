@@ -94,6 +94,17 @@ class LeadTable(Base):
     conversation_state = Column(Text, default="{}")  # JSON string of the current qualification state
     conversation_summary = Column(Text, default="New Lead - Discovery Phase")
     source = Column(String, default="Website")
+    assigned_agent = Column(String, nullable=True)
+
+class AgentTable(Base):
+    __tablename__ = "agents"
+    id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(String, ForeignKey("tenants.id"), index=True, default="filcan")
+    name = Column(String)
+    pin = Column(String)
+    avatar = Column(String, default="AG")
+    role = Column(String, default="Sales Consultant")
+    is_active = Column(Boolean, default=True)
 
 class AdTable(Base):
     __tablename__ = "ads"

@@ -296,5 +296,78 @@ async def seo_generate(req: SEORequest):
     """Generates SEO content kit."""
     return generate_seo_content(req.topic, req.location)
 
+# ── AGENT MANAGEMENT ──────────────────────────────
+
+DEMO_AGENTS = [
+    {"id": 1, "name": "R-Jay Velasquez", "pin": "1234", "avatar": "RJ", "role": "Senior Sales Consultant", "is_active": True},
+    {"id": 2, "name": "Mark Santos", "pin": "5678", "avatar": "MS", "role": "Sales Consultant", "is_active": True},
+    {"id": 3, "name": "Jessica Cruz", "pin": "9012", "avatar": "JC", "role": "Junior Sales Consultant", "is_active": True}
+]
+
+class AgentLoginRequest(BaseModel):
+    name: str
+    pin: str
+
+@api_router.post("/agents/login")
+async def agent_login(req: AgentLoginRequest):
+    """Simple PIN-based agent login."""
+    # Try DB first
+    try:
+        from .storage import AgentTable
+        with db.session_factory() as session:
+            agent = session.query(AgentTable).filter(
+                AgentTable.name == req.name, AgentTable.pin == req.pin, AgentTable.is_active == True
+            ).first()
+            if agent:
+                return {"status": "success", "agent": {"id": agent.id, "name": agent.name, "avatar": agent.avatar, "role": agent.role}}
+    except:
+        pass
+    
+    # Fallback to demo agents
+    for a in DEMO_AGENTS:
+        if a["name"].lower() == req.name.lower() and a["pin"] == req.pin:
+            return {"status": "success", "agent": a}
+    
+    raise HTTPException(status_code=401, detail="Invalid name or PIN")
+
+@api_router.get("/agents")
+async def get_agents(tenant_id: str = Depends(get_tenant_id)):
+    """List all agents."""
+    try:
+        from .storage import AgentTable
+        with db.session_factory() as session:
+            agents = session.query(AgentTable).filter(AgentTable.tenant_id == tenant_id).all()
+            if agents:
+                return [{"id": a.id, "name": a.name, "avatar": a.avatar, "role": a.role, "is_active": a.is_active} for a in agents]
+    except:
+        pass
+    return DEMO_AGENTS
+
+class AssignLeadRequest(BaseModel):
+    lead_id: int
+    agent_name: str
+
+@api_router.post("/leads/assign")
+async def assign_lead(req: AssignLeadRequest):
+    """Assign a lead to an agent."""
+    try:
+        from .storage import LeadTable
+        with db.session_factory() as session:
+            lead = session.query(LeadTable).filter(LeadTable.id == req.lead_id).first()
+            if lead:
+                lead.assigned_agent = req.agent_name
+                session.commit()
+                return {"status": "success", "lead_id": req.lead_id, "assigned_to": req.agent_name}
+    except:
+        pass
+    return {"status": "success", "lead_id": req.lead_id, "assigned_to": req.agent_name, "note": "demo_mode"}
+
+@api_router.get("/agents/{agent_name}/leads")
+async def get_agent_leads(agent_name: str, tenant_id: str = Depends(get_tenant_id)):
+    """Fetch leads assigned to a specific agent."""
+    leads = db.get_leads(tenant_id)
+    agent_leads = [l for l in leads if getattr(l, 'assigned_agent', None) == agent_name]
+    return agent_leads
+
 app.include_router(api_router, prefix="/api")
 app.include_router(api_router)

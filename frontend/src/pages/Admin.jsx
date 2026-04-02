@@ -359,8 +359,9 @@ export default function Admin() {
                                                     <button 
                                                         key={agent.id}
                                                         onClick={() => {
-                                                            setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, assigned_to: agent.id } : l));
+                                                            setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, assigned_to: agent.id, assigned_agent: agent.name } : l));
                                                             setAuditLogs(prev => [{ id: `assign-${Date.now()}`, time: "Now", action: `System: Assigned lead ${lead.name} to ${agent.name}`, type: "System" }, ...prev]);
+                                                            fetch(`${apiUrl}/leads/assign`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead_id: lead.id, agent_name: agent.name }) }).catch(() => {});
                                                         }}
                                                         title={`Assign to ${agent.name}`}
                                                         style={{ 
