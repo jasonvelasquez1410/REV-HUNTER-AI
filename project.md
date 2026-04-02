@@ -9,7 +9,7 @@ This file serves as a persistent record of the project's state to help future se
 - **Business Model (Three-Tier)**:
   - **Tier 1 — Dealer SaaS (PPL)**: $20/lead qualified.
   - **Tier 2 — Agent Edition**: $99/mo per agent (Personal AI specialist).
-  - **Tier 3 — Premium Suite**: $2,900 CAD One-Time Setup (Includes full integration, unlimited agents, and 1-year money-back guarantee).
+  - **Tier 3 — Premium Suite**: $2,900 CAD Setup ($1,450 Onboarding Down) with 6-month reimbursement guarantee (minus lead costs).
 - **Current Tenant**: FilCan Cars (Sherwood Park)
 - **AI Persona**: **Elliot** (The AI Sales Specialist)
 
@@ -37,7 +37,7 @@ This file serves as a persistent record of the project's state to help future se
 
 - **Slide 1: The Machine**: Focus on AI Hunter Hub, Voice Specialist, and Agent App.
 - **Slide 2: The Reality**: Live lead DNA analysis and qualification transcripts.
-- **Slide 3: The Investment**: $2,900 CAD pricing, 🛡️ 1-Year Full Refund Guarantee, and Renewal Policy.
+- **Slide 3: The Investment**: $2,900 CAD Setup ($1,450 Down), 🛡️ 6-Month Guarantee, 10 Leads/Day, 25-50% Closing Range.
 - **Navigation UX**: Fixed side-navigation arrows (←/→) and progress dot indicators.
 
 ### Dealer Admin Features
@@ -58,7 +58,7 @@ This file serves as a persistent record of the project's state to help future se
 
 1. [x] **Premium Suite Deck**: Integrated $2,900 CAD investment slide into Admin Pitch Mode.
 2. [x] **Pitch UX**: Added explicit arrow navigation for professional dealer presentations.
-3. [x] **Refund Guarantee**: Hardcoded the 1-year money-back guarantee into the sales pitch.
+3. [x] **Refund Guarantee**: Hardcoded the 6-month reimbursement guarantee into the sales pitch.
 4. [x] **Agent Edition**: Full PWA dashboard with lead import and push notifications.
 
 ## Memory Log
@@ -66,9 +66,9 @@ This file serves as a persistent record of the project's state to help future se
 - **2026-03-24 to 2026-04-01**: Iterative development from V1 to V18 (SaaS, AI Hub, PPL, SEO).
 - **2026-04-02 (V19.0)**: **AGENT EDITION DEPLOYED**. Agent login, push notifications, lead import, and assignment system.
 - **2026-04-02 (V20.0)**: **PREMIUM SUITE DEPLOYED**.
-  - **Investment Deck Updated**: Added $2,900 CAD pricing model and 1-year refund guarantee to Pitch Mode.
-  - **Navigation UX Upgrade**: Added explicit side-navigation arrows to the Admin overlay for smoother dealer demos.
-  - **Pricing Realignment**: Finalized tiers for Agent ($99/mo) and Dealer ($2,900 CAD one-time).
+  - **Investment Deck Updated**: Added $2,900 CAD pricing ($1,450 Down), 10 leads/day goal, 25-50% closing range, and 6-month reimbursement policy.
+  - **Navigation UX Upgrade**: Added explicit side-navigation arrows for smoother dealer demos.
+  - **Pricing Realignment**: Finalized tiers for Agent ($99/mo) and Dealer ($2,900 CAD total).
   - Pushed all updates to GitHub and Vercel.
 
 ## Future Roadmap

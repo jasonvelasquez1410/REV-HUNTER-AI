@@ -701,10 +701,10 @@ export default function Admin() {
                                         
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px' }}>
                                             {[
-                                                "Full AI Integration (Facebook, Google, Web)",
-                                                "Unlimited Agent PWA Dashboard Licenses",
-                                                "Custom AI Voice Branding (Elliot)",
-                                                "Automated 24/7 Lead Nudging System",
+                                                "Target Goal: 10 Qualified Leads / Day",
+                                                "25-50% Projected Closing Range",
+                                                "$1,450 CAD Down (50% Onboarding)",
+                                                "Custom AI Persona Integration",
                                                 "99.9% Automation Guarantee"
                                             ].map((item, i) => (
                                                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -718,10 +718,10 @@ export default function Admin() {
                                     
                                     <div style={{ background: 'linear-gradient(135deg, #222 0%, #111 100%)', padding: '40px', borderRadius: '40px', border: '1px solid #D92027', boxShadow: '0 20px 50px rgba(217,32,39,0.2)' }}>
                                         <h4 style={{ color: '#D92027', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            🛡️ THE 1-YEAR GUARANTEE
+                                            🛡️ THE 6-MONTH GUARANTEE
                                         </h4>
                                         <p style={{ fontSize: '1.1rem', lineHeight: '1.6', color: '#ccc' }}>
-                                            We are so confident in **RevHunter AI** that we offer a **Full Refund** after 1 year if it doesn't meet your performance metrics.
+                                            We offer a **Full Setup Reimbursement** after 180 days if performance goals aren't met (minus lead delivery costs).
                                         </p>
                                         <hr style={{ border: 'none', borderTop: '1px solid #333', margin: '25px 0' }} />
                                         <div style={{ marginBottom: '25px' }}>
