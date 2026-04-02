@@ -687,7 +687,7 @@ export default function Admin() {
                             {presentationStep === 2 && (
                                 <div className="animate-in" style={{ textAlign: 'left', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '50px', alignItems: 'center', width: '100%' }}>
                                     <div>
-                                        <h3 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#D92027', marginBottom: '10px' }}>120,000 PHP</h3>
+                                        <h3 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#D92027', marginBottom: '10px' }}>$2,900 CAD</h3>
                                         <div style={{ fontSize: '1.2rem', opacity: 0.7, marginBottom: '30px' }}>PREMIUM SUITE (ONE-TIME SETUP)</div>
                                         
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px' }}>
