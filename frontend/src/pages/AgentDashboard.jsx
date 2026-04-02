@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Bell, LogOut } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Bell, LogOut, FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
 import { useTenant } from '../context/TenantContext';
+import * as XLSX from 'xlsx';
 
 // ── PUSH NOTIFICATION HELPER ──────────────────────
 function requestNotificationPermission() {
@@ -113,6 +114,10 @@ export default function AgentDashboard() {
     const [activeView, setActiveView] = useState('leads');
     const [nudging, setNudging] = useState(null);
     const [newLeadAlert, setNewLeadAlert] = useState(null);
+    const [importedLeads, setImportedLeads] = useState([]);
+    const [importStatus, setImportStatus] = useState(null); // null | 'preview' | 'importing' | 'done'
+    const [importFileName, setImportFileName] = useState('');
+    const fileInputRef = useRef(null);
 
     const handleLogin = (agentData) => {
         setAgent(agentData);
@@ -348,17 +353,118 @@ export default function AgentDashboard() {
                 )}
 
                 {activeView === 'import' && (
-                    <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '30px', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
-                        <Upload size={40} style={{ color: 'rgba(255,255,255,0.2)', marginBottom: '15px' }} />
-                        <h3 style={{ margin: '0 0 10px', fontWeight: '800', color: 'white' }}>Import Your Leads</h3>
-                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem', marginBottom: '25px' }}>Upload your DealerSocket or CRM export and let Elliot start working them.</p>
-                        <button
-                            onClick={() => alert('CRM Import triggered! Elliot will begin qualifying your imported leads.')}
-                            style={{ padding: '15px 35px', background: 'linear-gradient(135deg, #D92027, #a01820)', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem', boxShadow: '0 8px 25px rgba(217,32,39,0.3)' }}
-                        >
-                            📥 SYNC FROM DEALERSOCKET
-                        </button>
-                        <div style={{ marginTop: '20px', fontSize: '0.7rem', color: 'rgba(255,255,255,0.25)' }}>Supports: .xlsx, .csv (Revenue Radar format)</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        {/* Upload Zone */}
+                        {importStatus !== 'done' && (
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '40px 20px', border: '2px dashed rgba(255,255,255,0.1)', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
+                            >
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".csv,.xlsx,.xls"
+                                    style={{ display: 'none' }}
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        setImportFileName(file.name);
+                                        const reader = new FileReader();
+                                        reader.onload = (evt) => {
+                                            try {
+                                                const data = new Uint8Array(evt.target.result);
+                                                const workbook = XLSX.read(data, { type: 'array' });
+                                                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                                                const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                                                const parsed = rows.map((row, i) => {
+                                                    const name = row['Name'] || row['name'] || row['Customer'] || row['customer'] || row['Contact'] || Object.values(row)[0] || `Lead ${i+1}`;
+                                                    const phone = row['Phone'] || row['phone'] || row['Mobile'] || row['mobile'] || row['Cell'] || Object.values(row)[1] || '';
+                                                    const email = row['Email'] || row['email'] || '';
+                                                    const notes = row['Notes'] || row['notes'] || row['Status'] || row['status'] || row['Category'] || '';
+                                                    const car = row['Vehicle'] || row['vehicle'] || row['Car'] || row['Interest'] || '';
+                                                    return { id: Date.now() + i, name: String(name).trim(), phone: String(phone).trim(), email: String(email).trim(), notes: String(notes).trim(), car: String(car).trim(), quality_score: 75, status: 'Discovery', source: 'CRM Import', assigned_agent: agent.name, follow_up_streak: 0, last_action_time: 'Just imported' };
+                                                }).filter(l => l.name && l.name !== 'Lead 1' && l.name.length > 1);
+                                                setImportedLeads(parsed);
+                                                setImportStatus('preview');
+                                            } catch {
+                                                alert('Could not parse file. Please use a .csv or .xlsx file.');
+                                            }
+                                        };
+                                        reader.readAsArrayBuffer(file);
+                                        e.target.value = '';
+                                    }}
+                                />
+                                <FileSpreadsheet size={40} style={{ color: 'rgba(217,32,39,0.5)', marginBottom: '15px' }} />
+                                <h3 style={{ margin: '0 0 8px', fontWeight: '800', color: 'white', fontSize: '1rem' }}>Tap to Upload Your Leads</h3>
+                                <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.8rem', margin: '0 0 15px' }}>Upload your <strong>Revenue Radar</strong> export or any CSV/Excel file</p>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(217,32,39,0.1)', padding: '10px 20px', borderRadius: '12px', color: '#D92027', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                                    <Upload size={16} /> CHOOSE FILE
+                                </div>
+                                <div style={{ marginTop: '15px', fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)' }}>Supports: .xlsx, .csv • Revenue Radar format auto-detected</div>
+                            </div>
+                        )}
+
+                        {/* Preview Table */}
+                        {importStatus === 'preview' && importedLeads.length > 0 && (
+                            <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                    <div>
+                                        <div style={{ fontWeight: '800', fontSize: '0.95rem', color: 'white' }}>📋 Preview: {importFileName}</div>
+                                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', marginTop: '3px' }}>{importedLeads.length} leads found</div>
+                                    </div>
+                                    <button onClick={() => { setImportedLeads([]); setImportStatus(null); }} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'rgba(255,255,255,0.4)', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.7rem' }}>✕ Clear</button>
+                                </div>
+                                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                    {importedLeads.slice(0, 20).map((lead, i) => (
+                                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                                            <div>
+                                                <div style={{ fontWeight: '600', fontSize: '0.85rem', color: 'white' }}>{lead.name}</div>
+                                                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>{lead.phone || 'No phone'}{lead.car ? ` • ${lead.car}` : ''}</div>
+                                            </div>
+                                            <div style={{ fontSize: '0.6rem', color: '#00b894', background: 'rgba(0,184,148,0.1)', padding: '3px 8px', borderRadius: '6px' }}>Ready</div>
+                                        </div>
+                                    ))}
+                                    {importedLeads.length > 20 && (
+                                        <div style={{ padding: '10px', textAlign: 'center', fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>...and {importedLeads.length - 20} more</div>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setImportStatus('importing');
+                                        setTimeout(() => {
+                                            setLeads(prev => [...importedLeads, ...prev]);
+                                            setImportStatus('done');
+                                            sendPushNotification('📥 Import Complete!', `${importedLeads.length} leads loaded. Elliot is now working them.`);
+                                        }, 2000);
+                                    }}
+                                    style={{ width: '100%', marginTop: '15px', padding: '16px', background: 'linear-gradient(135deg, #D92027, #a01820)', color: 'white', border: 'none', borderRadius: '14px', fontWeight: '800', cursor: 'pointer', fontSize: '0.95rem', boxShadow: '0 8px 25px rgba(217,32,39,0.3)' }}
+                                >
+                                    ⚡ IMPORT {importedLeads.length} LEADS → LET ELLIOT WORK THEM
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Importing Animation */}
+                        {importStatus === 'importing' && (
+                            <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '40px', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                                <div style={{ fontSize: '2rem', marginBottom: '15px', animation: 'pulse 1s infinite' }}>⚡</div>
+                                <div style={{ fontWeight: '800', color: 'white', marginBottom: '8px' }}>Importing {importedLeads.length} Leads...</div>
+                                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)' }}>Elliot is preparing to contact each lead</div>
+                            </div>
+                        )}
+
+                        {/* Import Complete */}
+                        {importStatus === 'done' && (
+                            <div style={{ background: 'rgba(0,184,148,0.05)', borderRadius: '20px', padding: '40px', border: '1px solid rgba(0,184,148,0.15)', textAlign: 'center' }}>
+                                <CheckCircle size={40} style={{ color: '#00b894', marginBottom: '15px' }} />
+                                <div style={{ fontWeight: '800', color: 'white', marginBottom: '8px', fontSize: '1.1rem' }}>Import Complete! 🎉</div>
+                                <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginBottom: '20px' }}>{importedLeads.length} leads are now in your pipeline. Elliot is contacting them.</div>
+                                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                                    <button onClick={() => { setActiveView('leads'); }} style={{ padding: '12px 25px', background: 'rgba(0,184,148,0.15)', color: '#00b894', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>VIEW MY LEADS</button>
+                                    <button onClick={() => { setImportStatus(null); setImportedLeads([]); }} style={{ padding: '12px 25px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>IMPORT MORE</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
