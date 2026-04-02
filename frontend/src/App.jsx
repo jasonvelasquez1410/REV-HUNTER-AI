@@ -5,6 +5,7 @@ import Admin from './pages/Admin';
 import LandingPageDemo from './pages/LandingPageDemo';
 import FacebookDemo from './pages/FacebookDemo';
 import LandingPage from './pages/LandingPage';
+import AgentDashboard from './pages/AgentDashboard';
 import { TenantProvider, useTenant } from './context/TenantContext';
 
 // Safe-guarding the pitch from any unexpected runtime regressions
@@ -88,6 +89,8 @@ function AppContent() {
         setCurrentPage('facebook');
       } else if (activeRoute === '/revhunter' || activeRoute === 'revhunter') {
         setCurrentPage('revhunter');
+      } else if (activeRoute === '/agent' || activeRoute === 'agent') {
+        setCurrentPage('agent');
       } else {
         setCurrentPage('home');
       }
@@ -104,46 +107,50 @@ function AppContent() {
 
   return (
     <div className="App">
-      <header style={{ backgroundColor: '#f8f9fa' }}>
-        <div className="container header-content">
-          <span>📍 {tenant.address || 'Loading...'}, {tenant.location}</span>
-          <span>📞 (587) 860-1770</span>
-        </div>
-      </header>
+      {currentPage !== 'agent' && (
+        <>
+          <header style={{ backgroundColor: '#f8f9fa' }}>
+            <div className="container header-content">
+              <span>📍 {tenant.address || 'Loading...'}, {tenant.location}</span>
+              <span>📞 (587) 860-1770</span>
+            </div>
+          </header>
 
-      <nav>
-        <div className="container nav-content">
-          <a href="#" className="logo" onClick={(e) => { e.preventDefault(); setCurrentPage('home'); }} style={{ color: tenant.theme_color }}>
-            {tenant.name.toUpperCase()}
-          </a>
-          <div className="nav-links">
-            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('home'); }}>Inventory</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('landing'); }}>Demo Site</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('facebook'); }}>Demo FB</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('admin'); }}>Admin Portal</a>
-            {showInstallBtn ? (
-              <button 
-                onClick={handleInstallClick}
-                style={{ marginLeft: '15px', padding: '5px 12px', background: '#00b894', color: 'white', border: 'none', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', animation: 'pulse 2s infinite' }}
-              >
-                📲 Install App
-              </button>
-            ) : (
-              <button 
-                onClick={() => alert("RevHunter AI PWA Installation:\n\n1. Use Chrome or Safari\n2. Tap 'Share' or 'Menu'\n3. Select 'Add to Home Screen'\n\nResult: Fixed icon on your home screen for instant lead tracking!")}
-                style={{ marginLeft: '15px', padding: '5px 10px', background: '#e0e0e0', color: '#666', border: '1px solid #ccc', borderRadius: '20px', fontSize: '0.7rem', cursor: 'pointer' }}
-              >
-                📲 App Info
-              </button>
-            )}
-            {isIos && !window.navigator.standalone && (
-              <span style={{ marginLeft: '15px', fontSize: '0.6rem', color: '#666' }}>
-                 (iOS: Share &gt; Home)
-              </span>
-            )}
-          </div>
-        </div>
-      </nav>
+          <nav>
+            <div className="container nav-content">
+              <a href="#" className="logo" onClick={(e) => { e.preventDefault(); setCurrentPage('home'); }} style={{ color: tenant.theme_color }}>
+                {tenant.name.toUpperCase()}
+              </a>
+              <div className="nav-links">
+                <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('home'); }}>Inventory</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('landing'); }}>Demo Site</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('facebook'); }}>Demo FB</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('admin'); }}>Admin Portal</a>
+                {showInstallBtn ? (
+                  <button 
+                    onClick={handleInstallClick}
+                    style={{ marginLeft: '15px', padding: '5px 12px', background: '#00b894', color: 'white', border: 'none', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', animation: 'pulse 2s infinite' }}
+                  >
+                    📲 Install App
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => alert("RevHunter AI PWA Installation:\n\n1. Use Chrome or Safari\n2. Tap 'Share' or 'Menu'\n3. Select 'Add to Home Screen'\n\nResult: Fixed icon on your home screen for instant lead tracking!")}
+                    style={{ marginLeft: '15px', padding: '5px 10px', background: '#e0e0e0', color: '#666', border: '1px solid #ccc', borderRadius: '20px', fontSize: '0.7rem', cursor: 'pointer' }}
+                  >
+                    📲 App Info
+                  </button>
+                )}
+                {isIos && !window.navigator.standalone && (
+                  <span style={{ marginLeft: '15px', fontSize: '0.6rem', color: '#666' }}>
+                     (iOS: Share &gt; Home)
+                  </span>
+                )}
+              </div>
+            </div>
+          </nav>
+        </>
+      )}
 
       <main>
         {currentPage === 'home' && <Home />}
@@ -151,18 +158,21 @@ function AppContent() {
         {currentPage === 'landing' && <LandingPageDemo />}
         {currentPage === 'facebook' && <FacebookDemo />}
         {currentPage === 'revhunter' && <LandingPage />}
+        {currentPage === 'agent' && <AgentDashboard />}
       </main>
 
-      <ChatWidget />
+      {currentPage !== 'agent' && <ChatWidget />}
 
-      <footer style={{ backgroundColor: '#002244', color: 'white', padding: '40px 0', marginTop: '80px' }}>
-        <div className="container" style={{ textAlign: 'center' }}>
-          <p>© 2026 {tenant.name} - {tenant.location}'s Trusted Used Car Dealer</p>
-          <div style={{ fontSize: '0.7rem', marginTop: '10px', opacity: 0.5 }}>
-            Powered by RevHunter AI - The Relentless Sales Engine
+      {currentPage !== 'agent' && (
+        <footer style={{ backgroundColor: '#002244', color: 'white', padding: '40px 0', marginTop: '80px' }}>
+          <div className="container" style={{ textAlign: 'center' }}>
+            <p>© 2026 {tenant.name} - {tenant.location}'s Trusted Used Car Dealer</p>
+            <div style={{ fontSize: '0.7rem', marginTop: '10px', opacity: 0.5 }}>
+              Powered by RevHunter AI - The Relentless Sales Engine
+            </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }
