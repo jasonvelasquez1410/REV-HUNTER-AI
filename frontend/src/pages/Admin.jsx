@@ -602,6 +602,12 @@ export default function Admin() {
                                 </div>
                             ))}
                         </div>
+                        <button 
+                            onClick={() => window.open('/agent', '_blank')}
+                            style={{ width: '100%', marginTop: '20px', padding: '12px', background: '#eef', color: '#003366', border: '1px solid #ddd', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                        >
+                            📱 OPEN AGENT DASHBOARD
+                        </button>
                     </div>
                 </aside>
             </div>
@@ -640,7 +646,10 @@ export default function Admin() {
                                                 </div>
                                             ))}
                                         </div>
-                                        <button onClick={() => setPresentationStep(1)} style={{ marginTop: '40px', padding: '20px 40px', background: '#D92027', color: 'white', border: 'none', borderRadius: '10px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer' }}>SEE LIVE ANALYSIS →</button>
+                                        <div style={{ display: 'flex', gap: '15px', marginTop: '40px' }}>
+                                            <button onClick={() => setPresentationStep(1)} style={{ padding: '20px 40px', background: '#D92027', color: 'white', border: 'none', borderRadius: '10px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer' }}>SEE LIVE ANALYSIS →</button>
+                                            <button onClick={() => window.open('/agent', '_blank')} style={{ padding: '20px 30px', background: 'white', color: '#D92027', border: '2px solid #D92027', borderRadius: '10px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer' }}>📱 DEMO AGENT VIEW</button>
+                                        </div>
                                     </div>
                                     <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '30px', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                                         <div style={{ fontSize: '5rem', marginBottom: '20px' }}>💹</div>
