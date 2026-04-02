@@ -396,11 +396,11 @@ export default function AgentDashboard() {
                                 />
                                 <FileSpreadsheet size={40} style={{ color: 'rgba(217,32,39,0.5)', marginBottom: '15px' }} />
                                 <h3 style={{ margin: '0 0 8px', fontWeight: '800', color: 'white', fontSize: '1rem' }}>Tap to Upload Your Leads</h3>
-                                <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.8rem', margin: '0 0 15px' }}>Upload your <strong>Revenue Radar</strong> export or any CSV/Excel file</p>
+                                <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.8rem', margin: '0 0 15px' }}>Upload <strong>any</strong> Excel or CSV file — your own leads, CRM exports, or DealerSocket reports</p>
                                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(217,32,39,0.1)', padding: '10px 20px', borderRadius: '12px', color: '#D92027', fontWeight: 'bold', fontSize: '0.85rem' }}>
                                     <Upload size={16} /> CHOOSE FILE
                                 </div>
-                                <div style={{ marginTop: '15px', fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)' }}>Supports: .xlsx, .csv • Revenue Radar format auto-detected</div>
+                                <div style={{ marginTop: '15px', fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)' }}>Supports: .xlsx, .xls, .csv • Columns auto-detected (Name, Phone, Email, Vehicle)</div>
                             </div>
                         )}
 
