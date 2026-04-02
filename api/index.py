@@ -299,7 +299,7 @@ async def seo_generate(req: SEORequest):
 # ── AGENT MANAGEMENT ──────────────────────────────
 
 DEMO_AGENTS = [
-    {"id": 1, "name": "R-Jay Velasquez", "pin": "1234", "avatar": "RJ", "role": "Senior Sales Consultant", "is_active": True},
+    {"id": 1, "name": "Juan Dela Cruz", "pin": "1234", "avatar": "JD", "role": "Senior Sales Consultant", "is_active": True},
     {"id": 2, "name": "Mark Santos", "pin": "5678", "avatar": "MS", "role": "Sales Consultant", "is_active": True},
     {"id": 3, "name": "Jessica Cruz", "pin": "9012", "avatar": "JC", "role": "Junior Sales Consultant", "is_active": True}
 ]

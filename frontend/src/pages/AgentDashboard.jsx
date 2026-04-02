@@ -48,13 +48,13 @@ function AgentLogin({ onLogin }) {
         } catch {
             // Demo fallback login
             const demoAgents = [
-                { id: 1, name: 'R-Jay Velasquez', pin: '1234', avatar: 'RJ', role: 'Senior Sales Consultant' },
+                { id: 1, name: 'Juan Dela Cruz', pin: '1234', avatar: 'JD', role: 'Senior Sales Consultant' },
                 { id: 2, name: 'Mark Santos', pin: '5678', avatar: 'MS', role: 'Sales Consultant' },
                 { id: 3, name: 'Jessica Cruz', pin: '9012', avatar: 'JC', role: 'Junior Sales Consultant' }
             ];
             const match = demoAgents.find(a => a.name.toLowerCase() === name.toLowerCase() && a.pin === pin);
             if (match) { onLogin(match); }
-            else { setError('Invalid credentials. Demo PINs: R-Jay=1234, Mark=5678, Jessica=9012'); }
+            else { setError('Invalid credentials. Demo PINs: Juan=1234, Mark=5678, Jessica=9012'); }
         }
         setLoading(false);
     };
