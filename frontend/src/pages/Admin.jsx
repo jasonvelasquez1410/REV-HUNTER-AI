@@ -279,6 +279,12 @@ export default function Admin() {
     const dailyLeads = leads.filter(l => l.is_reported);
     const stats = { published: 12, pending: 4, impressions: "15.4K", reach: "9.2K", leads24h: leads.length, qualityReported: dailyLeads.length };
 
+    const queryParams = new URLSearchParams(window.location.search);
+    const isSuperAdmin = queryParams.get('sa') === 'true';
+
+    const allTabs = ['inbox', 'analytics', 'roi', 'hunters', 'showroom', 'seo', 'billing', 'settings'];
+    const visibleTabs = allTabs.filter(tab => tab !== 'billing' || isSuperAdmin);
+
     return (
         <div className="admin-container" style={{ padding: '30px 5%', background: '#f4f7f6', minHeight: '100vh' }}>
             <h1 style={{ marginBottom: '30px', color: '#003366', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -303,7 +309,7 @@ export default function Admin() {
             )}
 
             <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
-                {['inbox', 'analytics', 'roi', 'hunters', 'showroom', 'seo', 'billing', 'settings'].map(tab => (
+                {visibleTabs.map(tab => (
                     <button 
                         key={tab} 
                         onClick={() => setActiveTab(tab)}
@@ -320,6 +326,7 @@ export default function Admin() {
                     </button>
                 ))}
             </div>
+
 
             <div className="dashboard-content" style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '30px' }}>
                 <main>
@@ -602,80 +609,146 @@ export default function Admin() {
             {/* Presentation Overlay */}
             {presentationMode && (
                 <div className="presentation-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.95)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', padding: '40px' }}>
-                    <div style={{ width: '100%', maxWidth: '1000px', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '50px' }}>
+                    <div style={{ width: '100%', maxWidth: '1000px', textAlign: 'center', position: 'relative' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '50px' }}>
                             <div style={{ textAlign: 'left' }}>
                                 <div style={{ color: '#D92027', fontWeight: 'bold', letterSpacing: '2px' }}>DEALER PITCH MODE</div>
-                                <h2 style={{ fontSize: '2.5rem', margin: '10px 0' }}>{presentationStep === 0 ? "The 10-Lead-A-Day Revenue Machine" : "Relentless AI in Action"}</h2>
+                                <h2 style={{ fontSize: '2.5rem', margin: '10px 0' }}>
+                                    {presentationStep === 0 && "The 10-Lead-A-Day Revenue Machine"}
+                                    {presentationStep === 1 && "Relentless AI in Action (Live DNA)"}
+                                    {presentationStep === 2 && "The RevHunter Premium Suite Investment"}
+                                </h2>
                             </div>
                             <button onClick={() => setPresentationMode(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '2rem', cursor: 'pointer' }}>×</button>
                         </div>
 
-                        {presentationStep === 0 ? (
-                            <div className="animate-in" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', textAlign: 'left' }}>
-                                <div>
-                                    <h3 style={{ fontSize: '1.8rem', color: '#D92027', marginBottom: '20px' }}>HOW IT WORKS 🏹</h3>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-                                        {[
-                                            { t: "1. The Hunt", d: "AI scans Facebook & social media threads for local buying intent." },
-                                            { t: "2. The Hook", d: "Bot-less engagement. AI responds to comments as a human specialist." },
-                                            { t: "3. The DNA", d: "Extracts trade-in info, budget, and credit status in seconds." },
-                                            { t: "4. The Close", d: "AI books the showroom appointment directly into your calendar." }
-                                        ].map((item, i) => (
-                                            <div key={i}>
-                                                <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '5px' }}>{item.t}</div>
-                                                <div style={{ color: '#aaa' }}>{item.d}</div>
+                        <div style={{ minHeight: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {presentationStep === 0 && (
+                                <div className="animate-in" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', textAlign: 'left', width: '100%' }}>
+                                    <div>
+                                        <h3 style={{ fontSize: '1.8rem', color: '#D92027', marginBottom: '20px' }}>HOW IT WORKS 🏹</h3>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                                            {[
+                                                { t: "1. The AI Hunter Hub", d: "Aggressively scans Facebook, Google, and your CRM for local buyers." },
+                                                { t: "2. The AI Voice Specialist", d: "Elliot makes outbound calls and texts within 60 seconds of a lead arriving." },
+                                                { t: "3. The Lead DNA", d: "Automatically extracts trade-in details, budget, and credit pre-approval." },
+                                                { t: "4. The Agent App", d: "Your sales team gets push notifications to their phones for every hot lead." }
+                                            ].map((item, i) => (
+                                                <div key={i}>
+                                                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '5px' }}>{item.t}</div>
+                                                    <div style={{ color: '#aaa' }}>{item.d}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <button onClick={() => setPresentationStep(1)} style={{ marginTop: '40px', padding: '20px 40px', background: '#D92027', color: 'white', border: 'none', borderRadius: '10px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer' }}>SEE LIVE ANALYSIS →</button>
+                                    </div>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '30px', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                                        <div style={{ fontSize: '5rem', marginBottom: '20px' }}>💹</div>
+                                        <div style={{ fontSize: '3rem', fontWeight: '900' }}>400%</div>
+                                        <div style={{ fontSize: '1.2rem', color: '#00b894', fontWeight: 'bold' }}>CONVERSION LIFT</div>
+                                        <p style={{ marginTop: '20px', textAlign: 'center', opacity: 0.6 }}>Eliminating lead aging by responding in seconds, not hours.</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {presentationStep === 1 && (
+                                <div className="animate-in" style={{ width: '100%' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '30px' }}>
+                                        {Object.entries(PRESENTATION_INSIGHTS).map(([name, data]) => (
+                                            <div key={name} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '25px', padding: '30px', textAlign: 'left', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                                                    <h4 style={{ fontSize: '1.4rem', margin: 0 }}>{name}</h4>
+                                                    <span style={{ color: '#00b894', fontWeight: 'bold' }}>QUALIFIED 🎯</span>
+                                                </div>
+                                                <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '15px', padding: '15px', marginBottom: '20px', fontSize: '0.85rem', height: '140px', overflowY: 'auto' }}>
+                                                    {data.transcript.map((t, j) => (
+                                                        <div key={j} style={{ marginBottom: '8px', color: t.sender === 'ai' ? '#00b894' : 'white' }}>
+                                                            <b>{t.sender === 'ai' ? "ELLIOT:" : "LEAD:"}</b> {t.text}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <div className="nine-step-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                                    {Object.entries(data.dna).map(([k, v]) => (
+                                                        <div key={k} style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '10px', fontSize: '0.75rem' }}>
+                                                            <span style={{ opacity: 0.6 }}>{k}:</span> <b>{v}</b>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
-                                    <button onClick={() => setPresentationStep(1)} style={{ marginTop: '40px', padding: '20px 40px', background: '#D92027', color: 'white', border: 'none', borderRadius: '10px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer' }}>SEE LIVE ANALYSIS →</button>
+                                    <div style={{ marginTop: '50px', display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                                        <button onClick={() => setPresentationStep(0)} style={{ padding: '15px 30px', background: 'transparent', border: '1px solid white', color: 'white', borderRadius: '10px', cursor: 'pointer' }}>← BACK</button>
+                                        <button onClick={() => setPresentationStep(2)} style={{ padding: '15px 50px', background: '#D92027', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>VIEW INVESTMENT PLAN →</button>
+                                    </div>
                                 </div>
-                                <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '30px', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                                    <div style={{ fontSize: '5rem', marginBottom: '20px' }}>💹</div>
-                                    <div style={{ fontSize: '3rem', fontWeight: '900' }}>10+</div>
-                                    <div style={{ fontSize: '1.2rem', color: '#00b894', fontWeight: 'bold' }}>DAILY QUALIFIED LEADS</div>
-                                    <p style={{ marginTop: '20px', textAlign: 'center', opacity: 0.6 }}>Our average dealer sees a 400% increase in lead response speed.</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="animate-in">
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '30px' }}>
-                                    {Object.entries(PRESENTATION_INSIGHTS).map(([name, data]) => (
-                                        <div key={name} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '25px', padding: '30px', textAlign: 'left', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                                                <h4 style={{ fontSize: '1.4rem', margin: 0 }}>{name}</h4>
-                                                <span style={{ color: '#00b894', fontWeight: 'bold' }}>QUALIFIED 🎯</span>
-                                            </div>
-                                            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '15px', padding: '15px', marginBottom: '20px', fontSize: '0.85rem' }}>
-                                                {data.transcript.map((t, j) => (
-                                                    <div key={j} style={{ marginBottom: '8px', color: t.sender === 'ai' ? '#00b894' : 'white' }}>
-                                                        <b>{t.sender === 'ai' ? "ELLIOT:" : "LEAD:"}</b> {t.text}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            <div className="nine-step-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                                {Object.entries(data.dna).map(([k, v]) => (
-                                                    <div key={k} style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '10px', fontSize: '0.75rem' }}>
-                                                        <span style={{ opacity: 0.6 }}>{k}:</span> <b>{v}</b>
-                                                    </div>
-                                                ))}
-                                            </div>
+                            )}
+
+                            {presentationStep === 2 && (
+                                <div className="animate-in" style={{ textAlign: 'left', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '50px', alignItems: 'center', width: '100%' }}>
+                                    <div>
+                                        <h3 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#D92027', marginBottom: '10px' }}>120,000 PHP</h3>
+                                        <div style={{ fontSize: '1.2rem', opacity: 0.7, marginBottom: '30px' }}>PREMIUM SUITE (ONE-TIME SETUP)</div>
+                                        
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px' }}>
+                                            {[
+                                                "Full AI Integration (Facebook, Google, Web)",
+                                                "Unlimited Agent PWA Dashboard Licenses",
+                                                "Custom AI Voice Branding (Elliot)",
+                                                "Automated 24/7 Lead Nudging System",
+                                                "99.9% Automation Guarantee"
+                                            ].map((item, i) => (
+                                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                                    <div style={{ color: '#00b894', fontSize: '1.5rem' }}>✓</div>
+                                                    <div style={{ fontSize: '1.1rem' }}>{item}</div>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                        <button onClick={() => setPresentationStep(1)} style={{ padding: '15px 30px', background: 'transparent', border: '1px solid white', color: 'white', borderRadius: '10px', cursor: 'pointer' }}>← BACK</button>
+                                    </div>
+                                    
+                                    <div style={{ background: 'linear-gradient(135deg, #222 0%, #111 100%)', padding: '40px', borderRadius: '40px', border: '1px solid #D92027', boxShadow: '0 20px 50px rgba(217,32,39,0.2)' }}>
+                                        <h4 style={{ color: '#D92027', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            🛡️ THE 1-YEAR GUARANTEE
+                                        </h4>
+                                        <p style={{ fontSize: '1.1rem', lineHeight: '1.6', color: '#ccc' }}>
+                                            We are so confident in **RevHunter AI** that we offer a **Full Refund** after 1 year if it doesn't meet your performance metrics.
+                                        </p>
+                                        <hr style={{ border: 'none', borderTop: '1px solid #333', margin: '25px 0' }} />
+                                        <div style={{ marginBottom: '25px' }}>
+                                            <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold', marginBottom: '5px' }}>RENEWAL POLICY</div>
+                                            <div style={{ fontSize: '0.95rem' }}>Optional annual renewal fee applies after Year 1 for maintenance, AI updates, and cloud hosting.</div>
+                                        </div>
+                                        <button onClick={() => setPresentationMode(false)} style={{ width: '100%', padding: '20px', background: '#00b894', color: 'white', border: 'none', borderRadius: '15px', fontWeight: 'bold', fontSize: '1.2rem', cursor: 'pointer' }}>CLOSE DEAL / END PITCH</button>
+                                    </div>
                                 </div>
-                                <div style={{ marginTop: '50px', display: 'flex', gap: '20px', justifyContent: 'center' }}>
-                                    <button onClick={() => setPresentationStep(0)} style={{ padding: '15px 30px', background: 'transparent', border: '1px solid white', color: 'white', borderRadius: '10px', cursor: 'pointer' }}>← BACK</button>
-                                    <button onClick={() => setPresentationMode(false)} style={{ padding: '15px 50px', background: '#00b894', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>END PRESENTATION</button>
-                                </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                         <div style={{ marginTop: '60px', display: 'flex', justifyContent: 'center', gap: '15px' }}>
-                            {[0, 1].map(step => (
+                            {[0, 1, 2].map(step => (
                                 <div key={step} onClick={() => setPresentationStep(step)} style={{ width: '12px', height: '12px', borderRadius: '50%', background: presentationStep === step ? '#D92027' : '#444', cursor: 'pointer', transition: '0.3s' }} />
                             ))}
                         </div>
                     </div>
+
+                    {/* Side Navigation Arrows */}
+                    {presentationStep > 0 && (
+                        <button 
+                            onClick={() => setPresentationStep(prev => prev - 1)}
+                            style={{ position: 'fixed', left: '40px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', width: '60px', height: '60px', borderRadius: '50%', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.3s', zIndex: 10001 }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                        >←</button>
+                    )}
+                    {presentationStep < 2 && (
+                        <button 
+                            onClick={() => setPresentationStep(prev => prev + 1)}
+                            style={{ position: 'fixed', right: '40px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', width: '60px', height: '60px', borderRadius: '50%', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.3s', zIndex: 10001 }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(217,32,39,0.3)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                        >→</button>
+                    )}
                 </div>
             )}
 
@@ -766,6 +839,18 @@ export default function Admin() {
                     </div>
                 </div>
             )}
+            {/* Subtle SuperAdmin Toggle for internal use */}
+            <div style={{ position: 'fixed', bottom: '10px', right: '10px', opacity: 0.1, transition: '0.3s', cursor: 'pointer', fontSize: '0.6rem' }} 
+                 onMouseEnter={(e) => e.currentTarget.style.opacity = 0.8}
+                 onMouseLeave={(e) => e.currentTarget.style.opacity = 0.1}
+                 onClick={() => {
+                     const url = new URL(window.location.href);
+                     url.searchParams.set('sa', isSuperAdmin ? 'false' : 'true');
+                     window.location.href = url.toString();
+                 }}>
+                {isSuperAdmin ? '🔒 DISABLE SA MODE' : '🔓 ENABLE SA MODE'}
+            </div>
         </div>
     );
 }
+
