@@ -37,8 +37,8 @@ def init_db():
                 db_url, 
                 pool_size=2, 
                 max_overflow=0,
-                pool_pre_ping=True,
-                connect_args={"connect_timeout": 5}
+                pool_pre_ping=True
+                # Removed connect_timeout for SQLite compatibility
             )
             SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
             # Create tables if they don't exist
@@ -185,12 +185,62 @@ class Storage:
             # Seed Leads (Impressive Pitch Edition)
             if session.query(LeadTable).count() == 0:
                 leads = [
-                    LeadTable(tenant_id="filcan", name="Marvin Raymundo", email="marvin@example.com", phone="587-888-1234", credit_score=750, monthly_budget=800, trade_in_details="2018 Toyota RAV4", status="Hot", is_reported=True, is_billed=True, quality_score=98, follow_up_streak=4, last_action_time="Today 10:45 AM", conversation_summary="Highly interested in VW Atlas. Ready for test drive tomorrow."),
-                    LeadTable(tenant_id="filcan", name="Jessica Chen", email="jess@outlook.com", phone="587-555-9000", credit_score=680, monthly_budget=550, trade_in_details="None", status="Qualified", is_reported=True, is_billed=False, quality_score=85, follow_up_streak=2, last_action_time="Today 9:15 AM", conversation_summary="Looking for a reliable SUV. Comparing Atlas and CX-5. Financing approved."),
-                    LeadTable(tenant_id="filcan", name="Robert Downey", email="rob@gmail.com", phone="780-123-4567", credit_score=720, monthly_budget=700, trade_in_details="2015 Ford Escape", status="Hot", is_reported=True, is_billed=True, quality_score=94, follow_up_streak=3, last_action_time="Yesterday", conversation_summary="Interested in Mazda CX-5. Asked about trade-in value & winter tires."),
-                    LeadTable(tenant_id="filcan", name="Alice Wonderland", email="alice@magic.com", phone="555-9876", credit_score=650, monthly_budget=400, trade_in_details="None", status="Pending", is_reported=False, is_billed=False, quality_score=60, follow_up_streak=1, last_action_time="2h ago", conversation_summary="Discovery Phase: Browsing SUVs for city commute.")
+                    LeadTable(
+                        tenant_id="filcan", 
+                        name="Marvin Raymundo", 
+                        email="marvin@example.com", 
+                        phone="+17805550123", 
+                        credit_score=750, 
+                        monthly_budget=800, 
+                        trade_in_details="2018 Honda Civic (Paid off)", 
+                        status="Hot", 
+                        is_reported=True, 
+                        is_billed=True, 
+                        quality_score=98, 
+                        follow_up_streak=4, 
+                        last_action_time="Today 10:45 AM", 
+                        conversation_summary="Highly interested in VW Atlas EXECLINE. Ready for test drive Monday 2PM.",
+                        interaction_history=json.dumps([
+                            {"role": "customer", "text": "Hi, is the 2024 VW Atlas still available?", "timestamp": (datetime.now() - timedelta(hours=2)).isoformat()},
+                            {"role": "AI (Elliot)", "text": "Hi Marvin! Yes, we have two EXECLINE trims on the lot. Are you looking for the family-sized 3rd row or a specific feature?", "timestamp": (datetime.now() - timedelta(hours=1, minutes=58)).isoformat()},
+                            {"role": "customer", "text": "Need the 3rd row for the kids. Do you take trade-ins?", "timestamp": (datetime.now() - timedelta(hours=1, minutes=45)).isoformat()},
+                            {"role": "AI (Elliot)", "text": "Absolutely! We're offering a $1,500 bonus for trades this week. Can I get our AI Specialist Jason to give you a quick 1-minute call to value your Civic?", "timestamp": (datetime.now() - timedelta(hours=1, minutes=40)).isoformat()},
+                            {"role": "customer", "text": "Sure, call me.", "timestamp": (datetime.now() - timedelta(hours=1, minutes=35)).isoformat()},
+                            {"role": "AI (Jason)", "text": "[PHONE CALL COMPLETED]\nSummary: Marvin confirmed he has a 2018 Civic Type R. He's extremely excited about the Atlas safety features. Appt set for Monday 2PM.", "timestamp": (datetime.now() - timedelta(minutes=10)).isoformat()}
+                        ]),
+                        vapi_recording_url="https://www.soundjay.com/buttons/beep-01a.mp3", # Real audio placeholder
+                        assigned_agent="Juan Dela Cruz"
+                    ),
+                    LeadTable(
+                        tenant_id="filcan", 
+                        name="Jessica Chen", 
+                        email="jess@outlook.com", 
+                        phone="587-555-9000", 
+                        credit_score=680, 
+                        monthly_budget=550, 
+                        status="Qualified", 
+                        is_reported=True, 
+                        quality_score=85, 
+                        last_action_time="Today 9:15 AM", 
+                        conversation_summary="Comparing Atlas and CX-5. Financing approved.",
+                        interaction_history=json.dumps([
+                            {"role": "customer", "text": "What's the best price on the Mazda?", "timestamp": (datetime.now() - timedelta(hours=5)).isoformat()},
+                            {"role": "AI (Elliot)", "text": "The CX-5 Signature is currently $39,500. It's fully loaded!", "timestamp": (datetime.now() - timedelta(hours=4, minutes=50)).isoformat()}
+                        ]),
+                        assigned_agent="Jessica Cruz"
+                    )
                 ]
                 session.add_all(leads)
+                session.commit()
+            
+            # Seed Agents (The Premium Team)
+            if session.query(AgentTable).count() == 0:
+                agents = [
+                    AgentTable(tenant_id="filcan", name="Juan Dela Cruz", pin="1234", avatar="JD", role="Senior Sales Consultant"),
+                    AgentTable(tenant_id="filcan", name="Mark Santos", pin="5678", avatar="MS", role="Sales Consultant"),
+                    AgentTable(tenant_id="filcan", name="Jessica Cruz", pin="9012", avatar="JC", role="Junior Sales Consultant")
+                ]
+                session.add_all(agents)
                 session.commit()
             
             # Seed Ads
