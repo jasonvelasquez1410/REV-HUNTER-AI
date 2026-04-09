@@ -28,6 +28,7 @@ export default function SettingsPortal({ tenant, onUpdate }) {
           { id: 'branding', label: 'Dealer Branding', icon: Palette },
           { id: 'google', label: 'Google Ads', icon: Globe },
           { id: 'ai', label: 'AI Configuration', icon: Terminal },
+          { id: 'billing', label: 'Subscription & Billing', icon: Copy },
           { id: 'general', label: 'General Settings', icon: Settings },
         ].map(item => (
           <button 
@@ -186,6 +187,71 @@ export default function SettingsPortal({ tenant, onUpdate }) {
                   <option>Friendly & Community-Focused</option>
                   <option>Concise & Direct</option>
                 </select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeSubTab === 'billing' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+            <h2 style={{ color: '#003366' }}>Subscription & Billing 💎</h2>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '30px' }}>
+              <div style={{ background: 'linear-gradient(135deg, #003366 0%, #001a33 100%)', padding: '30px', borderRadius: '30px', color: 'white', border: '1px solid #D92027', boxShadow: '0 15px 40px rgba(217,32,39,0.2)' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: '900', letterSpacing: '2px', color: '#D92027', marginBottom: '10px' }}>CURRENT PLAN: [ELITE]</div>
+                <h3 style={{ fontSize: '1.8rem', margin: '0 0 20px' }}>RevHunter Premium Suite</h3>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '30px' }}>
+                  {[
+                    "Elliot AI Persona (24/7 Agent)",
+                    "Vapi Outbound Voice (Real PSTN)",
+                    "Marketplace Posting Auto-Organizer",
+                    "Infinite Agent Sub-Accounts",
+                    "Lead DNA Data Extraction Engine"
+                  ].map((item, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.9rem' }}>
+                      <span style={{ color: '#00b894' }}>●</span> {item}
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '15px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <span style={{ opacity: 0.7 }}>Implementation Fee:</span>
+                    <span style={{ fontWeight: 'bold' }}>$2,792.00</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ opacity: 0.7 }}>Monthly License:</span>
+                    <span style={{ fontWeight: 'bold' }}>$99.00 /mo</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ background: '#f8f9fa', padding: '30px', borderRadius: '30px', border: '1px solid #eee' }}>
+                <h4 style={{ margin: '0 0 20px', color: '#666', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>INVOICE PREVIEW</h4>
+                <div style={{ border: '1px solid #ddd', background: 'white', padding: '20px', borderRadius: '10px', fontSize: '0.8rem', color: '#333' }}>
+                  <div style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '15px', display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ fontWeight: 'bold' }}>INV-2024-001</div>
+                    <div style={{ color: '#999' }}>{new Date().toLocaleDateString()}</div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Elite AI Deployment (FilCan)</span>
+                      <span>$2,792.00</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Service Provisioning</span>
+                      <span>$0.00</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', borderTop: '1px solid #eee', paddingTop: '10px', marginTop: '10px', fontSize: '1rem' }}>
+                      <span>TOTAL DUE</span>
+                      <span>$2,792.00</span>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                    <button style={{ padding: '10px 20px', background: '#00b894', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.7rem' }}>PAID VIA STRIPE ✓</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

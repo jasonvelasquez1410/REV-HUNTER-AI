@@ -123,6 +123,7 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
         if (isThinking) return;
         setIsThinking(true);
         if (recognitionRef.current) recognitionRef.current.stop();
+        setIsListening(false);
 
         const input = forcedContext || transcriptRef.current.toLowerCase();
         let response = "";
@@ -135,6 +136,8 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
                 : "The pipeline is dry, but I'm currently hunting marketplace and social listings for fresh targets as we speak.";
         } else if (input.includes('hot') || input.includes('priority')) {
             response = `I've shifted the hunter algorithm to focus specifically on your ${hotLeads.length} hot prospects. We're in pursuit.`;
+        } else if (input.includes('call') || input.includes('trigger') || input.includes('dial')) {
+            response = "Understood. I'm initiating the outbound autonomous calls for your hot lead queue now. I'll notify you specifically when a live transfer is ready.";
         } else {
             response = "Copy that. Instruction processed and instructions are synced. Consider it done. Anything else?";
         }
@@ -143,6 +146,7 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
             setIsThinking(false);
             setAiResponse(response);
             speak(response);
+            // After Elliot speaks, the Mic is ready again!
         }, 800);
     };
 
@@ -169,6 +173,7 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
                     </button>
                     
                     {!isSynced && <div style={{ marginTop: '20px', color: '#D92027', fontWeight: '900', fontSize: '0.8rem', letterSpacing: '2px', animation: 'pulse 1s infinite' }}>TAP TO SYNC WITH ELLIOT</div>}
+                    {isSynced && !isListening && !isThinking && <div style={{ marginTop: '20px', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold', fontSize: '0.7rem' }}>MIC READY • SPEAK NOW</div>}
                 </div>
 
                 <div style={{ minHeight: '130px' }}>
@@ -179,9 +184,17 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
 
                 {/* Quick Actions (The Bulletproof Mode) */}
                 {isSynced && !isThinking && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '30px' }}>
-                        <button onClick={() => processInstruction('status')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>📊 STATUS UPDATE</button>
-                        <button onClick={() => processInstruction('hot leads')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>🔥 ANY HOT LEADS?</button>
+                    <div style={{ marginTop: '20px' }}>
+                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                            <button onClick={() => processInstruction('status')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>📊 STATUS UPDATE</button>
+                            <button onClick={() => processInstruction('hot leads')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>🔥 ANY HOT LEADS?</button>
+                        </div>
+                        <button 
+                            onClick={() => processInstruction('call')}
+                            style={{ width: '100%', background: 'rgba(0,184,148,0.1)', border: '1px solid #00b894', color: '#00b894', padding: '15px', borderRadius: '14px', fontSize: '0.9rem', fontWeight: '900', boxShadow: '0 4px 15px rgba(0,184,148,0.2)' }}
+                        >
+                            📞 TRIGGER OUTBOUND CALLS
+                        </button>
                     </div>
                 )}
 
