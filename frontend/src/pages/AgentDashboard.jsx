@@ -216,31 +216,35 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
             )}
 
             {subView === 'settings' && (
-                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <h3 style={{ margin: '0 0 20px', fontSize: '1rem', fontWeight: 'bold' }}>Facebook Credentials</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '28px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <h3 style={{ margin: '0 0 20px', fontSize: '1.2rem', fontWeight: '900', color: 'white' }}>Account Integration</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <div>
-                            <label style={{ display: 'block', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginBottom: '6px', textTransform: 'uppercase' }}>Page Access Token</label>
-                            <input 
-                                type="password"
-                                value={fbSettings.fb_access_token}
-                                onChange={e => onUpdateSettings({ ...fbSettings, fb_access_token: e.target.value })}
-                                placeholder="EAA..."
-                                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '0.9rem', boxSizing: 'border-box' }}
-                            />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginBottom: '6px', textTransform: 'uppercase' }}>Facebook Page ID (Optional)</label>
+                            <label style={{ display: 'block', fontSize: '0.75rem', color: 'rgba(255,255,255,0.85)', marginBottom: '8px', textTransform: 'uppercase', fontWeight: 'bold' }}>Facebook Email / Phone</label>
                             <input 
                                 type="text"
-                                value={fbSettings.fb_page_id}
-                                onChange={e => onUpdateSettings({ ...fbSettings, fb_page_id: e.target.value })}
-                                placeholder="123456..."
-                                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                                placeholder="Email or phone"
+                                style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
                             />
                         </div>
-                        <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)', lineHeight: '1.4' }}>
-                            Your tokens are stored securely. Use a Page Access Token for automated posting to your dealership page. For demo purposes, you can use "mock_token" to simulate a successful post.
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.75rem', color: 'rgba(255,255,255,0.85)', marginBottom: '8px', textTransform: 'uppercase', fontWeight: 'bold' }}>Facebook Password</label>
+                            <input 
+                                type="password"
+                                placeholder="Required for direct app link"
+                                style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
+                            />
+                        </div>
+                        
+                        <button 
+                            onClick={() => alert('Elliot is initializing Facebook App Link...')}
+                            style={{ width: '100%', padding: '16px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '14px', fontWeight: '900', fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 6px 20px rgba(24,119,242,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '10px' }}
+                        >
+                            <Share2 size={20} /> CONNECT TO FB APP
+                        </button>
+
+                        <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', lineHeight: '1.5', textAlign: 'center' }}>
+                            By connecting, Elliot will automatically monitor your Marketplace posts and lead inquiries directly within the Facebook app.
                         </p>
                     </div>
                 </div>
@@ -595,8 +599,8 @@ export default function AgentDashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <div style={{ width: '45px', height: '45px', borderRadius: '14px', background: 'linear-gradient(135deg, #D92027, #D9202788)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.9rem' }}>{agent.avatar || agent.name.charAt(0)}</div>
                         <div>
-                            <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>{agent.name}</div>
-                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>
+                            <div style={{ fontWeight: '900', fontSize: '1.2rem', color: 'white' }}>{agent.name}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.73)', fontWeight: '600' }}>
                                 {agent.role} • {tenant?.name || 'FilCan Cars'} {agent.subscription_status === 'active' && '⭐'}
                             </div>
                         </div>
@@ -623,8 +627,8 @@ export default function AgentDashboard() {
                 ].map((stat, i) => (
                     <div key={i} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
                         <div style={{ color: stat.color, marginBottom: '8px' }}>{stat.icon}</div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: '900' }}>{stat.value}</div>
-                        <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)', marginTop: '3px' }}>{stat.label}</div>
+                        <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'white' }}>{stat.value}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', marginTop: '4px', fontWeight: '600' }}>{stat.label}</div>
                     </div>
                 ))}
             </div>
