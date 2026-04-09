@@ -26,6 +26,8 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
     const [transcript, setTranscript] = useState('');
     const [aiResponse, setAiResponse] = useState('');
     const [isThinking, setIsThinking] = useState(false);
+    const [isListening, setIsListening] = useState(false);
+    const [isSynced, setIsSynced] = useState(false);
     const recognitionRef = useRef(null);
     const transcriptRef = useRef('');
     const silenceTimerRef = useRef(null);
@@ -38,14 +40,17 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
             const msg = new SpeechSynthesisUtterance(text);
             const voices = window.speechSynthesis.getVoices();
             
-            const preferred = voices.find(v => (v.lang.startsWith('en') && (v.name.includes('Male') || v.name.includes('Guy') || v.name.includes('David') || v.name.includes('Microsoft'))))
-                || voices.find(v => v.lang.startsWith('en') && !v.name.includes('Female'))
+            let elliot = voices.find(v => v.lang.startsWith('en') && v.name.includes('Natural') && v.name.includes('Male'))
+                || voices.find(v => v.lang.startsWith('en') && v.name.includes('Google') && v.name.includes('Male'))
+                || voices.find(v => v.lang.startsWith('en') && v.name.includes('David'))
+                || voices.find(v => v.lang.startsWith('en') && v.name.includes('Male'))
+                || voices.find(v => v.lang.startsWith('en') && v.name.includes('Guy'))
                 || voices.find(v => v.lang.startsWith('en'))
                 || voices[0];
 
-            if (preferred) msg.voice = preferred;
-            msg.pitch = 0.82;
-            msg.rate = 1.05;
+            if (elliot) msg.voice = elliot;
+            msg.pitch = 0.8;
+            msg.rate = 1.0;
             window.speechSynthesis.speak(msg);
         };
 
@@ -56,27 +61,32 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
         }
     };
 
-    useEffect(() => {
-        let recognition = null;
-        if (isOpen) {
+    const startStrategist = () => {
+        setIsSynced(true);
+        speak("I'm online, boss. I've analyzed your current pipeline. What's the plan?");
+    };
+
+    const toggleListening = () => {
+        if (!isSynced) return startStrategist();
+        
+        if (isListening) {
+            if (recognitionRef.current) recognitionRef.current.stop();
+            setIsListening(false);
+        } else {
             setTranscript('');
             transcriptRef.current = '';
             setAiResponse('');
-            setIsThinking(false);
+            setIsListening(true);
             
-            setTimeout(() => speak("I'm here, boss. Give me the plan, or ask me anything about your pipeline."), 400);
-
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (SpeechRecognition) {
-                recognition = new SpeechRecognition();
-                recognition.continuous = true;
-                recognition.interimResults = true;
-                recognition.lang = 'en-US';
+                recognitionRef.current = new SpeechRecognition();
+                recognitionRef.current.continuous = true;
+                recognitionRef.current.interimResults = true;
+                recognitionRef.current.lang = 'en-US';
 
-                recognition.onresult = (event) => {
-                    const result = Array.from(event.results)
-                        .map(res => res[0].transcript)
-                        .join('');
+                recognitionRef.current.onresult = (event) => {
+                    const result = Array.from(event.results).map(res => res[0].transcript).join('');
                     setTranscript(result);
                     transcriptRef.current = result;
 
@@ -85,55 +95,48 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
                         if (transcriptRef.current.length > 3) {
                             processInstruction();
                         }
-                    }, 1200);
+                    }, 1500);
                 };
 
-                recognition.onend = () => {
+                recognitionRef.current.onend = () => {
+                    setIsListening(false);
                     if (transcriptRef.current.length > 3 && !aiResponse) {
                         processInstruction();
                     }
                 };
 
-                setTimeout(() => {
-                    try { recognition.start(); } catch(e) {}
-                }, 1200);
+                try { recognitionRef.current.start(); } catch(e) {}
             }
         }
-        
-        return () => {
-            if (recognition) recognition.stop();
-            if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-            if (typeof window !== 'undefined' && window.speechSynthesis) {
-                window.speechSynthesis.cancel();
-            }
-        };
+    };
+
+    useEffect(() => {
+        if (!isOpen) {
+            if (recognitionRef.current) recognitionRef.current.stop();
+            if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+            setIsListening(false);
+            setIsSynced(false);
+        }
     }, [isOpen]);
 
-    const processInstruction = () => {
-        if (isThinking || aiResponse) return;
+    const processInstruction = (forcedContext = null) => {
+        if (isThinking) return;
         setIsThinking(true);
-        
-        const input = transcriptRef.current.toLowerCase();
+        if (recognitionRef.current) recognitionRef.current.stop();
+
+        const input = forcedContext || transcriptRef.current.toLowerCase();
         let response = "";
 
-        // INTELLIGENT CONTEXT-AWARE RESPONSES
-        if (input.includes('leads') || input.includes('many') || input.includes('any')) {
+        if (input.includes('status') || input.includes('leads') || input.includes('news')) {
             const count = leads?.length || 0;
             const hotCount = hotLeads?.length || 0;
-            if (count === 0) {
-                response = "The pipeline is currently dry, but I'm hunting local Marketplace listings as we speak. I'll alert you the second a fish bites.";
-            } else {
-                response = `You've got ${count} leads in the hub right now, and ${hotCount} of them are rated as hot. I'm currently prioritizing the highest quality scores for your callback list.`;
-            }
-        } else if (input.includes('hot') || input.includes('best')) {
-            const hotCount = hotLeads?.length || 0;
-            response = `Out of your ${leads.length} leads, ${hotCount} are red hot and ready for a close. I've already sent them a nudge to confirm their appointment times.`;
-        } else if (input.includes('prioritize') || input.includes('focus') || input.includes('target')) {
-            response = "Understood. I'm shifting the hunter algorithm to focus specifically on those targets. Strategy updated and synced across the dealership.";
-        } else if (input.includes('doing') || input.includes('status')) {
-            response = "I'm currently running outbound autonomous calls and scraping social leads 24/7. My current goal is to hit your 10-lead daily pulse before the showroom opens.";
+            response = count > 0 
+                ? `The hub is active with ${count} leads. I've flagged ${hotCount} of those as your highest closing probability. I'm prioritizing them now.`
+                : "The pipeline is dry, but I'm currently hunting marketplace and social listings for fresh targets as we speak.";
+        } else if (input.includes('hot') || input.includes('priority')) {
+            response = `I've shifted the hunter algorithm to focus specifically on your ${hotLeads.length} hot prospects. We're in pursuit.`;
         } else {
-            response = "Copy that. Instruction processed and the strategy is updated. I'm on it, boss. Anything else?";
+            response = "Copy that. Instruction processed and instructions are synced. Consider it done. Anything else?";
         }
 
         setTimeout(() => {
@@ -146,47 +149,52 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
     if (!isOpen) return null;
 
     return (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.98)', backdropFilter: 'blur(30px)', zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-            <div style={{ width: '100%', maxWidth: '420px', textAlign: 'center', animation: 'fadeIn 0.3s ease' }}>
-                <div style={{ marginBottom: '30px', position: 'relative' }}>
-                    <div style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(217,32,39,0.1)', border: '2px solid #D92027', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', boxShadow: isThinking ? '0 0 60px #D92027' : '0 0 30px rgba(217,32,39,0.3)', transition: 'all 0.5s ease', animation: 'pulse 2s infinite' }}>
-                        <Mic size={60} color="#D92027" />
-                    </div>
-                </div>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.98)', backdropFilter: 'blur(35px)', zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <div style={{ width: '100%', maxWidth: '420px', textAlign: 'center', animation: 'fadeIn 0.4s ease' }}>
                 
-                <h2 style={{ color: 'white', fontSize: '1.6rem', fontWeight: '900', marginBottom: '5px', letterSpacing: '1px' }}>ELLIOT STRATEGIST</h2>
-                <div style={{ fontSize: '0.7rem', color: '#D92027', fontWeight: 'bold', marginBottom: '30px', opacity: 0.8 }}>VOICE COMMAND ACTIVE</div>
+                <h2 style={{ color: 'white', fontSize: '1.6rem', fontWeight: '900', marginBottom: '5px', letterSpacing: '2px' }}>ELLIOT STRATEGIST</h2>
+                
+                <div style={{ marginBottom: '40px', position: 'relative' }}>
+                    <div style={{ height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px', marginBottom: '15px' }}>
+                        {[...Array(12)].map((_, i) => (
+                            <div key={i} style={{ width: '3px', height: isListening ? '100%' : '15%', background: isListening ? '#00b894' : 'rgba(217,32,39,0.3)', borderRadius: '10px', animation: isListening ? `wave 1s ease-in-out ${i * 0.1}s infinite` : 'none', transition: 'all 0.3s ease' }} />
+                        ))}
+                    </div>
 
-                <div style={{ minHeight: '120px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '15px' }}>
-                    {transcript && (
-                        <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '15px', padding: '15px', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', textAlign: 'left', alignSelf: 'flex-start', maxWidth: '85%' }}>
-                            "{transcript}"
-                        </div>
-                    )}
-
-                    {isThinking && (
-                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', fontStyle: 'italic', animation: 'pulse 1s infinite' }}>
-                            Elliot is updating the hunt strategy...
-                        </div>
-                    )}
-
-                    {aiResponse && (
-                        <div style={{ background: 'rgba(217,32,39,0.15)', borderRadius: '15px', padding: '15px', border: '1px solid rgba(217,32,39,0.3)', color: 'white', fontSize: '0.9rem', textAlign: 'right', alignSelf: 'flex-end', maxWidth: '85%', fontWeight: '600' }}>
-                            {aiResponse}
-                        </div>
-                    )}
+                    <button 
+                        onClick={toggleListening}
+                        style={{ width: '130px', height: '130px', borderRadius: '50%', background: isListening ? 'rgba(0,184,148,0.1)' : 'rgba(217,32,39,0.1)', border: `3px solid ${isListening ? '#00b894' : '#D92027'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', boxShadow: isListening ? '0 0 50px rgba(0,184,148,0.4)' : isThinking ? '0 0 60px #D92027' : '0 0 30px rgba(217,32,39,0.3)', transition: 'all 0.4s ease', cursor: 'pointer' }}
+                    >
+                        {!isSynced ? <Zap size={50} color="#D92027" /> : <Mic size={50} color={isListening ? '#00b894' : '#D92027'} />}
+                    </button>
+                    
+                    {!isSynced && <div style={{ marginTop: '20px', color: '#D92027', fontWeight: '900', fontSize: '0.8rem', letterSpacing: '2px', animation: 'pulse 1s infinite' }}>TAP TO SYNC WITH ELLIOT</div>}
                 </div>
 
-                <div style={{ marginTop: '50px' }}>
-                    <button 
-                        onClick={onClose}
-                        style={{ background: '#D92027', color: 'white', border: 'none', borderRadius: '16px', padding: '18px 40px', fontWeight: '900', cursor: 'pointer', fontSize: '1rem', width: '100%', boxShadow: '0 8px 25px rgba(217,32,39,0.4)' }}
-                    >
-                        DONE & SYNC STRATEGY
-                    </button>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', marginTop: '20px', cursor: 'pointer', fontSize: '0.85rem' }}>LOGOUT COMMAND MODE</button>
+                <div style={{ minHeight: '130px' }}>
+                    {transcript && !aiResponse && <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '15px', padding: '15px', color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', textAlign: 'center' }}>"{transcript}"</div>}
+                    {isThinking && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>Elliot is calculating...</div>}
+                    {aiResponse && <div style={{ background: 'rgba(217,32,39,0.15)', borderRadius: '15px', padding: '20px', border: '1px solid rgba(217,32,39,0.3)', color: 'white', fontSize: '1rem', fontWeight: '600', animation: 'slideUp 0.3s ease' }}>{aiResponse}</div>}
+                </div>
+
+                {/* Quick Actions (The Bulletproof Mode) */}
+                {isSynced && !isThinking && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '30px' }}>
+                        <button onClick={() => processInstruction('status')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>📊 STATUS UPDATE</button>
+                        <button onClick={() => processInstruction('hot leads')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>🔥 ANY HOT LEADS?</button>
+                    </div>
+                )}
+
+                <div style={{ marginTop: '40px' }}>
+                    <button onClick={onClose} style={{ background: '#D92027', color: 'white', border: 'none', borderRadius: '16px', padding: '16px 40px', fontWeight: '900', cursor: 'pointer', fontSize: '1rem', width: '100%' }}>EXIT COMMAND MODE</button>
                 </div>
             </div>
+            
+            <style>{`
+                @keyframes wave { 0%, 100% { height: 15%; } 50% { height: 100%; } }
+                @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+                @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            `}</style>
         </div>
     );
 }
