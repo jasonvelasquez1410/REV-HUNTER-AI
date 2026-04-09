@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Bell, LogOut, FileSpreadsheet, CheckCircle, AlertCircle, Share2, Settings, LayoutDashboard, Image as ImageIcon, Send, MessageSquare } from 'lucide-react';
+import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Bell, LogOut, FileSpreadsheet, CheckCircle, AlertCircle, Share2, Settings, LayoutDashboard, Image as ImageIcon, Send, MessageSquare, Mic } from 'lucide-react';
 import { useTenant } from '../context/TenantContext';
 import * as XLSX from 'xlsx';
 
@@ -20,6 +20,39 @@ function sendPushNotification(title, body) {
             tag: 'revhunter-lead'
         });
     }
+}
+
+// ── STRATEGIST MODAL ──────────────────────────────
+function StrategistModal({ isOpen, onClose }) {
+    if (!isOpen) return null;
+    return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.95)', backdropFilter: 'blur(25px)', zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <div style={{ width: '100%', maxWidth: '400px', textAlign: 'center', animation: 'fadeIn 0.3s ease' }}>
+                <div style={{ marginBottom: '30px' }}>
+                    <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(217,32,39,0.1)', border: '2px solid #D92027', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', boxShadow: '0 0 40px rgba(217,32,39,0.3)', animation: 'pulse 2s infinite' }}>
+                        <Mic size={50} color="#D92027" />
+                    </div>
+                </div>
+                <h2 style={{ color: 'white', fontSize: '1.5rem', fontWeight: '900', marginBottom: '10px' }}>ELLIOT STRATEGIST</h2>
+                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', marginBottom: '40px', lineHeight: '1.5' }}>
+                    "Give Elliot his marching orders. Tell him who to prioritize or how the follow-up strategy should change today."
+                </p>
+                <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '30px' }}>
+                    <div style={{ color: '#D92027', fontSize: '0.65rem', fontWeight: '900', letterSpacing: '2px', marginBottom: '10px' }}>LISTENING FOR INSTRUCTIONS...</div>
+                    <div style={{ color: 'white', fontSize: '0.85rem', fontStyle: 'italic', opacity: 0.5 }}>
+                        "Elliot, focus on Atlas leads with credit over 700..."
+                    </div>
+                </div>
+                <button 
+                    onClick={onClose}
+                    style={{ background: '#D92027', color: 'white', border: 'none', borderRadius: '14px', padding: '15px 40px', fontWeight: '800', cursor: 'pointer', fontSize: '1rem', width: '100%' }}
+                >
+                    SET NEW STRATEGY
+                </button>
+                <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', marginTop: '20px', cursor: 'pointer', fontSize: '0.85rem' }}>CANCEL</button>
+            </div>
+        </div>
+    );
 }
 
 // ── LOGIN SCREEN ──────────────────────────────────
@@ -408,6 +441,7 @@ export default function AgentDashboard() {
     const [fbSettings, setFbSettings] = useState({ fb_access_token: '', fb_page_id: '' });
     const [dialing, setDialing] = useState(null);
     const [selectedDNA, setSelectedDNA] = useState(null);
+    const [isStrategistOpen, setIsStrategistOpen] = useState(false);
     const fileInputRef = useRef(null);
 
     const handleLogin = (agentData) => {
@@ -610,6 +644,9 @@ export default function AgentDashboard() {
                             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00b894', boxShadow: '0 0 8px #00b894' }} />
                             <span style={{ fontSize: '0.65rem', color: '#00b894' }}>ELLIOT LIVE</span>
                         </div>
+                        <button onClick={() => setIsStrategistOpen(true)} style={{ background: 'rgba(217,32,39,0.15)', border: '1px solid rgba(217,32,39,0.3)', color: '#D92027', borderRadius: '10px', padding: '10px', cursor: 'pointer', boxShadow: '0 0 10px rgba(217,32,39,0.2)' }} title="Elliot Strategist">
+                            <Mic size={18} />
+                        </button>
                         <button onClick={handleLogout} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'rgba(255,255,255,0.4)', borderRadius: '10px', padding: '8px', cursor: 'pointer' }} title="Sign Out">
                             <LogOut size={16} />
                         </button>
@@ -869,7 +906,9 @@ export default function AgentDashboard() {
                                 </div>
                             </div>
                         )}
-                    </div>
+                            {/* Strategist Modal */}
+            <StrategistModal isOpen={isStrategistOpen} onClose={() => setIsStrategistOpen(false)} />
+        </div>
                 )}
             </div>
 
