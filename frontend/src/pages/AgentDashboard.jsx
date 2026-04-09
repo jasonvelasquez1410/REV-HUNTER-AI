@@ -29,27 +29,35 @@ function StrategistModal({ isOpen, onClose }) {
     const [isThinking, setIsThinking] = useState(false);
     const recognitionRef = useRef(null);
 
+    const transcriptRef = useRef('');
+
     const speak = (text) => {
         if (typeof window === 'undefined' || !window.speechSynthesis) return;
-        try {
+        
+        const performSpeak = () => {
             window.speechSynthesis.cancel();
             const msg = new SpeechSynthesisUtterance(text);
             const voices = window.speechSynthesis.getVoices();
             
-            // MASTER VOICE SELECTION: Filter for English (US/GB) and prioritize a professional male voice
-            const elliotVoice = voices.find(v => 
-                (v.lang.startsWith('en-') && (v.name.includes('Male') || v.name.includes('Guy') || v.name.includes('Daniel') || v.name.includes('Google US English')))
-            ) || voices.find(v => v.lang.startsWith('en-')) || voices[0];
-            
-            if (elliotVoice) {
-                msg.voice = elliotVoice;
-            }
-            
-            msg.pitch = 0.85; // Lower pitch for a more masculine, professional 'Elliot' feel
+            // Log for debugging
+            console.log("Available voices:", voices.map(v => v.name));
+
+            // Aggressive Male/English search
+            const preferred = voices.find(v => (v.lang.startsWith('en') && (v.name.includes('Male') || v.name.includes('Guy') || v.name.includes('David') || v.name.includes('Microsoft'))))
+                || voices.find(v => v.lang.startsWith('en') && !v.name.includes('Female'))
+                || voices.find(v => v.lang.startsWith('en'))
+                || voices[0];
+
+            if (preferred) msg.voice = preferred;
+            msg.pitch = 0.8;
             msg.rate = 1.0;
             window.speechSynthesis.speak(msg);
-        } catch (e) {
-            console.error("Speech Synthesis Error:", e);
+        };
+
+        if (window.speechSynthesis.getVoices().length > 0) {
+            performSpeak();
+        } else {
+            window.speechSynthesis.onvoiceschanged = performSpeak;
         }
     };
 
@@ -57,16 +65,16 @@ function StrategistModal({ isOpen, onClose }) {
         let recognition = null;
         if (isOpen) {
             setTranscript('');
+            transcriptRef.current = '';
             setAiResponse('');
             setIsThinking(false);
             
-            // Small delay to ensure voices are loaded on mobile
-            setTimeout(() => speak("I'm listening, boss. What are your instructions for today?"), 500);
+            setTimeout(() => speak("I'm listening, boss. What are your instructions for today?"), 800);
 
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (SpeechRecognition) {
                 recognition = new SpeechRecognition();
-                recognition.continuous = false;
+                recognition.continuous = true;
                 recognition.interimResults = true;
                 recognition.lang = 'en-US';
 
@@ -75,22 +83,18 @@ function StrategistModal({ isOpen, onClose }) {
                         .map(res => res[0].transcript)
                         .join('');
                     setTranscript(result);
+                    transcriptRef.current = result;
                 };
 
                 recognition.onend = () => {
-                    // Logic to trigger response if we have enough text
-                    setTranscript(prev => {
-                        if (prev.length > 3) {
-                            processInstruction();
-                        }
-                        return prev;
-                    });
+                    if (transcriptRef.current.length > 3 && !aiResponse) {
+                        processInstruction();
+                    }
                 };
 
-                // Delay start to avoid Elliot hearing himself
                 setTimeout(() => {
                     try { recognition.start(); } catch(e) {}
-                }, 2500);
+                }, 2800);
             }
         }
         
@@ -103,13 +107,14 @@ function StrategistModal({ isOpen, onClose }) {
     }, [isOpen]);
 
     const processInstruction = () => {
+        if (isThinking) return;
         setIsThinking(true);
         setTimeout(() => {
             setIsThinking(false);
-            const response = "Copy that. Hunt strategy updated. I'll prioritize those leads and increase the follow-up frequency. Anything else?";
+            const response = "Loud and clear. I've updated the hunter algorithm. I'll prioritize those targets and ping you as soon as they bite. Anything else?";
             setAiResponse(response);
             speak(response);
-        }, 1500);
+        }, 1200);
     };
 
     if (!isOpen) return null;
