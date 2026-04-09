@@ -30,6 +30,7 @@ function StrategistModal({ isOpen, onClose }) {
     const recognitionRef = useRef(null);
 
     const transcriptRef = useRef('');
+    const silenceTimerRef = useRef(null);
 
     const speak = (text) => {
         if (typeof window === 'undefined' || !window.speechSynthesis) return;
@@ -39,10 +40,6 @@ function StrategistModal({ isOpen, onClose }) {
             const msg = new SpeechSynthesisUtterance(text);
             const voices = window.speechSynthesis.getVoices();
             
-            // Log for debugging
-            console.log("Available voices:", voices.map(v => v.name));
-
-            // Aggressive Male/English search
             const preferred = voices.find(v => (v.lang.startsWith('en') && (v.name.includes('Male') || v.name.includes('Guy') || v.name.includes('David') || v.name.includes('Microsoft'))))
                 || voices.find(v => v.lang.startsWith('en') && !v.name.includes('Female'))
                 || voices.find(v => v.lang.startsWith('en'))
@@ -50,7 +47,7 @@ function StrategistModal({ isOpen, onClose }) {
 
             if (preferred) msg.voice = preferred;
             msg.pitch = 0.8;
-            msg.rate = 1.0;
+            msg.rate = 1.1; // Slightly faster speaking rate
             window.speechSynthesis.speak(msg);
         };
 
@@ -69,7 +66,8 @@ function StrategistModal({ isOpen, onClose }) {
             setAiResponse('');
             setIsThinking(false);
             
-            setTimeout(() => speak("I'm listening, boss. What are your instructions for today?"), 800);
+            // Faster greeting
+            setTimeout(() => speak("I'm listening, boss. What's the plan?"), 400);
 
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (SpeechRecognition) {
@@ -84,6 +82,14 @@ function StrategistModal({ isOpen, onClose }) {
                         .join('');
                     setTranscript(result);
                     transcriptRef.current = result;
+
+                    // SILENCE DETECTION: If they stop talking for 1s, trigger response
+                    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+                    silenceTimerRef.current = setTimeout(() => {
+                        if (transcriptRef.current.length > 3) {
+                            processInstruction();
+                        }
+                    }, 1000); // 1 second of silence
                 };
 
                 recognition.onend = () => {
@@ -92,14 +98,16 @@ function StrategistModal({ isOpen, onClose }) {
                     }
                 };
 
+                // Ready much faster
                 setTimeout(() => {
                     try { recognition.start(); } catch(e) {}
-                }, 2800);
+                }, 1200);
             }
         }
         
         return () => {
             if (recognition) recognition.stop();
+            if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
             if (typeof window !== 'undefined' && window.speechSynthesis) {
                 window.speechSynthesis.cancel();
             }
@@ -107,14 +115,14 @@ function StrategistModal({ isOpen, onClose }) {
     }, [isOpen]);
 
     const processInstruction = () => {
-        if (isThinking) return;
+        if (isThinking || aiResponse) return;
         setIsThinking(true);
         setTimeout(() => {
             setIsThinking(false);
-            const response = "Loud and clear. I've updated the hunter algorithm. I'll prioritize those targets and ping you as soon as they bite. Anything else?";
+            const response = "Loud and clear. Strategy updated. I'll prioritize those targets now. Anything else?";
             setAiResponse(response);
             speak(response);
-        }, 1200);
+        }, 500); // Super fast thinking
     };
 
     if (!isOpen) return null;
