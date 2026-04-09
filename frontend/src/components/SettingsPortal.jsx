@@ -216,13 +216,9 @@ export default function SettingsPortal({ tenant, onUpdate }) {
                 </div>
 
                 <div style={{ background: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '15px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <span style={{ opacity: 0.7 }}>Implementation Fee:</span>
-                    <span style={{ fontWeight: 'bold' }}>$2,792.00</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ opacity: 0.7 }}>Monthly License:</span>
-                    <span style={{ fontWeight: 'bold' }}>$99.00 /mo</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
+                    <span style={{ opacity: 0.7 }}>Premium Suite Implementation:</span>
+                    <span style={{ fontSize: '1.2rem' }}>$2,792.00</span>
                   </div>
                 </div>
               </div>
@@ -236,20 +232,16 @@ export default function SettingsPortal({ tenant, onUpdate }) {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Elite AI Deployment (FilCan)</span>
+                      <span>Premium Suite Deployment (FilCan)</span>
                       <span>$2,792.00</span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Service Provisioning</span>
-                      <span>$0.00</span>
-                    </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', borderTop: '1px solid #eee', paddingTop: '10px', marginTop: '10px', fontSize: '1rem' }}>
-                      <span>TOTAL DUE</span>
+                      <span>TOTAL (Tax Incl.)</span>
                       <span>$2,792.00</span>
                     </div>
                   </div>
                   <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                    <button style={{ padding: '10px 20px', background: '#00b894', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.7rem' }}>PAID VIA STRIPE ✓</button>
+                    <button style={{ padding: '10px 20px', background: '#00b894', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.7rem' }}>DEALER AUTHORIZED ✓</button>
                   </div>
                 </div>
               </div>
