@@ -39,7 +39,10 @@ class Lead(BaseModel):
     follow_up_streak: int = 0  # 0-90 days
     last_action_time: str = "Saturday 9:00 PM"  # Mock for demo
     is_aged: bool = False
-    assigned_rep: str = "User/Rjay"
+    assigned_agent: str = "User/Rjay"
+    is_manual_assignment: bool = False
+    interaction_history: str = "[]"
+    vapi_recording_url: Optional[str] = None
     conversation_state: Optional[str] = "{}"
     conversation_summary: Optional[str] = "New Lead"
     id: Optional[int] = None

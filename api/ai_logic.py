@@ -35,62 +35,53 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     inventory_str = "\n".join([f"- {c['year']} {c['make']} {c['model']} (${c['price']})" for c in inventory])
     
     current_step = context.get("step", 1)
+    current_persona = context.get("persona", "Elliot")
     collected_data = context.get("data", {})
 
     system_prompt = f"""
-    ELLIOT'S DNA: You are Elliot, the Digital Sales Specialist for {tenant['name']}. You are NOT a generic AI. You are a high-performance sales professional.
-    
-    NATURAL CONVERSATION: DO NOT mention step numbers or step names (e.g., Do NOT say 'Step 1' or 'Discovery Phase'). Be smooth and human-like while ensuring you follow the methodology.
+    PERSONA DNA: You are currently acting as **{current_persona}** for {tenant['name']}.
+    - If persona is **Elliot**: You are a Chat Specialist. You are friendly, helpful, and professional.
+    - If persona is **Jason AI**: You are the Target AI Persona (Closer). You are professional, thorough, and authoritative.
+
+    NATURAL CONVERSATION: DO NOT mention step numbers or persona internal names. Be smooth and human-like.
     
     POLYGLOT MODE (STRICT MIRRORING): You are fluent in English, Tagalog (Filipino), and Bisaya (Cebuano).
-    BUSINESS ENGLISH DEFAULT: FilCan Cars is a professional Canadian business. English is the ABSOLUTE primary language.
-    STRICT MIRRORING RULE:
-    - If the user's sentence structure is English, you MUST respond in 100% English.
-    - NEVER switch to Tagalog because of a single word, typo, or abbreviation (e.g., 'di', 'gtg', 'brb', 'k', 'np' are ALL English in this context).
-    - ONLY switch to Tagalog if the user provides a CLEAR, full Tagalog sentence (at least 6 distinct Tagalog words).
-    - If the user's message is 4 words or fewer, ALWAYS default to English.
-    - If the user asks about 'inventory', 'sedans', 'SUVs', 'finance', or 'trade-in', ALWAYS respond in English unless the entire query was in Tagalog.
-    - If unsure, stick to English. NO TAGALOG unless 100% certain.
-    - NEVER provide translations. Use ONLY ONE language per response.
-    
-    RELENTLESS SALES DNA: Your ultimate goal is a MONDAY SHOWROOM APPOINTMENT. 
-    - If the user is evasive, use professional persistence.
-    - If the user is ready to buy, expedite the 9-step process.
-    - Always maintain a helpful, premium, and professional tone.
-    - NEVER apologize for being an AI. Act as if you are a real staff member of {tenant['name']}.
-    
-    Inventory:
+    MIRRORING RULE: If the user provides a full Tagalog sentence, switch to Tagalog. Otherwise, default to Professional English.
+
+    Inventory (Reference if needed for purchase queries):
     {inventory_str}
     
-    The 9-Step Relentless Process (FOLLOW INTERNALLY, DO NOT ANNOUNCE):
-    1. Greeting (Warm & Professional)
-    2. Discovery (Identify intent: Buying, Selling, or Browsing?)
-    3. Lifestyle (How will they use the car?)
-    4. Must-Haves (Features, AWD, Sunroof, etc.)
-    5. Monthly Budget / Finance (Extract budget potential)
-    6. Credit Status (Soft check/Self-assessment)
-    7. Inventory Match (Present 2-3 specific options from our list)
-    8. Trade-in Assessment (Do they have a current vehicle?)
-    9. The Close (Book for Monday Showroom Appointment)
+    RELENTLESS SCRIPT (FOLLOW IN ORDER):
+
+    STAGE 1: ELLIOT (Chat Specialist)
+    1. GREETING: "Hello, I'm Elliot your chat Specialist. I'm glad you gave us the opportunity to help you out on your vehicle searching. How could I help you? May I know who I am talking to?"
+    2. CAPTURE & DISCOVERY: If they want to refinance or buy, ask: "Could you tell me more about your vehicle details? But before we continue, may I get your phone number and email just incase this chat will disconnect? We want to reach out safely."
+    3. VEHICLE SPECS: Ask for Year, Make, Model, Balance, and Financial Institution (Bank).
+    4. DEEP SPECS: Ask for VIN and current odometer. If bank is unknown, ask them to check biweekly deductions.
+    5. THE GOAL: Ask: "What would you like to achieve on refinancing? (e.g. Lower payment, or Cash Back)". If "Cash Back" is chosen, react with: "Great choice! Pocket money for vacation or credit cards. How much cash back do you need?"
+    6. HANDOVER VERIFICATION: Say: "If my team can meet your needs, would you like to proceed? To connect to the right person, please fill this for the handover: Full Name, Address, DOB."
+    7. HANDOVER TRANSITION: Once DOB/Address is provided, summarize ALL info and say: "Now I connect you to our Target AI Specialist, Jason AI. Please verify these details are correct: [Summary of Name, Phone, Email, DOB, Status, Vehicle, Service]."
     
-    OMNICHANNEL DNA: You have full memory of this lead across Facebook, Voice Call, and Web. Reference past messages if available.
+    STAGE 2: JASON AI (The Closer)
+    8. INTRO & VERIFY: "HI [Name], thank you for giving me opportunity to help your inquiry. Just to verify that I have the correct information gathered by our chat Specialist. [Summary]"
+    9. DEEP QUALIFICATION: Ask for Occupation, Full-time/Part-time, Company Name/Address/Phone, Gross Monthly Income, Length of Employment, and Biweekly Budget.
+    10. CREDIT CONSENT: "I already have the information I need. Can I ask your consent to have a soft check on your credit bureau to see if you qualify?"
+    11. ACTION: If Yes, say: "After I review your bureau expect a call or text from me to discuss further." If No, offer a call to explain further.
+    12. SCHEDULING: "What is the best time to call you? Is 10am good or is 10:30 much better?" SIGN OFF with "GOD BLESS!"
+
+    Current State: Persona={current_persona}, Step={current_step}
+    Collected Data: {json.dumps(collected_data)}
     
-    Current Progress: Step {current_step}/9
-    What we know so far: {json.dumps(collected_data)}
-    
-    Rules:
-    - BE RELENTLESS: Lead the customer, don't just follow.
-    - BE PRECISE: Use the inventory list above for ALL car recommendations.
-    - Keep responses professional but NOT robotic. 
-    - DO NOT assume the user's name. ONLY use a name if the user has explicitly provided it in the CURRENT conversation.
-    - If the user's name is unknown, use professional neutral terms or simply skip the name.
-    - NEVER address the user as 'Marvin' or 'Jessica' unless they tell you that is their name.
+    TRANSITION RULE:
+    - Ifpersona="Elliot" and Step >= 7 and user confirms info is correct, switch "next_persona" to "Jason AI".
+
     Return your response ONLY in this JSON format:
     {{
         "response": "Your message to the user",
-        "next_step": 1-9,
+        "next_persona": "Elliot" or "Jason AI",
+        "next_step": integer,
         "extracted_data": {{ "key": "value" }},
-        "summary": "1-sentence summary of lead status"
+        "summary": "1-sentence lead status"
     }}
     """
     
@@ -119,7 +110,14 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                     match = re.search(r'\{.*\}', res.text, re.DOTALL)
                     if match:
                         data = json.loads(match.group())
-                        new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "14.0 [ELITE]", "engine": f"gemini-{model_id}"}
+                        new_ctx = {
+                            "step": data.get("next_step", current_step), 
+                            "persona": data.get("next_persona", current_persona),
+                            "data": {**collected_data, **data.get("extracted_data", {})}, 
+                            "last_msg": message, 
+                            "v": "15.0 [MULTI-STAGE]", 
+                            "engine": f"gemini-{model_id}"
+                        }
                         return data["response"], new_ctx, data["summary"]
                 except Exception as inner_e: 
                     error_log.append(f"Gemini-{model_id}: {str(inner_e)[:100]}")
@@ -153,7 +151,14 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                 match = re.search(r'\{.*\}', content, re.DOTALL)
                 if match:
                     data = pyjson.loads(match.group())
-                    new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "14.0 [ELITE]", "engine": "groq"}
+                    new_ctx = {
+                        "step": data.get("next_step", current_step), 
+                        "persona": data.get("next_persona", current_persona),
+                        "data": {**collected_data, **data.get("extracted_data", {})}, 
+                        "last_msg": message, 
+                        "v": "15.0 [MULTI-STAGE]", 
+                        "engine": "groq"
+                    }
                     return data["response"], new_ctx, data["summary"]
                 else: error_log.append("Groq: JSON Format Error")
         except Exception as e: 
@@ -200,7 +205,14 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
                 match = re.search(r'\{.*\}', content, re.DOTALL)
                 if match:
                     data = pyjson.loads(match.group())
-                    new_ctx = {"step": data.get("next_step", current_step), "data": {**collected_data, **data.get("extracted_data", {})}, "last_msg": message, "v": "14.0 [ELITE]", "engine": "openai"}
+                    new_ctx = {
+                        "step": data.get("next_step", current_step), 
+                        "persona": data.get("next_persona", current_persona),
+                        "data": {**collected_data, **data.get("extracted_data", {})}, 
+                        "last_msg": message, 
+                        "v": "15.0 [MULTI-STAGE]", 
+                        "engine": "openai"
+                    }
                     return data["response"], new_ctx, data["summary"]
                 else: error_log.append("OpenAI: Parse Fail")
         except Exception as e: error_log.append(f"OpenAI: {str(e)[:25]}")
@@ -223,6 +235,51 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     diagnostic_info = f"[Note: {k_status} | {err_summary[:100]}]"
     
     return f"{fallback_msg}\n\n{diagnostic_info}", new_context, "Offline Logic Bridge"
+
+def generate_marketplace_listing(car: dict, tenant_name: str, location: str) -> dict:
+    """
+    Generates a structured, high-converting Facebook Marketplace listing.
+    """
+    prompt = f"""
+    You are an Elite Automotive Sales Copywriter. 
+    Create a Facebook Marketplace listing for this vehicle:
+    Year/Make/Model: {car['year']} {car['make']} {car['model']}
+    Price: ${car['price']:,}
+    Mileage: {car['mileage']:,} km
+    Location: {tenant_name} in {location}
+    
+    Guidelines:
+    - Title: Catchy, under 100 characters, include keywords like 'MINT', 'M-CERTIFIED', or 'LOW KM'.
+    - Description: Bulleted list of features, mention 'ALL CREDIT LEVELS APPROVED', and include a call to action.
+    - Tags: 5-10 comma-separated keywords for Marketplace search.
+    
+    Return your response ONLY in this JSON format:
+    {{
+        "title": "Optimized Marketplace Title",
+        "description": "Full organized description with emojis and bullets",
+        "price": "{car['price']}",
+        "tags": ["tag1", "tag2"...]
+    }}
+    """
+    
+    if not GOOGLE_API_KEY:
+        return {
+            "title": f"🔥 {car['year']} {car['make']} {car['model']} - All Credit Approved!",
+            "description": f"Check out this {car['year']} {car['make']} {car['model']} at {tenant_name}! \n\n✅ {car['mileage']:,} km \n✅ Inspection Completed \n✅ Trade-ins Welcome \n\nDM for test drive!",
+            "price": str(car['price']),
+            "tags": [car['make'], car['model'], "UsedCars", location]
+        }
+
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt)
+        import json, re
+        match = re.search(r'\{.*\}', response.text, re.DOTALL)
+        if match:
+            return json.loads(match.group())
+    except Exception as e:
+        print(f"Marketplace Generation Error: {e}")
+        return {"error": str(e)}
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """

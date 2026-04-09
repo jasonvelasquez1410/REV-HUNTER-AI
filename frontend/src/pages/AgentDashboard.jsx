@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Bell, LogOut, FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
+import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Bell, LogOut, FileSpreadsheet, CheckCircle, AlertCircle, Share2, Settings, LayoutDashboard, Image as ImageIcon, Send, MessageSquare } from 'lucide-react';
 import { useTenant } from '../context/TenantContext';
 import * as XLSX from 'xlsx';
 
@@ -43,6 +43,9 @@ function AgentLogin({ onLogin }) {
             if (res.ok) {
                 const data = await res.json();
                 onLogin(data.agent);
+            } else if (res.status === 402) {
+                const data = await res.json();
+                onLogin({ name, pin, subscription_status: 'expired', ...data.detail });
             } else {
                 setError('Invalid name or PIN. Try again.');
             }
@@ -101,7 +104,287 @@ function AgentLogin({ onLogin }) {
     );
 }
 
-// ── MAIN AGENT DASHBOARD ──────────────────────────
+// ── MARKETING HUB VIEW ────────────────────────────
+// ── MARKETING HUB VIEW ────────────────────────────
+function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, tenant }) {
+    const [subView, setSubView] = useState('inventory'); // 'inventory' | 'settings'
+    const [postingCar, setPostingCar] = useState(null);
+    const [organizedListing, setOrganizedListing] = useState(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [isPosting, setIsPosting] = useState(false);
+    const [status, setStatus] = useState(null);
+
+    const handlePost = async () => {
+        if (!postingCar) return;
+        setIsPosting(true);
+        setStatus(null);
+        try {
+            const res = await fetch(`${apiUrl}/marketing/facebook/post-marketplace`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-tenant-id': tenant?.id || 'filcan' },
+                body: JSON.stringify({
+                    car_id: postingCar.id,
+                    agent_id: agent.id,
+                    custom_caption: organizedListing?.description || undefined
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setStatus({ type: 'success', msg: data.message });
+                setPostingCar(null);
+                setOrganizedListing(null);
+            } else {
+                setStatus({ type: 'error', msg: data.detail || 'Failed to post' });
+            }
+        } catch (err) {
+            console.error(err);
+            setStatus({ type: 'error', msg: 'Connection error. Check backend.' });
+        }
+        setIsPosting(false);
+    };
+
+    const handleOrganize = async (car) => {
+        setPostingCar(car);
+        setIsGenerating(true);
+        setOrganizedListing(null);
+        try {
+            const res = await fetch(`${apiUrl}/marketing/facebook/marketplace-helper/${car.id}`, {
+                headers: { 'x-tenant-id': tenant?.id || 'filcan' }
+            });
+            const data = await res.json();
+            setOrganizedListing(data);
+        } catch (err) {
+            console.error(err);
+        }
+        setIsGenerating(false);
+    };
+
+    const copyToClipboard = (text, label) => {
+        navigator.clipboard.writeText(text);
+        alert(`${label} copied!`);
+    };
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* Marketing Tabs */}
+            <div style={{ display: 'flex', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '5px', borderRadius: '12px', width: 'fit-content' }}>
+                <button 
+                    onClick={() => setSubView('inventory')}
+                    style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold', background: subView === 'inventory' ? 'rgba(217,32,39,0.15)' : 'transparent', color: subView === 'inventory' ? '#D92027' : 'rgba(255,255,255,0.4)' }}
+                >
+                    <Share2 size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> INVENTORY
+                </button>
+                <button 
+                    onClick={() => setSubView('settings')}
+                    style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold', background: subView === 'settings' ? 'rgba(217,32,39,0.15)' : 'transparent', color: subView === 'settings' ? '#D92027' : 'rgba(255,255,255,0.4)' }}
+                >
+                    <Settings size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> FB SETTINGS
+                </button>
+            </div>
+
+            {status && (
+                <div style={{ padding: '12px 16px', borderRadius: '12px', background: status.type === 'success' ? 'rgba(0,184,148,0.1)' : 'rgba(217,32,39,0.1)', color: status.type === 'success' ? '#00b894' : '#D92027', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '10px', border: `1px solid ${status.type === 'success' ? 'rgba(0,184,148,0.2)' : 'rgba(217,32,39,0.2)'}` }}>
+                    {status.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+                    {status.msg}
+                    <button onClick={() => setStatus(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>✕</button>
+                </div>
+            )}
+
+            {subView === 'inventory' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+                    {inventory.length === 0 && <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.2)' }}>No inventory found.</div>}
+                    {inventory.map(car => (
+                        <div key={car.id} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div style={{ display: 'flex', gap: '15px', padding: '12px' }}>
+                                <div style={{ width: '100px', height: '70px', borderRadius: '10px', background: '#111', flexShrink: 0, overflow: 'hidden' }}>
+                                    {car.image ? <img src={car.image} alt={car.model} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={24} style={{ margin: '23px 38px', opacity: 0.1 }} />}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{car.year} {car.make} {car.model}</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>${car.price.toLocaleString()} • {car.mileage.toLocaleString()} km</div>
+                                    <button 
+                                        onClick={() => handleOrganize(car)}
+                                        style={{ marginTop: '10px', padding: '6px 12px', background: 'rgba(217,32,39,0.1)', color: '#D92027', border: '1px solid rgba(217,32,39,0.2)', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer' }}
+                                    >
+                                        🚀 MARKETPLACE ORGANIZER
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {subView === 'settings' && (
+                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <h3 style={{ margin: '0 0 20px', fontSize: '1rem', fontWeight: 'bold' }}>Facebook Credentials</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginBottom: '6px', textTransform: 'uppercase' }}>Page Access Token</label>
+                            <input 
+                                type="password"
+                                value={fbSettings.fb_access_token}
+                                onChange={e => onUpdateSettings({ ...fbSettings, fb_access_token: e.target.value })}
+                                placeholder="EAA..."
+                                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginBottom: '6px', textTransform: 'uppercase' }}>Facebook Page ID (Optional)</label>
+                            <input 
+                                type="text"
+                                value={fbSettings.fb_page_id}
+                                onChange={e => onUpdateSettings({ ...fbSettings, fb_page_id: e.target.value })}
+                                placeholder="123456..."
+                                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                            />
+                        </div>
+                        <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)', lineHeight: '1.4' }}>
+                            Your tokens are stored securely. Use a Page Access Token for automated posting to your dealership page. For demo purposes, you can use "mock_token" to simulate a successful post.
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Marketplace Organizer Modal */}
+            {postingCar && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+                    <div style={{ width: '100%', maxWidth: '420px', background: '#1a1a2e', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', animation: 'slideUp 0.3s ease' }}>
+                        <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontWeight: '900', fontSize: '1rem' }}>MKTPLACE ORGANIZER</div>
+                            <button onClick={() => { setPostingCar(null); setOrganizedListing(null); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>✕</button>
+                        </div>
+                        <div style={{ padding: '20px', maxHeight: '75vh', overflowY: 'auto' }}>
+                             {isGenerating ? (
+                                <div style={{ textAlign: 'center', padding: '40px' }}>
+                                    <div style={{ fontSize: '2rem', animation: 'pulse 1s infinite' }}>🧠</div>
+                                    <div style={{ fontWeight: 'bold', marginTop: '10px' }}>Elliot is organizing the listing...</div>
+                                </div>
+                             ) : organizedListing ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                            <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontWeight: 'bold' }}>OPTIMIZED TITLE</span>
+                                            <button onClick={() => copyToClipboard(organizedListing.title, 'Title')} style={{ background: 'none', border: 'none', color: '#00b894', fontSize: '0.65rem', fontWeight: 'bold', cursor: 'pointer' }}>COPY</button>
+                                        </div>
+                                        <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{organizedListing.title}</div>
+                                    </div>
+
+                                    <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                            <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontWeight: 'bold' }}>PRICE</span>
+                                            <button onClick={() => copyToClipboard(organizedListing.price, 'Price')} style={{ background: 'none', border: 'none', color: '#00b894', fontSize: '0.65rem', fontWeight: 'bold', cursor: 'pointer' }}>COPY</button>
+                                        </div>
+                                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#fdcb6e' }}>${Number(organizedListing.price).toLocaleString()}</div>
+                                    </div>
+
+                                    <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                            <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontWeight: 'bold' }}>LISTING DESCRIPTION</span>
+                                            <button onClick={() => copyToClipboard(organizedListing.description, 'Description')} style={{ background: 'none', border: 'none', color: '#00b894', fontSize: '0.65rem', fontWeight: 'bold', cursor: 'pointer' }}>COPY ALL</button>
+                                        </div>
+                                        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', whiteSpace: 'pre-wrap', maxHeight: '150px', overflowY: 'auto' }}>{organizedListing.description}</div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                        {organizedListing.tags?.map((tag, i) => (
+                                            <span key={i} style={{ fontSize: '0.6rem', padding: '4px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>#{tag}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                             ) : (
+                                <div style={{ textAlign: 'center', padding: '20px' }}>Failed to organize listing.</div>
+                             )}
+                        </div>
+                        <div style={{ padding: '20px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <a 
+                                href="https://www.facebook.com/marketplace/create/item" 
+                                target="_blank" 
+                                rel="noreferrer"
+                                style={{ width: '100%', padding: '16px', background: '#D92027', color: 'white', textDecoration: 'none', borderRadius: '14px', fontWeight: '800', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', textAlign: 'center' }}
+                            >
+                                <Share2 size={18} /> OPEN FB MARKETPLACE
+                            </a>
+                            <button 
+                                onClick={handlePost}
+                                disabled={isPosting || !fbSettings.fb_access_token}
+                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}
+                            >
+                                {isPosting ? 'POSTING TO PAGE...' : '🚀 ALSO POST TO PAGE FEED'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ── ENGAGEMENT HISTORY MODAL ──────────────────────
+function EngagementHistoryModal({ lead, onClose }) {
+    if (!lead) return null;
+    let history = [];
+    try {
+        history = JSON.parse(lead.interaction_history || "[]");
+    } catch {
+        history = [];
+    }
+
+    return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(15px)', zIndex: 20000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+            <div style={{ width: '100%', maxWidth: '450px', background: '#111', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', height: '85vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                {/* Header */}
+                <div style={{ padding: '25px', background: 'linear-gradient(135deg, #1A1A2E 0%, #111 100%)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <div style={{ color: '#D92027', fontSize: '0.65rem', fontWeight: '900', letterSpacing: '2px', marginBottom: '4px' }}>LEAD DNA TIMELINE</div>
+                        <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'white' }}>{lead.name}</h2>
+                    </div>
+                    <button onClick={onClose} style={{ padding: '10px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer' }}>✕</button>
+                </div>
+
+                {/* Timeline */}
+                <div className="custom-scroll" style={{ flex: 1, overflowY: 'auto', padding: '25px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {lead.vapi_recording_url && (
+                        <div style={{ padding: '20px', background: 'rgba(217,32,39,0.1)', borderRadius: '20px', border: '1px solid rgba(217,32,39,0.2)', marginBottom: '10px' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#D92027', fontWeight: '900', marginBottom: '10px' }}>🎙️ AI CALL RECORDING</div>
+                            <audio controls src={lead.vapi_recording_url} style={{ width: '100%', filter: 'invert(1) hue-rotate(180deg)' }} />
+                            <div style={{ fontSize: '0.6rem', color: 'rgba(217,32,39,0.5)', marginTop: '8px', textAlign: 'center' }}>Jason AI Outbound Call • Completed</div>
+                        </div>
+                    )}
+
+                    {history.length === 0 ? (
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', opacity: 0.3 }}>
+                            <div style={{ fontSize: '2rem' }}>📡</div>
+                            <p style={{ fontSize: '0.8rem' }}>Waiting for interaction data...</p>
+                        </div>
+                    ) : history.map((msg, i) => {
+                        const isAI = msg.role?.toLowerCase().includes('ai');
+                        return (
+                            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: isAI ? 'flex-start' : 'flex-end', gap: '4px' }}>
+                                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>{msg.role?.toUpperCase()}</div>
+                                <div style={{ 
+                                    maxWidth: '85%', padding: '12px 16px', borderRadius: '18px', fontSize: '0.9rem', lineHeight: '1.4',
+                                    background: isAI ? 'rgba(255,255,255,0.08)' : '#D92027',
+                                    color: 'white',
+                                    borderBottomLeftRadius: isAI ? '4px' : '18px',
+                                    borderBottomRightRadius: isAI ? '18px' : '4px'
+                                }}>
+                                    {msg.text}
+                                </div>
+                                <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.15)' }}>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Footer Info */}
+                <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
+                    Relentless AI is 24/7 monitoring this lead DNA chain.
+                </div>
+            </div>
+        </div>
+    );
+}
 export default function AgentDashboard() {
     const { tenant } = useTenant();
     const apiUrl = import.meta.env.VITE_API_URL || '/api';
@@ -117,6 +400,10 @@ export default function AgentDashboard() {
     const [importedLeads, setImportedLeads] = useState([]);
     const [importStatus, setImportStatus] = useState(null); // null | 'preview' | 'importing' | 'done'
     const [importFileName, setImportFileName] = useState('');
+    const [inventory, setInventory] = useState([]);
+    const [fbSettings, setFbSettings] = useState({ fb_access_token: '', fb_page_id: '' });
+    const [dialing, setDialing] = useState(null);
+    const [selectedDNA, setSelectedDNA] = useState(null);
     const fileInputRef = useRef(null);
 
     const handleLogin = (agentData) => {
@@ -139,21 +426,22 @@ export default function AgentDashboard() {
             const data = await res.json();
             const newLeads = data.leads || data || [];
 
-            // Check for new leads and trigger notification
-            if (leads.length > 0 && newLeads.length > leads.length) {
-                const newest = newLeads.find(nl => !leads.some(ol => ol.id === nl.id));
-                if (newest) {
-                    sendPushNotification(
-                        '🔥 New Lead Assigned!',
-                        `${newest.name} (Score: ${newest.quality_score || '??'}%) has been assigned to you.`
-                    );
-                    setNewLeadAlert(newest);
-                    setTimeout(() => setNewLeadAlert(null), 5000);
+            setLeads(prevLeads => {
+                if (prevLeads.length > 0 && newLeads.length > prevLeads.length) {
+                    const newest = newLeads.find(nl => !prevLeads.some(ol => ol.id === nl.id));
+                    if (newest) {
+                        sendPushNotification(
+                            '🔥 New Lead Assigned!',
+                            `${newest.name} (Score: ${newest.quality_score || '??'}%) has been assigned to you.`
+                        );
+                        setNewLeadAlert(newest);
+                        setTimeout(() => setNewLeadAlert(null), 5000);
+                    }
                 }
-            }
-            setLeads(newLeads);
+                return newLeads;
+            });
         } catch {
-            // Demo fallback: show sample leads assigned to this agent
+            // Demo fallback
             setLeads([
                 { id: 1, name: 'Jan Marc Santos', car: '2024 VW Atlas', quality_score: 92, status: 'Hot', source: 'CRM', last_action_time: '2 hrs ago', follow_up_streak: 3, assigned_agent: agent.name },
                 { id: 2, name: 'Leo Valdez', car: '2023 Honda CR-V', quality_score: 98, status: 'Hot', source: 'Facebook', last_action_time: '30 min ago', follow_up_streak: 5, assigned_agent: agent.name },
@@ -165,15 +453,51 @@ export default function AgentDashboard() {
         setLoading(false);
     }, [agent, apiUrl, tenant?.id]);
 
+    const fetchMarketingData = useCallback(async () => {
+        if (!agent) return;
+        try {
+            // Fetch Inventory
+            const invRes = await fetch(`${apiUrl}/inventory`, {
+                headers: { 'x-tenant-id': tenant?.id || 'filcan' }
+            });
+            const invData = await invRes.json();
+            setInventory(invData);
+
+            // Fetch Agent Settings
+            const settingsRes = await fetch(`${apiUrl}/agents/${agent.id}/settings`);
+            const settingsData = await settingsRes.json();
+            setFbSettings({
+                fb_access_token: settingsData.fb_access_token || '',
+                fb_page_id: settingsData.fb_page_id || ''
+            });
+        } catch (err) {
+            console.error("fetchMarketingData error:", err);
+        }
+    }, [agent, apiUrl, tenant?.id]);
+
     useEffect(() => {
         if (agent) {
             fetchLeads();
+            fetchMarketingData();
             requestNotificationPermission();
             // Poll for new leads every 30 seconds
             const interval = setInterval(fetchLeads, 30000);
             return () => clearInterval(interval);
         }
-    }, [agent, fetchLeads]);
+    }, [agent, fetchLeads, fetchMarketingData]);
+
+    const handleUpdateSettings = async (newSettings) => {
+        setFbSettings(newSettings);
+        try {
+            await fetch(`${apiUrl}/agents/${agent.id}/settings`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newSettings)
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     const handleNudge = (leadId) => {
         setNudging(leadId);
@@ -183,9 +507,50 @@ export default function AgentDashboard() {
         }, 1500);
     };
 
-    // ── RENDER LOGIN IF NOT AUTHENTICATED ─────────
+    const handleAutoDial = async (leadId) => {
+        setDialing(leadId);
+        try {
+            const res = await fetch(`${apiUrl}/vapi/outbound-call`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-tenant-id': tenant?.id || 'filcan' },
+                body: JSON.stringify({ lead_id: leadId })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert(`📞 ${data.message}\n\n(AI Assistant is now rapidly dialing the lead via PSTN)`);
+                setLeads(prev => prev.map(l => l.id === leadId ? { ...l, last_action_time: 'AI Dialing...' } : l));
+            } else {
+                alert(`⚠️ Dialing Error: ${data.detail}`);
+            }
+        } catch (err) {
+            alert('⚠️ Network Connection Error: Could not reach dialing server.');
+        }
+        setDialing(null);
+    };
+
     if (!agent) {
         return <AgentLogin onLogin={handleLogin} />;
+    }
+
+    if (agent.subscription_status === 'expired') {
+        return (
+            <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+                <div style={{ width: '100%', maxWidth: '400px', padding: '0 20px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🔒</div>
+                    <h2 style={{ fontWeight: '900', marginBottom: '10px' }}>Subscription Required</h2>
+                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginBottom: '30px' }}>
+                        Your 14-day free trial has officially expired. To continue using the RevHunter AI Agent Edition and accessing your pipelines, please activate your subscription.
+                    </p>
+                    <button 
+                        onClick={() => alert(`Billing Provider: ${agent.provider || 'Stripe'}\n\nCheckout Portal will open here!`)}
+                        style={{ width: '100%', padding: '16px', background: '#6366f1', color: 'white', border: 'none', borderRadius: '14px', fontWeight: '800', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 8px 25px rgba(99,102,241,0.3)', marginBottom: '15px' }}
+                    >
+                        PAY $99/MO TO UNLOCK
+                    </button>
+                    <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '0.8rem', textDecoration: 'underline' }}>Sign Out</button>
+                </div>
+            </div>
+        );
     }
 
     const hotLeads = leads.filter(l => (l.quality_score || 0) >= 80);
@@ -217,6 +582,13 @@ export default function AgentDashboard() {
                 </div>
             )}
 
+            {/* Trial Banner */}
+            {agent.subscription_status === 'trialing' && agent.trial_ends && (
+                <div style={{ background: '#fdcb6e', color: '#000', padding: '8px 15px', textAlign: 'center', fontWeight: '800', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                    ⚡ 14-DAY TRIAL ACTIVE — Expires {new Date(agent.trial_ends).toLocaleDateString()}
+                </div>
+            )}
+
             {/* Header */}
             <div style={{ padding: '20px 5%', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -224,7 +596,9 @@ export default function AgentDashboard() {
                         <div style={{ width: '45px', height: '45px', borderRadius: '14px', background: 'linear-gradient(135deg, #D92027, #D9202788)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.9rem' }}>{agent.avatar || agent.name.charAt(0)}</div>
                         <div>
                             <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>{agent.name}</div>
-                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>{agent.role} • {tenant?.name || 'FilCan Cars'}</div>
+                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>
+                                {agent.role} • {tenant?.name || 'FilCan Cars'} {agent.subscription_status === 'active' && '⭐'}
+                            </div>
                         </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -256,19 +630,23 @@ export default function AgentDashboard() {
             </div>
 
             {/* Tab Navigation */}
-            <div style={{ display: 'flex', gap: '5px', padding: '0 5%', marginBottom: '20px' }}>
-                {['leads', 'import'].map(tab => (
+            <div style={{ display: 'flex', gap: '5px', padding: '0 5%', marginBottom: '20px', overflowX: 'auto', paddingBottom: '5px' }}>
+                {[
+                    { id: 'leads', icon: '🎯', label: 'My Leads' },
+                    { id: 'marketing', icon: '🚀', label: 'Marketing' },
+                    { id: 'import', icon: '📥', label: 'Import' }
+                ].map(tab => (
                     <button
-                        key={tab}
-                        onClick={() => setActiveView(tab)}
+                        key={tab.id}
+                        onClick={() => setActiveView(tab.id)}
                         style={{
-                            padding: '10px 20px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px',
-                            background: activeView === tab ? 'rgba(217,32,39,0.2)' : 'rgba(255,255,255,0.03)',
-                            color: activeView === tab ? '#D92027' : 'rgba(255,255,255,0.4)',
-                            border: activeView === tab ? '1px solid rgba(217,32,39,0.3)' : '1px solid rgba(255,255,255,0.05)'
+                            padding: '10px 18px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap',
+                            background: activeView === tab.id ? 'rgba(217,32,39,0.2)' : 'rgba(255,255,255,0.03)',
+                            color: activeView === tab.id ? '#D92027' : 'rgba(255,255,255,0.4)',
+                            border: activeView === tab.id ? '1px solid rgba(217,32,39,0.3)' : '1px solid rgba(255,255,255,0.05)'
                         }}
                     >
-                        {tab === 'leads' ? '🎯 My Leads' : '📥 Import'}
+                        {tab.icon} {tab.label}
                     </button>
                 ))}
             </div>
@@ -314,10 +692,16 @@ export default function AgentDashboard() {
                                                 </div>
                                             </div>
                                             <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button title="Engagement DNA" onClick={() => setSelectedDNA(lead)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(217,32,39,0.1)', border: 'none', color: '#D92027', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <MessageSquare size={18} />
+                                                </button>
+                                                <button title="AI Auto-Dial via Vapi" onClick={() => handleAutoDial(lead.id)} disabled={dialing === lead.id} style={{ width: '40px', height: '40px', borderRadius: '12px', background: dialing === lead.id ? 'rgba(255,255,255,0.05)' : 'rgba(217,32,39,0.15)', border: 'none', color: '#D92027', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    {dialing === lead.id ? '...' : '🤖'}
+                                                </button>
                                                 <button title="AI Auto-Nudge" onClick={() => handleNudge(lead.id)} disabled={nudging === lead.id} style={{ width: '40px', height: '40px', borderRadius: '12px', background: nudging === lead.id ? 'rgba(255,255,255,0.05)' : 'rgba(108,92,231,0.15)', border: 'none', color: '#a29bfe', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                     <Zap size={18} />
                                                 </button>
-                                                <a href={lead.phone ? `tel:${lead.phone}` : '#'} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(0,184,148,0.15)', border: 'none', color: '#00b894', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+                                                <a href={lead.phone ? `tel:${lead.phone}` : '#'} title="Manual Phone Call" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(0,184,148,0.15)', border: 'none', color: '#00b894', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
                                                     <Phone size={18} />
                                                 </a>
                                             </div>
@@ -341,15 +725,31 @@ export default function AgentDashboard() {
                                                     <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>{lead.car || 'Browsing'} • Score: {lead.quality_score}%</div>
                                                 </div>
                                             </div>
-                                            <button onClick={() => handleNudge(lead.id)} disabled={nudging === lead.id} style={{ padding: '8px 14px', borderRadius: '10px', background: 'rgba(253,203,110,0.1)', border: 'none', color: '#fdcb6e', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                                <Zap size={14} /> NUDGE
-                                            </button>
+                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                                <button onClick={() => setSelectedDNA(lead)} style={{ padding: '8px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.7rem' }}>
+                                                    DNA
+                                                </button>
+                                                <button onClick={() => handleNudge(lead.id)} disabled={nudging === lead.id} style={{ padding: '8px 14px', borderRadius: '10px', background: 'rgba(253,203,110,0.1)', border: 'none', color: '#fdcb6e', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                    <Zap size={14} /> NUDGE
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         )}
                     </div>
+                )}
+
+                {activeView === 'marketing' && (
+                    <MarketingHub 
+                        agent={agent}
+                        inventory={inventory}
+                        fbSettings={fbSettings}
+                        onUpdateSettings={handleUpdateSettings}
+                        apiUrl={apiUrl}
+                        tenant={tenant}
+                    />
                 )}
 
                 {activeView === 'import' && (
@@ -475,7 +875,9 @@ export default function AgentDashboard() {
                     <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00b894' }} />
                     Elliot is monitoring {leads.length} leads for {agent.name.split(' ')[0]} • Polling every 30s
                 </div>
-            </div>
+                {/* DNA Engagement Modal */}
+            <EngagementHistoryModal lead={selectedDNA} onClose={() => setSelectedDNA(null)} />
+        </div>
 
             <style>{`
                 @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }

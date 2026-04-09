@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .models import UserMessage, Lead, AdApproval, Car
 from .ai_logic import qualify_lead, generate_ad_copy, generate_ad_image_prompt, generate_seo_content
 from .import_leads import import_dealer_socket_excel
+from .facebook_marketing import post_to_facebook_marketplace, generate_marketplace_payload
 from pydantic import BaseModel
 from typing import List, Optional, Annotated
 import os
@@ -76,7 +77,20 @@ async def req_inventory(tenant_id: str = Depends(get_tenant_id)):
 async def chat_endpoint(user_msg: UserMessage, tenant_id: str = Depends(get_tenant_id)):
     try:
         response, new_context, summary = qualify_lead(user_msg.message, user_msg.context, tenant_id)
-        return {"response": response, "context": new_context, "summary": summary}
+        
+        # Log to DB if lead_id is present
+        lead_id = user_msg.context.get("lead_id")
+        if lead_id:
+            db.append_interaction(lead_id, "customer", user_msg.message)
+            db.append_interaction(lead_id, "AI (Elliot)", response)
+            db.update_lead_state(lead_id, new_context, summary)
+
+        return {
+            "response": response, 
+            "context": new_context, 
+            "summary": summary,
+            "persona": new_context.get("persona", "Elliot")
+        }
     except Exception as e:
         print(f"Chat Endpoint Error: {e}")
         return {"response": f"I'm sorry, I'm having a technical hiccup. (Error: {str(e)})", "context": user_msg.context}
@@ -175,7 +189,15 @@ async def fb_webhook(request: Request):
         if sender_id and message_text:
             tenant_id = "filcan"
             lead = db.get_or_create_lead(tenant_id, name=f"FB User {sender_id}")
+            
+            # Log Customer Message
+            db.append_interaction(lead.id, "customer", message_text)
+            
             response, next_state, summary = qualify_lead(message_text, lead.conversation_state, tenant_id)
+            
+            # Log AI Response
+            db.append_interaction(lead.id, "AI (Elliot)", response)
+            
             db.update_lead_state(lead.id, json.loads(next_state), summary)
         return {"status": "success"}
     except Exception as e:
@@ -310,7 +332,8 @@ class AgentLoginRequest(BaseModel):
 
 @api_router.post("/agents/login")
 async def agent_login(req: AgentLoginRequest):
-    """Simple PIN-based agent login."""
+    """Simple PIN-based agent login with 14-day trial enforcement."""
+    from datetime import datetime
     # Try DB first
     try:
         from .storage import AgentTable
@@ -319,14 +342,41 @@ async def agent_login(req: AgentLoginRequest):
                 AgentTable.name == req.name, AgentTable.pin == req.pin, AgentTable.is_active == True
             ).first()
             if agent:
-                return {"status": "success", "agent": {"id": agent.id, "name": agent.name, "avatar": agent.avatar, "role": agent.role}}
-    except:
+                # 14-Day Trial Check
+                if agent.subscription_status != 'active':
+                    if agent.trial_ends_at and datetime.utcnow() > agent.trial_ends_at:
+                        agent.subscription_status = 'expired'
+                        session.commit()
+                        raise HTTPException(
+                            status_code=402, 
+                            detail={
+                                "error": "subscription_expired", 
+                                "message": "Your 14-day trial has expired.",
+                                "provider": agent.billing_provider
+                            }
+                        )
+                
+                return {
+                    "status": "success", 
+                    "agent": {
+                        "id": agent.id, 
+                        "name": agent.name, 
+                        "avatar": agent.avatar, 
+                        "role": agent.role,
+                        "subscription_status": agent.subscription_status,
+                        "trial_ends": agent.trial_ends_at.isoformat() if agent.trial_ends_at else None
+                    }
+                }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Agent Login Error: {e}")
         pass
     
-    # Fallback to demo agents
+    # Fallback to demo agents (Always active for smooth demo)
     for a in DEMO_AGENTS:
         if a["name"].lower() == req.name.lower() and a["pin"] == req.pin:
-            return {"status": "success", "agent": a}
+            return {"status": "success", "agent": {**a, "subscription_status": "active"}}
     
     raise HTTPException(status_code=401, detail="Invalid name or PIN")
 
@@ -368,6 +418,202 @@ async def get_agent_leads(agent_name: str, tenant_id: str = Depends(get_tenant_i
     leads = db.get_leads(tenant_id)
     agent_leads = [l for l in leads if getattr(l, 'assigned_agent', None) == agent_name]
     return agent_leads
+
+@api_router.get("/agents/{agent_id}/settings")
+async def get_agent_settings(agent_id: int):
+    """Fetch agent's Facebook configuration."""
+    settings = db.get_agent_settings(agent_id)
+    return settings
+
+class AgentSettingsUpdate(BaseModel):
+    fb_access_token: Optional[str] = None
+    fb_page_id: Optional[str] = None
+    fb_settings_json: Optional[dict] = None
+
+@api_router.patch("/agents/{agent_id}/settings")
+async def update_agent_settings(agent_id: int, settings: AgentSettingsUpdate):
+    """Update agent's Facebook configuration."""
+    if db.update_agent_settings(agent_id, settings.dict(exclude_unset=True)):
+        return {"status": "success", "message": "Settings updated"}
+    raise HTTPException(status_code=404, detail="Agent not found")
+
+class MarketplacePostRequest(BaseModel):
+    car_id: int
+    agent_id: int
+    custom_caption: Optional[str] = None
+
+@api_router.post("/marketing/facebook/post-marketplace")
+async def post_to_fb_marketplace(req: MarketplacePostRequest, tenant_id: str = Depends(get_tenant_id)):
+    """Triggers AI generation and the Facebook post logic (Direct Page Feed)."""
+    # 1. Fetch Agent Settings
+    settings = db.get_agent_settings(req.agent_id)
+    if not settings.get("fb_access_token"):
+        raise HTTPException(status_code=400, detail="Facebook Access Token is not configured for this agent.")
+
+    # 2. Fetch Car Details
+    cars = db.get_inventory(tenant_id)
+    car = next((c for c in cars if c["id"] == req.car_id), None)
+    if not car:
+        raise HTTPException(status_code=404, detail="Inventory item not found.")
+
+    # 3. Generate Content
+    tenant = db.get_tenant_config(tenant_id)
+    message = req.custom_caption or f"{car['year']} {car['make']} {car['model']} available at {tenant['name']}!"
+
+    # 4. Post to Facebook
+    result = post_to_facebook_marketplace(
+        access_token=settings["fb_access_token"],
+        page_id=settings["fb_page_id"] or "me", 
+        message=message,
+        image_url=car.get("image")
+    )
+    
+    if result["status"] == "error":
+        raise HTTPException(status_code=500, detail=result["message"])
+        
+    return result
+
+@api_router.get("/marketing/facebook/marketplace-helper/{car_id}")
+async def get_marketplace_helper(car_id: int, tenant_id: str = Depends(get_tenant_id)):
+    """Generates AI-organized listing details for a manual Marketplace post."""
+    from .ai_logic import generate_marketplace_listing
+    
+    cars = db.get_inventory(tenant_id)
+    car = next((c for c in cars if c["id"] == car_id), None)
+    if not car:
+        raise HTTPException(status_code=404, detail="Inventory item not found.")
+        
+    tenant = db.get_tenant_config(tenant_id)
+    return generate_marketplace_listing(car, tenant["name"], tenant["location"])
+
+class OutboundCallRequest(BaseModel):
+    lead_id: int
+    phone_number: Optional[str] = None
+
+@api_router.post("/vapi/outbound-call")
+async def trigger_vapi_outbound(req: OutboundCallRequest, tenant_id: str = Depends(get_tenant_id)):
+    """Triggers an outbound phone call via Vapi to the lead."""
+    from .storage import LeadTable
+    # 1. Fetch Lead
+    with db.session_factory() as session:
+        lead = session.query(LeadTable).filter(LeadTable.id == req.lead_id).first()
+        if not lead:
+            raise HTTPException(status_code=404, detail="Lead not found")
+            
+        phone = req.phone_number or lead.phone
+        if not phone or phone.lower() == "none":
+            raise HTTPException(status_code=400, detail="Lead has no phone number")
+            
+        # Clean phone number for E.164 formatting (simplified)
+        clean_phone = "".join(filter(lambda c: c.isdigit() or c == "+", phone))
+        if not clean_phone.startswith("+"):
+            if len(clean_phone) == 10:
+                clean_phone = "+1" + clean_phone
+            else:
+                clean_phone = "+" + clean_phone
+            
+        vapi_key = os.getenv("VAPI_API_KEY")
+        assistant_id = os.getenv("VAPI_ASSISTANT_ID")
+        
+        if not vapi_key or not assistant_id:
+            # DEMO MODE
+            print(f"DEMO VAPI CALL: Dialing {clean_phone} for lead {lead.name}")
+            return {"status": "success", "message": f"Demo Call: Dialing {clean_phone}...", "call_id": "demo-12345"}
+            
+        # REAL MODE
+        try:
+            import requests # Inner import to avoid startup crash if missing
+            headers = {
+                "Authorization": f"Bearer {vapi_key}",
+                "Content-Type": "application/json"
+            }
+            
+            # Injecting Custom Assistant Override (Option B: Natural Dealership)
+            natural_prompt = f"""You are Elliot, a friendly sales assistant at FilCan Cars pulling records from our dealership database.
+Your goal is to have a completely natural, human conversation with the customer. 
+Customer Name: {lead.name}
+Interest: {lead.car or 'buying a car'}
+
+Say exactly this when they pick up, and wait for them to respond naturally: 
+"Hello! This is Elliot from FilCan Cars. I saw you were looking at expanding your digital showroom, do you have a minute?"
+Keep all responses extremely brief and conversational."""
+
+            payload = {
+                "assistantId": assistant_id,
+                "assistantOverrides": {
+                    "firstMessage": f"Hello! This is Elliot from FilCan Cars.",
+                    "model": {
+                        "provider": "openai",
+                        "model": "gpt-4o",
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": natural_prompt
+                            }
+                        ]
+                    }
+                },
+                "customer": {
+                    "number": clean_phone,
+                    "name": lead.name
+                }
+            }
+            res = requests.post("https://api.vapi.ai/call/phone", headers=headers, json=payload)
+            res.raise_for_status()
+            data = res.json()
+            return {"status": "success", "message": f"AI is dialing {clean_phone}!", "call_id": data.get("id")}
+        except Exception as e:
+            print(f"Vapi Call Error: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to initiate Vapi call: {str(e)}")
+
+class AssignmentRequest(BaseModel):
+    lead_id: int
+    agent_name: str
+
+@api_router.post("/leads/assign")
+async def manual_assign_lead(req: AssignmentRequest):
+    """Admin Override: Manually assign a lead and lock it from auto-assignment."""
+    from .storage import LeadTable
+    with db.session_factory() as session:
+        lead = session.query(LeadTable).filter(LeadTable.id == req.lead_id).first()
+        if lead:
+            lead.assigned_agent = req.agent_name
+            lead.is_manual_assignment = True
+            lead.last_action_time = f"MANUALLY ASSIGNED TO {req.agent_name.upper()}"
+            session.commit()
+            return {"status": "success", "agent": req.agent_name}
+    raise HTTPException(status_code=404, detail="Lead not found")
+
+@api_router.post("/vapi/webhook")
+async def vapi_webhook(request: Request):
+    """Processes Vapi call completion events (transcripts & recordings)."""
+    data = await request.json()
+    try:
+        # Check if it's the right message type from Vapi
+        msg = data.get("message", {})
+        msg_type = msg.get("type")
+        
+        if msg_type == "end-of-call-report":
+            transcript = msg.get("transcript", "No transcript available.")
+            recording_url = msg.get("recordingUrl")
+            customer_phone = msg.get("call", {}).get("customer", {}).get("number")
+            
+            if customer_phone:
+                from .storage import LeadTable
+                with db.session_factory() as session:
+                    # Match by last 10 digits for robustness
+                    lead = session.query(LeadTable).filter(LeadTable.phone.contains(customer_phone[-10:])).first()
+                    if lead:
+                        # Log high-fidelity call report
+                        db.append_interaction(lead.id, "AI (Jason)", f"[PHONE CALL COMPLETED]\n{transcript}")
+                        if recording_url:
+                            db.update_recording_url(lead.id, recording_url)
+                            print(f"VAPI WEBHOOK: Saved recording for lead {lead.id}")
+            return {"status": "success"}
+    except Exception as e:
+        print(f"Vapi Webhook Processing Error: {e}")
+    
+    return {"status": "acknowledged"}
 
 app.include_router(api_router, prefix="/api")
 app.include_router(api_router)

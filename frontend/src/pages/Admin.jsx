@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Zap, Target, Mic, MessageSquare, HelpCircle } from 'lucide-react';
+import { Zap, Target, Mic, MessageSquare, HelpCircle, PhoneCall } from 'lucide-react';
 import { Vapi as VapiNamed } from '@vapi-ai/web';
 import VapiDefault from '@vapi-ai/web';
 import ChatModal from '../components/ChatModal';
@@ -19,12 +19,16 @@ export default function Admin() {
     const apiUrl = import.meta.env.VITE_API_URL || '/api';
 
     // State Declarations
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [pin, setPin] = useState('');
+    const [loginError, setLoginError] = useState(null);
     const [leads, setLeads] = useState([]);
     const [auditLogs, setAuditLogs] = useState([
         { id: 'init', time: "System", action: "Admin Hub Security Clear: OK", type: "Security" },
         { id: 'ready', time: "AI", action: "Relentless Sales Agent Elliot: STANDBY", type: "AI" }
     ]);
     const [selectedLeadChat, setSelectedLeadChat] = useState(null);
+    // ... rest of the many hooks ...
     const [isCommanding, setIsCommanding] = useState(null);
     const [activeTab, setActiveTab] = useState('inbox');
     const [vapiError, setVapiError] = useState(null);
@@ -45,23 +49,10 @@ export default function Admin() {
 
     // --- HOISTED FUNCTIONS ---
 
-    function parseState(stateStr) {
+    const parseState = useCallback((stateStr) => {
         try { return JSON.parse(stateStr || '{}'); } 
         catch { return { step: 1 }; }
-    }
-
-    function getBestVoice(gender = 'female', excludeVoice = null) {
-        if (availableVoices.length === 0) return null;
-        const femaleNames = ['aria', 'jenny', 'samantha', 'victoria', 'google us english', 'shannon', 'zira', 'hazel', 'elena'];
-        const maleNames = ['guy', 'andrew', 'david', 'mark', 'stefan', 'george', 'google uk english male', 'google us english male'];
-        const preferredNames = gender === 'female' ? femaleNames : maleNames;
-        const candidates = excludeVoice ? availableVoices.filter(v => v.name !== excludeVoice.name) : availableVoices;
-        
-        let best = candidates.find(v => (v.name.toLowerCase().includes('natural') || v.name.toLowerCase().includes('online') || v.name.toLowerCase().includes('neural')) && preferredNames.some(n => v.name.toLowerCase().includes(n)));
-        if (!best) best = candidates.find(v => v.name.toLowerCase().includes('google') && preferredNames.some(n => v.name.toLowerCase().includes(n)));
-        if (!best) best = candidates.find(v => preferredNames.some(n => v.name.toLowerCase().includes(n)));
-        return best || candidates[0] || availableVoices[0];
-    }
+    }, []);
 
     const fetchLeads = useCallback(async () => {
         try {
@@ -73,6 +64,128 @@ export default function Admin() {
             setLeads(MOCK_FALLBACK_LEADS);
         }
     }, [apiUrl, tenant.id]);
+
+    const getBestVoice = useCallback((gender = 'female', excludeVoice = null) => {
+        if (availableVoices.length === 0) return null;
+        const femaleNames = ['aria', 'jenny', 'samantha', 'victoria', 'google us english', 'shannon', 'zira', 'hazel', 'elena'];
+        const maleNames = ['guy', 'andrew', 'david', 'mark', 'stefan', 'george', 'google uk english male', 'google us english male'];
+        const preferredNames = gender === 'female' ? femaleNames : maleNames;
+        const candidates = excludeVoice ? availableVoices.filter(v => v.name !== excludeVoice.name) : availableVoices;
+        
+        let best = candidates.find(v => (v.name.toLowerCase().includes('natural') || v.name.toLowerCase().includes('online') || v.name.toLowerCase().includes('neural')) && preferredNames.some(n => v.name.toLowerCase().includes(n)));
+        if (!best) best = candidates.find(v => v.name.toLowerCase().includes('google') && preferredNames.some(n => v.name.toLowerCase().includes(n)));
+        if (!best) best = candidates.find(v => preferredNames.some(n => v.name.toLowerCase().includes(n)));
+        return best || candidates[0] || availableVoices[0];
+    }, [availableVoices]);
+
+    useEffect(() => {
+        if (tenant.id) fetchLeads();
+        const interval = setInterval(() => {
+            if (tenant.id) fetchLeads();
+        }, 30000);
+        return () => clearInterval(interval);
+    }, [tenant.id, fetchLeads]);
+
+    useEffect(() => {
+        if (leads.length > prevLeadsCount.current && prevLeadsCount.current > 0) {
+            new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(() => {});
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("🔥 NEW HOT LEAD!", { body: `${leads[0].name} is interested in ${leads[0].car || 'a vehicle'}! Effortless conversion initiated.`, icon: "/icon-192.png" });
+            }
+        }
+        prevLeadsCount.current = leads.length;
+    }, [leads]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) setAvailableVoices(voices);
+            else {
+                window.speechSynthesis.onvoiceschanged = () => setAvailableVoices(window.speechSynthesis.getVoices());
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        const VapiBase = VapiNamed || VapiDefault;
+        try {
+            let constructor = null;
+            if (typeof VapiBase === 'function') constructor = VapiBase;
+            else if (VapiBase?.default && typeof VapiBase.default === 'function') constructor = VapiBase.default;
+            else if (VapiBase && typeof VapiBase === 'object') {
+                constructor = Object.values(VapiBase).find(v => typeof v === 'function');
+            }
+
+            if (constructor) {
+                vapi.current = new constructor(VAPI_PUBLIC_KEY);
+                vapi.current.on('call-start', () => setIsCalling(true));
+                vapi.current.on('call-end', () => setIsCalling(false));
+                vapi.current.on('error', (e) => setVapiError(e.message || "Vapi Error"));
+            }
+        } catch (err) { console.error("Vapi Init Error:", err); }
+        
+        return () => { if (vapi.current) vapi.current.stop(); };
+    }, []);
+
+    if (!isAuthenticated) {
+        return (
+            <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at center, #1a1a2e 0%, #000 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'Inter, sans-serif' }}>
+                <div style={{ width: '100%', maxWidth: '420px', textAlign: 'center', animation: 'fadeIn 0.8s ease-out' }}>
+                    <div style={{ marginBottom: '40px' }}>
+                        <div style={{ fontSize: '3rem', color: '#D92027', fontWeight: '900', letterSpacing: '-2px', textTransform: 'uppercase' }}>
+                            FILCAN <span style={{ color: 'white' }}>CARS</span>
+                        </div>
+                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', letterSpacing: '4px', marginTop: '5px' }}>OFFICIAL HQ ACCESS</div>
+                    </div>
+                    
+                    <div style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '32px', padding: '40px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+                        <div style={{ width: '64px', height: '64px', background: 'rgba(217,32,39,0.1)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 30px', border: '1px solid rgba(217,32,39,0.2)' }}>
+                            <Zap color="#D92027" size={32} />
+                        </div>
+                        
+                        <h2 style={{ color: 'white', marginBottom: '10px', fontSize: '1.5rem', fontWeight: '800' }}>REVHUNTER HQ</h2>
+                        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginBottom: '30px' }}>Enter Command Authorization PIN</p>
+                        
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '30px' }}>
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} style={{ width: '50px', height: '60px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: `2px solid ${pin.length > i ? '#D92027' : 'rgba(255,255,255,0.1)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', color: 'white', fontWeight: 'bold' }}>
+                                    {pin.length > i ? '●' : ''}
+                                </div>
+                            ))}
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'C', 0, '✓'].map((num) => (
+                                <button
+                                    key={num}
+                                    onClick={() => {
+                                        if (num === 'C') setPin('');
+                                        else if (num === '✓') {
+                                            if (pin === '1234') setIsAuthenticated(true);
+                                            else {
+                                                setLoginError('Invalid Authorization');
+                                                setPin('');
+                                                setTimeout(() => setLoginError(null), 2000);
+                                            }
+                                        } else if (pin.length < 4) setPin(p => p + num);
+                                    }}
+                                    style={{ padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', background: num === '✓' ? '#D92027' : 'rgba(255,255,255,0.05)', color: 'white', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer' }}
+                                >
+                                    {num}
+                                </button>
+                            ))}
+                        </div>
+                        
+                        {loginError && <div style={{ marginTop: '20px', color: '#D92027', fontWeight: 'bold', fontSize: '0.8rem', animation: 'shake 0.4s ease' }}>{loginError}</div>}
+                    </div>
+                    
+                    <div style={{ marginTop: '40px', color: 'rgba(255,255,255,0.2)', fontSize: '0.7rem' }}>
+                        © 2026 REVHUNTER AI • RELENTLESS PERFORMANCE SUITE
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     function handleVoiceDemo() {
         if (isVoiceDemoPlaying || !window.speechSynthesis) return;
@@ -163,6 +276,7 @@ export default function Admin() {
                 setAuditLogs(prev => [{ id: `ad-gen-${Date.now()}`, time: "Now", action: "MARKETING: Elite Ad draft generated (AI Fallback Active). Awaiting human approval...", type: "Marketing" }, ...prev]);
             }, 2000);
         } catch (err) {
+            console.error("Ad Gen Fallback:", err);
             // RELENTLESS DEMO FALLBACK: Never show an error in the demo
             setTimeout(() => {
                 setPendingAd({
@@ -196,6 +310,27 @@ export default function Admin() {
         }).catch(err => console.error("Nudge failed:", err));
     }
 
+    function handleServerVoiceCall(lead) {
+        let phoneToDial = lead.phone;
+        if (!phoneToDial || phoneToDial.toLowerCase() === 'none') {
+            phoneToDial = prompt(`Please enter the phone number to dial for ${lead.name} (e.g. +1...):`, "+1");
+            if (!phoneToDial) return; // Admin cancelled the prompt
+        }
+        
+        setAuditLogs(prev => [{ id: `outbound-init-${Date.now()}`, time: "Now", action: `VAPI OUTBOUND 2.0: Triggering PSTN network for lead ${lead.name}...`, type: "AI" }, ...prev]);
+        fetch(`${apiUrl}/vapi/outbound-call`, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json', 'x-tenant-id': tenant?.id || 'filcan' }, 
+            body: JSON.stringify({ lead_id: lead.id, phone_number: phoneToDial }) 
+        }).then(res => res.json()).then(data => {
+            setAuditLogs(prev => [{ id: `outbound-succ-${Date.now()}`, time: "Now", action: `RELENTLESS: ${data.message}`, type: "AI" }, ...prev]);
+            alert(`📞 ${data.message}\n\n(AI Assistant is now dialing the lead's real phone number!)`);
+        }).catch(err => {
+            console.error("Outbound failed:", err);
+            setAuditLogs(prev => [{ id: `outbound-fail-${Date.now()}`, time: "Now", action: `ERROR: Failed to reach Vapi Outbound network`, type: "System" }, ...prev]);
+        });
+    }
+
     function handleVoiceCall(lead) {
         try {
             const VapiBase = VapiNamed || VapiDefault;
@@ -222,59 +357,6 @@ export default function Admin() {
             setVapiError("Manual Failure: " + err.message);
         }
     }
-
-    // --- EFFECTS ---
-
-    useEffect(() => {
-        if (tenant.id) fetchLeads();
-        // Relentless polling: Update leads every 30s to catch new "hunters"
-        const interval = setInterval(() => {
-            if (tenant.id) fetchLeads();
-        }, 30000);
-        return () => clearInterval(interval);
-    }, [tenant.id, fetchLeads]);
-
-    useEffect(() => {
-        if (leads.length > prevLeadsCount.current && prevLeadsCount.current > 0) {
-            new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(() => {});
-            if ("Notification" in window && Notification.permission === "granted") {
-                new Notification("🔥 NEW HOT LEAD!", { body: `${leads[0].name} is interested in ${leads[0].car || 'a vehicle'}! Effortless conversion initiated.`, icon: "/icon-192.png" });
-            }
-        }
-        prevLeadsCount.current = leads.length;
-    }, [leads]);
-
-    useEffect(() => {
-        if (typeof window !== 'undefined' && window.speechSynthesis) {
-            const voices = window.speechSynthesis.getVoices();
-            if (voices.length > 0) setAvailableVoices(voices);
-            else {
-                window.speechSynthesis.onvoiceschanged = () => setAvailableVoices(window.speechSynthesis.getVoices());
-            }
-        }
-    }, []);
-
-    useEffect(() => {
-        // Robust constructor resolution for Vapi Web SDK v2.x
-        const VapiBase = VapiNamed || VapiDefault;
-        try {
-            let constructor = null;
-            if (typeof VapiBase === 'function') constructor = VapiBase;
-            else if (VapiBase?.default && typeof VapiBase.default === 'function') constructor = VapiBase.default;
-            else if (VapiBase && typeof VapiBase === 'object') {
-                constructor = Object.values(VapiBase).find(v => typeof v === 'function');
-            }
-
-            if (constructor) {
-                vapi.current = new constructor(VAPI_PUBLIC_KEY);
-                vapi.current.on('call-start', () => setIsCalling(true));
-                vapi.current.on('call-end', () => setIsCalling(false));
-                vapi.current.on('error', (e) => setVapiError(e.message || "Vapi Error"));
-            }
-        } catch (err) { console.error("Vapi Init Error:", err); }
-        
-        return () => { if (vapi.current) vapi.current.stop(); };
-    }, []);
 
     const dailyLeads = leads.filter(l => l.is_reported);
     const stats = { published: 12, pending: 4, impressions: "15.4K", reach: "9.2K", leads24h: leads.length, qualityReported: dailyLeads.length };
@@ -348,7 +430,7 @@ export default function Admin() {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                         <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: '#003366', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{lead.name.charAt(0)}</div>
                                         <div>
-                                            <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{lead.name} {lead.status === 'Hot' && "🔥"}</div>
+                                            <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{lead.name} {lead.status === 'Hot' && "🔥"} {lead.is_manual_assignment && "🔒"}</div>
                                             <div style={{ fontSize: '0.8rem', color: '#666' }}>{lead.car || 'New Lead'} • {lead.source || 'Website'}</div>
                                             <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
                                                 <span style={{ fontSize: '0.7rem', background: '#e0f2f1', color: '#00796b', padding: '3px 10px', borderRadius: '20px', fontWeight: 'bold' }}>
@@ -388,7 +470,8 @@ export default function Admin() {
                                         <button title="View SMS/Chat Logs" onClick={() => setSelectedLeadChat(lead)} style={{ padding: '10px 14px', background: '#f0f2f5', border: 'none', borderRadius: '12px', color: '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><MessageSquare size={18} /></button>
                                         <button title="Zap (Relentless Nudge): Trigger AI to send a follow-up text instantly" onClick={() => handleAutoNudge(lead.id)} style={{ padding: '10px 14px', background: '#003366', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Zap size={18} /></button>
                                         <button title="Target (Command Mode): Manually instruct the AI on the next move" onClick={() => setIsCommanding(lead)} style={{ padding: '10px 14px', background: '#D92027', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Target size={18} /></button>
-                                        <button title="Mic (Voice Agent): Have AI Elliot start an outbound call to this lead" onClick={() => handleVoiceCall(lead)} style={{ padding: '10px 14px', background: '#00b894', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Mic size={18} /></button>
+                                        <button title="Mic (Web Voice Agent): Have AI Elliot start a web call to this lead" onClick={() => handleVoiceCall(lead)} style={{ padding: '10px 14px', background: 'rgba(0,184,148,0.2)', color: '#00b894', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Mic size={18} /></button>
+                                        <button title="PSTN Dial (Outbound 2.0): Trigger AI server to literally dial the lead's real phone" onClick={() => handleServerVoiceCall(lead)} style={{ padding: '10px 14px', background: '#00b894', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', animation: 'pulse 2s infinite' }}><PhoneCall size={18} /></button>
                                     </div>
                                   </div>
                                 </div>
@@ -696,16 +779,17 @@ export default function Admin() {
                             {presentationStep === 2 && (
                                 <div className="animate-in" style={{ textAlign: 'left', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '50px', alignItems: 'center', width: '100%' }}>
                                     <div>
-                                        <h3 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#D92027', marginBottom: '10px' }}>$2,900 CAD</h3>
-                                        <div style={{ fontSize: '1.2rem', opacity: 0.7, marginBottom: '30px' }}>PREMIUM SUITE (ONE-TIME SETUP)</div>
+                                        <h3 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#D92027', marginBottom: '10px' }}>PREMIUM SUITE</h3>
+                                        <div style={{ fontSize: '1.2rem', opacity: 0.7, marginBottom: '30px' }}>FILCAN CARS OFFICIAL DEPLOYMENT</div>
                                         
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px' }}>
                                             {[
-                                                "Target Goal: 10 Qualified Leads / Day",
-                                                "25-50% Projected Closing Range",
-                                                "$1,450 CAD Down (50% Onboarding)",
-                                                "Custom AI Persona Integration",
-                                                "99.9% Automation Guarantee"
+                                                "Target Goal: 10+ Qualified Leads / Day",
+                                                "Unlimited Agent Sub-Accounts Included",
+                                                "Elliot: Omni-Bot (Receptionist & Admin)",
+                                                "Elliot: Lead Hunter & Marketing Manager",
+                                                "25-50% Projected Closing Range Increase",
+                                                "99.9% Automation & Performance Guarantee"
                                             ].map((item, i) => (
                                                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                                     <div style={{ color: '#00b894', fontSize: '1.5rem' }}>✓</div>
@@ -718,17 +802,17 @@ export default function Admin() {
                                     
                                     <div style={{ background: 'linear-gradient(135deg, #222 0%, #111 100%)', padding: '40px', borderRadius: '40px', border: '1px solid #D92027', boxShadow: '0 20px 50px rgba(217,32,39,0.2)' }}>
                                         <h4 style={{ color: '#D92027', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            🛡️ THE 6-MONTH GUARANTEE
+                                            🛡️ THE PERFORMANCE GUARANTEE
                                         </h4>
                                         <p style={{ fontSize: '1.1rem', lineHeight: '1.6', color: '#ccc' }}>
-                                            We offer a **Full Setup Reimbursement** after 180 days if performance goals aren't met (minus lead delivery costs).
+                                            We offer a **Full Performance Warranty**. If specific volume milestones aren't reached within the roadmap period, our technical team provides dedicated optimization at zero cost until targets are met.
                                         </p>
                                         <hr style={{ border: 'none', borderTop: '1px solid #333', margin: '25px 0' }} />
                                         <div style={{ marginBottom: '25px' }}>
-                                            <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold', marginBottom: '5px' }}>RENEWAL POLICY</div>
-                                            <div style={{ fontSize: '0.95rem' }}>Optional annual renewal fee applies after Year 1 for maintenance, AI updates, and cloud hosting.</div>
+                                            <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold', marginBottom: '5px' }}>STRATEGIC PARTNERSHIP</div>
+                                            <div style={{ fontSize: '0.95rem' }}>The Premium Suite includes continuous AI training, cloud hosting, and weekly performance audits.</div>
                                         </div>
-                                        <button onClick={() => setPresentationMode(false)} style={{ width: '100%', padding: '20px', background: '#00b894', color: 'white', border: 'none', borderRadius: '15px', fontWeight: 'bold', fontSize: '1.2rem', cursor: 'pointer' }}>CLOSE DEAL / END PITCH</button>
+                                        <button onClick={() => setPresentationMode(false)} style={{ width: '100%', padding: '20px', background: '#00b894', color: 'white', border: 'none', borderRadius: '15px', fontWeight: 'bold', fontSize: '1.2rem', cursor: 'pointer' }}>INITIATE GROWTH PARTNERSHIP</button>
                                     </div>
                                 </div>
                             )}

@@ -10,6 +10,7 @@ const MOCK_ANALYTICS = {
     { name: 'Week 1', leads: 45, qualified: 22, appointments: 12 },
     { name: 'Week 2', leads: 52, qualified: 28, appointments: 15 },
     { name: 'Week 3', leads: 68, qualified: 41, appointments: 24 },
+    { name: 'Week 3', leads: 68, qualified: 41, appointments: 24 },
     { name: 'Week 4', leads: 95, qualified: 62, appointments: 38 },
   ],
   sources: [
@@ -21,7 +22,7 @@ const MOCK_ANALYTICS = {
     { label: 'Total Leads', value: '1,045', icon: Users, trend: '+24%', color: '#003366' },
     { label: 'Qualified (DNA)', value: '642', icon: Target, trend: '+32%', color: '#00b894' },
     { label: 'Appointments', value: '184', icon: PhoneCall, trend: '+45%', color: '#D92027' },
-    { label: 'Est. Revenue', value: '$84.5K', icon: DollarSign, trend: '+18%', color: '#8e44ad' },
+    { label: 'Success Velocity', value: '84.5%', icon: TrendingUp, trend: '+18%', color: '#8e44ad' },
   ]
 };
 

@@ -1,7 +1,8 @@
 import json
 import os
 from typing import List, Dict, Optional
-from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey, Text
+from datetime import datetime, timedelta
+from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from .models import Lead as PydanticLead, Car, AdApproval
@@ -95,6 +96,9 @@ class LeadTable(Base):
     conversation_summary = Column(Text, default="New Lead - Discovery Phase")
     source = Column(String, default="Website")
     assigned_agent = Column(String, nullable=True)
+    is_manual_assignment = Column(Boolean, default=False)
+    interaction_history = Column(Text, default="[]") 
+    vapi_recording_url = Column(String, nullable=True)
 
 class AgentTable(Base):
     __tablename__ = "agents"
@@ -105,6 +109,14 @@ class AgentTable(Base):
     avatar = Column(String, default="AG")
     role = Column(String, default="Sales Consultant")
     is_active = Column(Boolean, default=True)
+    fb_access_token = Column(Text, nullable=True)
+    fb_page_id = Column(String, nullable=True)
+    fb_settings_json = Column(Text, default='{}')
+    # Billing & 14-Day Trial Fields
+    trial_ends_at = Column(DateTime, nullable=True)
+    subscription_status = Column(String, default="trialing") # 'trialing', 'active', 'expired', 'canceled'
+    billing_provider = Column(String, default="stripe") # 'stripe', 'paddle', etc.
+    provider_customer_id = Column(String, nullable=True)
 
 class AdTable(Base):
     __tablename__ = "ads"
@@ -188,6 +200,35 @@ class Storage:
                     AdTable(tenant_id="filcan", content="Trade-in your old car for top value.", platform="Instagram", status="Approved")
                 ]
                 session.add_all(ads)
+                session.commit()
+                
+            # Seed Agents (Grandfathering the Cousin's account)
+            if session.query(AgentTable).count() == 0:
+                agents = [
+                    AgentTable(
+                        tenant_id="filcan",
+                        name="Cousin",
+                        pin="1234",
+                        avatar="CO",
+                        role="Sales Executive",
+                        is_active=True,
+                        subscription_status="active", # Grandfathered in!
+                        trial_ends_at=None,
+                        billing_provider="none"
+                    ),
+                    AgentTable(
+                        tenant_id="filcan",
+                        name="Test Agent",
+                        pin="0000",
+                        avatar="TA",
+                        role="Sales Representative",
+                        is_active=True,
+                        subscription_status="trialing",
+                        trial_ends_at=datetime.utcnow() + timedelta(days=14),
+                        billing_provider="stripe"
+                    )
+                ]
+                session.add_all(agents)
                 session.commit()
 
     def get_tenant_config(self, tenant_id: str = "filcan") -> Dict:
@@ -372,7 +413,92 @@ class Storage:
                 session.add(lead)
                 session.commit()
                 session.refresh(lead)
+                
+                # v20.0-AUTO: Automatically trigger assignment
+                self.auto_assign_lead(lead.id, tenant_id)
             return lead
+
+    def auto_assign_lead(self, lead_id: int, tenant_id: str = "filcan") -> Optional[str]:
+        """Automatically assigns a lead to an active agent using Round-Robin logic."""
+        if not self.session_factory: return None
+        
+        try:
+            with self.session_factory() as session:
+                # 1. Get all active agents for this tenant
+                agents = session.query(AgentTable).filter(
+                    AgentTable.tenant_id == tenant_id,
+                    AgentTable.is_active == True
+                ).all()
+                
+                if not agents:
+                    return None
+                
+                # 2. Find the agent with the fewest current leads to keep it fair (Round-Robin style)
+                # Count leads assigned to each agent name
+                agent_leads_counts = []
+                for agent in agents:
+                    count = session.query(LeadTable).filter(
+                        LeadTable.tenant_id == tenant_id,
+                        LeadTable.assigned_agent == agent.name
+                    ).count()
+                    agent_leads_counts.append((agent, count))
+                
+                # Sort by count ascending, then by ID to break ties consistently
+                agent_leads_counts.sort(key=lambda x: (x[1], x[0].id))
+                best_agent = agent_leads_counts[0][0]
+                
+                # 3. Assign the lead
+                lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
+                if lead:
+                    if lead.is_manual_assignment:
+                        print(f"AUTO-ASSIGN: Skipping lead {lead_id} (Manual Override Active)")
+                        return lead.assigned_agent
+                    
+                    lead.assigned_agent = best_agent.name
+                    lead.last_action_time = f"AUTO-ASSIGNED TO {best_agent.name.upper()}"
+                    session.commit()
+                    print(f"AUTO-ASSIGN: Lead #{lead_id} assigned to agent {best_agent.name}")
+                    return best_agent.name
+                    
+        except Exception as e:
+            print(f"Auto-Assignment Error: {e}")
+            return None
+
+    def append_interaction(self, lead_id: int, role: str, text: str) -> bool:
+        """Appends a message to the interaction_history JSON list."""
+        if not self.session_factory: return False
+        try:
+            with self.session_factory() as session:
+                lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
+                if lead:
+                    history = json.loads(lead.interaction_history or "[]")
+                    history.append({
+                        "role": role,
+                        "text": text,
+                        "timestamp": datetime.now().isoformat()
+                    })
+                    lead.interaction_history = json.dumps(history)
+                    session.commit()
+                    return True
+                return False
+        except Exception as e:
+            print(f"Append Interaction Error: {e}")
+            return False
+
+    def update_recording_url(self, lead_id: int, url: str) -> bool:
+        if not self.session_factory: return False
+        try:
+            with self.session_factory() as session:
+                lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
+                if lead:
+                    lead.vapi_recording_url = url
+                    session.commit()
+                    return True
+                return False
+        except Exception as e:
+            print(f"Update Recording Error: {e}")
+            return False
+        return None
 
     def add_ad(self, ad_data: Dict, tenant_id: str = "filcan"):
         with self.session_factory() as session:
@@ -398,6 +524,41 @@ class Storage:
         except Exception as e:
             print(f"Database Fetch Error (get_ads): {e}")
             return fallback_ads
+
+    def update_agent_settings(self, agent_id: int, settings: Dict) -> bool:
+        if not self.session_factory: return False
+        try:
+            with self.session_factory() as session:
+                agent = session.query(AgentTable).filter(AgentTable.id == agent_id).first()
+                if agent:
+                    if "fb_access_token" in settings:
+                        agent.fb_access_token = settings["fb_access_token"]
+                    if "fb_page_id" in settings:
+                        agent.fb_page_id = settings["fb_page_id"]
+                    if "fb_settings_json" in settings:
+                        agent.fb_settings_json = json.dumps(settings["fb_settings_json"])
+                    session.commit()
+                    return True
+                return False
+        except Exception as e:
+            print(f"DB Update Error (update_agent_settings): {e}")
+            return False
+
+    def get_agent_settings(self, agent_id: int) -> Dict:
+        if not self.session_factory: return {}
+        try:
+            with self.session_factory() as session:
+                agent = session.query(AgentTable).filter(AgentTable.id == agent_id).first()
+                if agent:
+                    return {
+                        "fb_access_token": agent.fb_access_token,
+                        "fb_page_id": agent.fb_page_id,
+                        "fb_settings_json": json.loads(agent.fb_settings_json) if agent.fb_settings_json else {}
+                    }
+                return {}
+        except Exception as e:
+            print(f"DB Fetch Error (get_agent_settings): {e}")
+            return {}
 
 # Singleton instance
 db = Storage()
