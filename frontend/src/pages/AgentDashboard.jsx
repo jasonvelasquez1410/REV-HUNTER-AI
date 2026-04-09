@@ -30,49 +30,76 @@ function StrategistModal({ isOpen, onClose }) {
     const recognitionRef = useRef(null);
 
     const speak = (text) => {
-        if (!('speechSynthesis' in window)) return;
-        window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(text);
-        const voices = window.speechSynthesis.getVoices();
-        // Try to find a premium/natural sounding voice
-        const preferred = voices.find(v => v.name.includes('Google') || v.name.includes('Natural')) || voices[0];
-        if (preferred) msg.voice = preferred;
-        msg.pitch = 0.95;
-        msg.rate = 1.05;
-        window.speechSynthesis.speak(msg);
+        if (typeof window === 'undefined' || !window.speechSynthesis) return;
+        try {
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            const voices = window.speechSynthesis.getVoices();
+            
+            // MASTER VOICE SELECTION: Filter for English (US/GB) and prioritize a professional male voice
+            const elliotVoice = voices.find(v => 
+                (v.lang.startsWith('en-') && (v.name.includes('Male') || v.name.includes('Guy') || v.name.includes('Daniel') || v.name.includes('Google US English')))
+            ) || voices.find(v => v.lang.startsWith('en-')) || voices[0];
+            
+            if (elliotVoice) {
+                msg.voice = elliotVoice;
+            }
+            
+            msg.pitch = 0.85; // Lower pitch for a more masculine, professional 'Elliot' feel
+            msg.rate = 1.0;
+            window.speechSynthesis.speak(msg);
+        } catch (e) {
+            console.error("Speech Synthesis Error:", e);
+        }
     };
 
     useEffect(() => {
+        let recognition = null;
         if (isOpen) {
             setTranscript('');
             setAiResponse('');
             setIsThinking(false);
-            speak("I'm listening, boss. What are your instructions for today?");
+            
+            // Small delay to ensure voices are loaded on mobile
+            setTimeout(() => speak("I'm listening, boss. What are your instructions for today?"), 500);
 
-            // Initialize Speech Recognition
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (SpeechRecognition) {
-                recognitionRef.current = new SpeechRecognition();
-                recognitionRef.current.continuous = false;
-                recognitionRef.current.interimResults = true;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
 
-                recognitionRef.current.onresult = (event) => {
-                    const current = event.results[event.results.length - 1][0].transcript;
-                    setTranscript(current);
+                recognition.onresult = (event) => {
+                    const result = Array.from(event.results)
+                        .map(res => res[0].transcript)
+                        .join('');
+                    setTranscript(result);
                 };
 
-                recognitionRef.current.onend = () => {
-                    if (transcript.length > 3) {
-                        processInstruction();
-                    }
+                recognition.onend = () => {
+                    // Logic to trigger response if we have enough text
+                    setTranscript(prev => {
+                        if (prev.length > 3) {
+                            processInstruction();
+                        }
+                        return prev;
+                    });
                 };
 
-                setTimeout(() => recognitionRef.current.start(), 2000);
+                // Delay start to avoid Elliot hearing himself
+                setTimeout(() => {
+                    try { recognition.start(); } catch(e) {}
+                }, 2500);
             }
-        } else {
-            if (recognitionRef.current) recognitionRef.current.stop();
-            window.speechSynthesis.cancel();
         }
+        
+        return () => {
+            if (recognition) recognition.stop();
+            if (typeof window !== 'undefined' && window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+        };
     }, [isOpen]);
 
     const processInstruction = () => {
