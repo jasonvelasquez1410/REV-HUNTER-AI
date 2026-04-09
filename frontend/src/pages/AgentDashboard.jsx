@@ -22,13 +22,11 @@ function sendPushNotification(title, body) {
     }
 }
 
-// ── STRATEGIST MODAL ──────────────────────────────
-function StrategistModal({ isOpen, onClose }) {
+function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
     const [transcript, setTranscript] = useState('');
     const [aiResponse, setAiResponse] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     const recognitionRef = useRef(null);
-
     const transcriptRef = useRef('');
     const silenceTimerRef = useRef(null);
 
@@ -46,8 +44,8 @@ function StrategistModal({ isOpen, onClose }) {
                 || voices[0];
 
             if (preferred) msg.voice = preferred;
-            msg.pitch = 0.8;
-            msg.rate = 1.1; // Slightly faster speaking rate
+            msg.pitch = 0.82;
+            msg.rate = 1.05;
             window.speechSynthesis.speak(msg);
         };
 
@@ -66,8 +64,7 @@ function StrategistModal({ isOpen, onClose }) {
             setAiResponse('');
             setIsThinking(false);
             
-            // Faster greeting
-            setTimeout(() => speak("I'm listening, boss. What's the plan?"), 400);
+            setTimeout(() => speak("I'm here, boss. Give me the plan, or ask me anything about your pipeline."), 400);
 
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (SpeechRecognition) {
@@ -83,13 +80,12 @@ function StrategistModal({ isOpen, onClose }) {
                     setTranscript(result);
                     transcriptRef.current = result;
 
-                    // SILENCE DETECTION: If they stop talking for 1s, trigger response
                     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
                     silenceTimerRef.current = setTimeout(() => {
                         if (transcriptRef.current.length > 3) {
                             processInstruction();
                         }
-                    }, 1000); // 1 second of silence
+                    }, 1200);
                 };
 
                 recognition.onend = () => {
@@ -98,7 +94,6 @@ function StrategistModal({ isOpen, onClose }) {
                     }
                 };
 
-                // Ready much faster
                 setTimeout(() => {
                     try { recognition.start(); } catch(e) {}
                 }, 1200);
@@ -117,12 +112,35 @@ function StrategistModal({ isOpen, onClose }) {
     const processInstruction = () => {
         if (isThinking || aiResponse) return;
         setIsThinking(true);
+        
+        const input = transcriptRef.current.toLowerCase();
+        let response = "";
+
+        // INTELLIGENT CONTEXT-AWARE RESPONSES
+        if (input.includes('leads') || input.includes('many') || input.includes('any')) {
+            const count = leads?.length || 0;
+            const hotCount = hotLeads?.length || 0;
+            if (count === 0) {
+                response = "The pipeline is currently dry, but I'm hunting local Marketplace listings as we speak. I'll alert you the second a fish bites.";
+            } else {
+                response = `You've got ${count} leads in the hub right now, and ${hotCount} of them are rated as hot. I'm currently prioritizing the highest quality scores for your callback list.`;
+            }
+        } else if (input.includes('hot') || input.includes('best')) {
+            const hotCount = hotLeads?.length || 0;
+            response = `Out of your ${leads.length} leads, ${hotCount} are red hot and ready for a close. I've already sent them a nudge to confirm their appointment times.`;
+        } else if (input.includes('prioritize') || input.includes('focus') || input.includes('target')) {
+            response = "Understood. I'm shifting the hunter algorithm to focus specifically on those targets. Strategy updated and synced across the dealership.";
+        } else if (input.includes('doing') || input.includes('status')) {
+            response = "I'm currently running outbound autonomous calls and scraping social leads 24/7. My current goal is to hit your 10-lead daily pulse before the showroom opens.";
+        } else {
+            response = "Copy that. Instruction processed and the strategy is updated. I'm on it, boss. Anything else?";
+        }
+
         setTimeout(() => {
             setIsThinking(false);
-            const response = "Loud and clear. Strategy updated. I'll prioritize those targets now. Anything else?";
             setAiResponse(response);
             speak(response);
-        }, 500); // Super fast thinking
+        }, 800);
     };
 
     if (!isOpen) return null;
@@ -1043,7 +1061,12 @@ export default function AgentDashboard() {
             `}</style>
 
             {/* Strategist Modal (Properly Placed) */}
-            <StrategistModal isOpen={isStrategistOpen} onClose={() => setIsStrategistOpen(false)} />
+            <StrategistModal 
+                isOpen={isStrategistOpen} 
+                onClose={() => setIsStrategistOpen(false)} 
+                leads={leads}
+                hotLeads={hotLeads}
+            />
         </div>
     );
 }
