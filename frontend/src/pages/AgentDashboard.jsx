@@ -24,6 +24,15 @@ function sendPushNotification(title, body) {
 
 // ── STRATEGIST MODAL ──────────────────────────────
 function StrategistModal({ isOpen, onClose }) {
+    useEffect(() => {
+        if (isOpen && 'speechSynthesis' in window) {
+            const msg = new SpeechSynthesisUtterance("I'm listening, boss. What are your instructions for today?");
+            msg.pitch = 0.9;
+            msg.rate = 1.0;
+            window.speechSynthesis.speak(msg);
+        }
+    }, [isOpen]);
+
     if (!isOpen) return null;
     return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.95)', backdropFilter: 'blur(25px)', zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
@@ -906,9 +915,7 @@ export default function AgentDashboard() {
                                 </div>
                             </div>
                         )}
-                            {/* Strategist Modal */}
-            <StrategistModal isOpen={isStrategistOpen} onClose={() => setIsStrategistOpen(false)} />
-        </div>
+                    </div>
                 )}
             </div>
 
@@ -925,6 +932,9 @@ export default function AgentDashboard() {
             <style>{`
                 @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
             `}</style>
+
+            {/* Strategist Modal (Properly Placed) */}
+            <StrategistModal isOpen={isStrategistOpen} onClose={() => setIsStrategistOpen(false)} />
         </div>
     );
 }
