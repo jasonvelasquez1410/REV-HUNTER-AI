@@ -24,41 +24,110 @@ function sendPushNotification(title, body) {
 
 // ── STRATEGIST MODAL ──────────────────────────────
 function StrategistModal({ isOpen, onClose }) {
+    const [transcript, setTranscript] = useState('');
+    const [aiResponse, setAiResponse] = useState('');
+    const [isThinking, setIsThinking] = useState(false);
+    const recognitionRef = useRef(null);
+
+    const speak = (text) => {
+        if (!('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        const voices = window.speechSynthesis.getVoices();
+        // Try to find a premium/natural sounding voice
+        const preferred = voices.find(v => v.name.includes('Google') || v.name.includes('Natural')) || voices[0];
+        if (preferred) msg.voice = preferred;
+        msg.pitch = 0.95;
+        msg.rate = 1.05;
+        window.speechSynthesis.speak(msg);
+    };
+
     useEffect(() => {
-        if (isOpen && 'speechSynthesis' in window) {
-            const msg = new SpeechSynthesisUtterance("I'm listening, boss. What are your instructions for today?");
-            msg.pitch = 0.9;
-            msg.rate = 1.0;
-            window.speechSynthesis.speak(msg);
+        if (isOpen) {
+            setTranscript('');
+            setAiResponse('');
+            setIsThinking(false);
+            speak("I'm listening, boss. What are your instructions for today?");
+
+            // Initialize Speech Recognition
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognitionRef.current = new SpeechRecognition();
+                recognitionRef.current.continuous = false;
+                recognitionRef.current.interimResults = true;
+
+                recognitionRef.current.onresult = (event) => {
+                    const current = event.results[event.results.length - 1][0].transcript;
+                    setTranscript(current);
+                };
+
+                recognitionRef.current.onend = () => {
+                    if (transcript.length > 3) {
+                        processInstruction();
+                    }
+                };
+
+                setTimeout(() => recognitionRef.current.start(), 2000);
+            }
+        } else {
+            if (recognitionRef.current) recognitionRef.current.stop();
+            window.speechSynthesis.cancel();
         }
     }, [isOpen]);
 
+    const processInstruction = () => {
+        setIsThinking(true);
+        setTimeout(() => {
+            setIsThinking(false);
+            const response = "Copy that. Hunt strategy updated. I'll prioritize those leads and increase the follow-up frequency. Anything else?";
+            setAiResponse(response);
+            speak(response);
+        }, 1500);
+    };
+
     if (!isOpen) return null;
+
     return (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.95)', backdropFilter: 'blur(25px)', zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-            <div style={{ width: '100%', maxWidth: '400px', textAlign: 'center', animation: 'fadeIn 0.3s ease' }}>
-                <div style={{ marginBottom: '30px' }}>
-                    <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(217,32,39,0.1)', border: '2px solid #D92027', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', boxShadow: '0 0 40px rgba(217,32,39,0.3)', animation: 'pulse 2s infinite' }}>
-                        <Mic size={50} color="#D92027" />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.98)', backdropFilter: 'blur(30px)', zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <div style={{ width: '100%', maxWidth: '420px', textAlign: 'center', animation: 'fadeIn 0.3s ease' }}>
+                <div style={{ marginBottom: '30px', position: 'relative' }}>
+                    <div style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(217,32,39,0.1)', border: '2px solid #D92027', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', boxShadow: isThinking ? '0 0 60px #D92027' : '0 0 30px rgba(217,32,39,0.3)', transition: 'all 0.5s ease', animation: 'pulse 2s infinite' }}>
+                        <Mic size={60} color="#D92027" />
                     </div>
                 </div>
-                <h2 style={{ color: 'white', fontSize: '1.5rem', fontWeight: '900', marginBottom: '10px' }}>ELLIOT STRATEGIST</h2>
-                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', marginBottom: '40px', lineHeight: '1.5' }}>
-                    "Give Elliot his marching orders. Tell him who to prioritize or how the follow-up strategy should change today."
-                </p>
-                <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '30px' }}>
-                    <div style={{ color: '#D92027', fontSize: '0.65rem', fontWeight: '900', letterSpacing: '2px', marginBottom: '10px' }}>LISTENING FOR INSTRUCTIONS...</div>
-                    <div style={{ color: 'white', fontSize: '0.85rem', fontStyle: 'italic', opacity: 0.5 }}>
-                        "Elliot, focus on Atlas leads with credit over 700..."
-                    </div>
+                
+                <h2 style={{ color: 'white', fontSize: '1.6rem', fontWeight: '900', marginBottom: '5px', letterSpacing: '1px' }}>ELLIOT STRATEGIST</h2>
+                <div style={{ fontSize: '0.7rem', color: '#D92027', fontWeight: 'bold', marginBottom: '30px', opacity: 0.8 }}>VOICE COMMAND ACTIVE</div>
+
+                <div style={{ minHeight: '120px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '15px' }}>
+                    {transcript && (
+                        <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '15px', padding: '15px', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', textAlign: 'left', alignSelf: 'flex-start', maxWidth: '85%' }}>
+                            "{transcript}"
+                        </div>
+                    )}
+
+                    {isThinking && (
+                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', fontStyle: 'italic', animation: 'pulse 1s infinite' }}>
+                            Elliot is updating the hunt strategy...
+                        </div>
+                    )}
+
+                    {aiResponse && (
+                        <div style={{ background: 'rgba(217,32,39,0.15)', borderRadius: '15px', padding: '15px', border: '1px solid rgba(217,32,39,0.3)', color: 'white', fontSize: '0.9rem', textAlign: 'right', alignSelf: 'flex-end', maxWidth: '85%', fontWeight: '600' }}>
+                            {aiResponse}
+                        </div>
+                    )}
                 </div>
-                <button 
-                    onClick={onClose}
-                    style={{ background: '#D92027', color: 'white', border: 'none', borderRadius: '14px', padding: '15px 40px', fontWeight: '800', cursor: 'pointer', fontSize: '1rem', width: '100%' }}
-                >
-                    SET NEW STRATEGY
-                </button>
-                <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', marginTop: '20px', cursor: 'pointer', fontSize: '0.85rem' }}>CANCEL</button>
+
+                <div style={{ marginTop: '50px' }}>
+                    <button 
+                        onClick={onClose}
+                        style={{ background: '#D92027', color: 'white', border: 'none', borderRadius: '16px', padding: '18px 40px', fontWeight: '900', cursor: 'pointer', fontSize: '1rem', width: '100%', boxShadow: '0 8px 25px rgba(217,32,39,0.4)' }}
+                    >
+                        DONE & SYNC STRATEGY
+                    </button>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', marginTop: '20px', cursor: 'pointer', fontSize: '0.85rem' }}>LOGOUT COMMAND MODE</button>
+                </div>
             </div>
         </div>
     );
