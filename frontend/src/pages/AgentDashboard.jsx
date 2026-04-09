@@ -348,7 +348,7 @@ function EngagementHistoryModal({ lead, onClose }) {
                         <div style={{ padding: '20px', background: 'rgba(217,32,39,0.1)', borderRadius: '20px', border: '1px solid rgba(217,32,39,0.2)', marginBottom: '10px' }}>
                             <div style={{ fontSize: '0.7rem', color: '#D92027', fontWeight: '900', marginBottom: '10px' }}>🎙️ AI CALL RECORDING</div>
                             <audio controls src={lead.vapi_recording_url} style={{ width: '100%', filter: 'invert(1) hue-rotate(180deg)' }} />
-                            <div style={{ fontSize: '0.6rem', color: 'rgba(217,32,39,0.5)', marginTop: '8px', textAlign: 'center' }}>Jason AI Outbound Call • Completed</div>
+                            <div style={{ fontSize: '0.6rem', color: 'rgba(217,32,39,0.5)', marginTop: '8px', textAlign: 'center' }}>Elliot Voice Outbound Link • Completed</div>
                         </div>
                     )}
 

@@ -605,7 +605,7 @@ async def vapi_webhook(request: Request):
                     lead = session.query(LeadTable).filter(LeadTable.phone.contains(customer_phone[-10:])).first()
                     if lead:
                         # Log high-fidelity call report
-                        db.append_interaction(lead.id, "AI (Jason)", f"[PHONE CALL COMPLETED]\n{transcript}")
+                        db.append_interaction(lead.id, "AI (Elliot Voice)", f"[PHONE CALL COMPLETED]\n{transcript}")
                         if recording_url:
                             db.update_recording_url(lead.id, recording_url)
                             print(f"VAPI WEBHOOK: Saved recording for lead {lead.id}")

@@ -204,9 +204,9 @@ class Storage:
                             {"role": "customer", "text": "Hi, is the 2024 VW Atlas still available?", "timestamp": (datetime.now() - timedelta(hours=2)).isoformat()},
                             {"role": "AI (Elliot)", "text": "Hi Marvin! Yes, we have two EXECLINE trims on the lot. Are you looking for the family-sized 3rd row or a specific feature?", "timestamp": (datetime.now() - timedelta(hours=1, minutes=58)).isoformat()},
                             {"role": "customer", "text": "Need the 3rd row for the kids. Do you take trade-ins?", "timestamp": (datetime.now() - timedelta(hours=1, minutes=45)).isoformat()},
-                            {"role": "AI (Elliot)", "text": "Absolutely! We're offering a $1,500 bonus for trades this week. Can I get our AI Specialist Jason to give you a quick 1-minute call to value your Civic?", "timestamp": (datetime.now() - timedelta(hours=1, minutes=40)).isoformat()},
+                            {"role": "AI (Elliot)", "text": "Absolutely! We're offering a $1,500 bonus for trades this week. Can I get our AI Specialist Elliot to give you a quick 1-minute call to value your Civic?", "timestamp": (datetime.now() - timedelta(hours=1, minutes=40)).isoformat()},
                             {"role": "customer", "text": "Sure, call me.", "timestamp": (datetime.now() - timedelta(hours=1, minutes=35)).isoformat()},
-                            {"role": "AI (Jason)", "text": "[PHONE CALL COMPLETED]\nSummary: Marvin confirmed he has a 2018 Civic Type R. He's extremely excited about the Atlas safety features. Appt set for Monday 2PM.", "timestamp": (datetime.now() - timedelta(minutes=10)).isoformat()}
+                            {"role": "AI (Elliot Voice)", "text": "[PHONE CALL COMPLETED]\nSummary: Elliot confirmed Marvin has a 2018 Civic Type R. Appt set for Monday 2PM.", "timestamp": (datetime.now() - timedelta(minutes=10)).isoformat()}
                         ]),
                         vapi_recording_url="https://www.soundjay.com/buttons/beep-01a.mp3", # Real audio placeholder
                         assigned_agent="Juan Dela Cruz"
