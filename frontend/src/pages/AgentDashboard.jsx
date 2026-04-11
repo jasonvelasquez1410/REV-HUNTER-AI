@@ -482,7 +482,9 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                                             <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontWeight: 'bold' }}>PRICE</span>
                                             <button onClick={() => copyToClipboard(organizedListing.price, 'Price')} style={{ background: 'none', border: 'none', color: '#00b894', fontSize: '0.65rem', fontWeight: 'bold', cursor: 'pointer' }}>COPY</button>
                                         </div>
-                                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#fdcb6e' }}>${Number(organizedListing.price).toLocaleString()}</div>
+                                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#fdcb6e' }}>
+                                            ${organizedListing.price ? Number(String(organizedListing.price).replace(/[^0-9.]/g, '')).toLocaleString() : '0'}
+                                        </div>
                                     </div>
 
                                     <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -500,7 +502,11 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                                     </div>
                                 </div>
                              ) : (
-                                <div style={{ textAlign: 'center', padding: '20px' }}>Failed to organize listing.</div>
+                                <div style={{ textAlign: 'center', padding: '20px' }}>
+                                    <AlertCircle size={32} color="#D92027" style={{ marginBottom: '10px' }} />
+                                    <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>AI Connection Lost</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '5px' }}>Check your Google API Key or internet connection. Close and try again.</div>
+                                </div>
                              )}
                         </div>
                         <div style={{ padding: '25px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '12px' }}>

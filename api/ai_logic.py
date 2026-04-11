@@ -257,26 +257,38 @@ def generate_marketplace_listing(car: dict, tenant_name: str, location: str) -> 
         "title": "Optimized Marketplace Title",
         "description": "Full organized description with emojis and bullets",
         "price": "{car['price']}",
-        "tags": ["tag1", "tag2"...]
+        "tags": ["tag1", "tag2"]
     }}
+    Important: The 'price' must be a raw number string with no symbols or commas.
     """
     
     if not GOOGLE_API_KEY:
+        # High-Quality Static Fallback
         return {
-            "title": f"🔥 {car['year']} {car['make']} {car['model']} - All Credit Approved!",
-            "description": f"Check out this {car['year']} {car['make']} {car['model']} at {tenant_name}! \n\n✅ {car['mileage']:,} km \n✅ Inspection Completed \n✅ Trade-ins Welcome \n\nDM for test drive!",
+            "title": f"🔥 {car['year']} {car['make']} {car['model']} - MINT CONDITION - All Credit Approved!",
+            "description": f"Available now at {tenant_name}! \n\n✅ {car['year']} {car['make']} {car['model']} \n✅ {car['mileage']:,} km \n✅ Fully Inspected & Ready for Delivery \n\nWe specialize in all credit levels. $0 Down options available! \n\n📍 Visit us in {location} or DM for details!",
             "price": str(car['price']),
-            "tags": [car['make'], car['model'], "UsedCars", location]
+            "tags": [car['make'], car['model'], "UsedCars", location, "Financing"]
         }
 
     try:
-        data, _ = run_gemini_logic(prompt, f"Car: {car['make']} {car['model']}")
-        if data:
+        data, _ = run_gemini_logic(prompt, f"Marketplace Logic: {car['make']} {car['model']}")
+        if data and "title" in data:
+            # Ensure price is sanitized for the frontend Number() call
+            if "price" in data:
+                data["price"] = str(data["price"]).replace("$", "").replace(",", "")
             return data
     except Exception as e:
         print(f"Marketplace Generation Error: {e}")
     
-    return {"error": "AI variant failed to respond"}
+    # Final safe return if AI fails
+    return {
+        "title": f"🔥 {car['year']} {car['make']} {car['model']} - All Credit Approved!",
+        "description": f"Fantastic {car['year']} {car['make']} {car['model']} available at {tenant_name}. Call today!",
+        "price": str(car['price']),
+        "tags": [car['make'], car['model'], "UsedCars"],
+        "error": "AI sync delayed, using standard listing."
+    }
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """
