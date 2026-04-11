@@ -735,12 +735,15 @@ function EngagementHistoryModal({ lead, onClose, onDial }) {
                         <button 
                             onClick={() => { onDial(lead.id, callObjective); onClose(); }} 
                             style={{ 
-                                width: '100%', padding: '18px', background: 'linear-gradient(135deg, #00b894, #008f72)', color: 'white', border: 'none', borderRadius: '16px', 
-                                fontWeight: '900', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                                width: '100%', padding: '16px', background: 'linear-gradient(135deg, #00b894, #008f72)', color: 'white', border: 'none', borderRadius: '16px', 
+                                fontWeight: '900', fontSize: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px',
                                 boxShadow: '0 8px 20px rgba(0,184,148,0.3)'
                             }}
                         >
-                            <Phone size={20} /> EXECUTE AI {callObjective?.toUpperCase() || 'OUTBOUND'} CALL
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Phone size={20} /> EXECUTE {callObjective?.toUpperCase() || 'AI CALL'}
+                            </div>
+                            <span style={{ fontSize: '0.55rem', opacity: 0.7, fontWeight: '700' }}>Elliot will dial now</span>
                         </button>
                     </div>
                 </div>
@@ -1113,15 +1116,17 @@ export default function AgentDashboard() {
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                     <button 
                                         onClick={() => setActiveView('import')}
-                                        style={{ width: '100%', padding: '16px', background: '#FF4B2B', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 8px 15px rgba(255, 75, 43, 0.2)' }}
+                                        style={{ width: '100%', padding: '16px', background: '#FF4B2B', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
                                     >
-                                        📥 IMPORT MY FIRST LIST
+                                        <span>📥 IMPORT LEADS</span>
+                                        <span style={{ fontSize: '0.55rem', opacity: 0.8, fontWeight: '700' }}>Upload CSV/Excel or Manual Entry</span>
                                     </button>
                                     <button 
                                         onClick={() => { setActiveView('marketing'); }}
-                                        style={{ width: '100%', padding: '16px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer' }}
+                                        style={{ width: '100%', padding: '16px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
                                     >
-                                        🚀 CONNECT FACEBOOK MARKETPLACE
+                                        <span>🚀 LINK FACEBOOK</span>
+                                        <span style={{ fontSize: '0.55rem', opacity: 0.5, fontWeight: '700' }}>Sync Marketplace Inventory</span>
                                     </button>
                                 </div>
                             </div>
