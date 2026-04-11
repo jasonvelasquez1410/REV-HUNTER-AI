@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Bell, LogOut, FileSpreadsheet, CheckCircle, AlertCircle, Share2, Settings, LayoutDashboard, Image as ImageIcon, Send, MessageSquare, Mic } from 'lucide-react';
+import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Bell, LogOut, FileSpreadsheet, CheckCircle, AlertCircle, Share2, Settings, LayoutDashboard, Image as ImageIcon, Send, MessageSquare, Mic, Link, Camera, Building2 } from 'lucide-react';
 import { useTenant } from '../context/TenantContext';
 import * as XLSX from 'xlsx';
 
@@ -391,30 +391,54 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
             )}
 
             {subView === 'inventory' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
-                    {inventory.length === 0 && <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.2)' }}>No inventory found.</div>}
-                    {inventory.map(car => (
-                        <div key={car.id} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', position: 'relative' }}>
-                            <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,184,148,0.2)', color: '#00b894', padding: '4px 8px', borderRadius: '8px', fontSize: '0.6rem', fontWeight: '900', border: '1px solid rgba(0,184,148,0.3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <Zap size={10} fill="currentColor" /> {Math.floor(80 + Math.random() * 19)}% DEMAND
-                            </div>
-                            <div style={{ display: 'flex', gap: '20px', padding: '20px' }}>
-                                <div style={{ width: '110px', height: '80px', borderRadius: '15px', background: '#111', flexShrink: 0, overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
-                                    {car.image ? <img src={car.image} alt={car.model} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={24} style={{ margin: '28px 43px', opacity: 0.1 }} />}
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: '900', fontSize: '1rem', color: 'white' }}>{car.year} {car.make}</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{car.model} • ${car.price.toLocaleString()}</div>
-                                    <button 
-                                        onClick={() => handleOrganize(car)}
-                                        style={{ marginTop: '15px', width: '100%', padding: '10px', background: 'rgba(255, 75, 43, 0.1)', color: '#FF4B2B', border: '1px solid rgba(255, 75, 43, 0.2)', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                                    >
-                                        🚀 SYNC TO MARKETPLACE
-                                    </button>
-                                </div>
-                            </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {/* Inventory Sources Hub (Option A, B, C) */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                        <button 
+                            onClick={() => alert("FREELANCE SYNC: Paste any Dealership URL and Elliot will extract the inventory for you.")}
+                            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '12px 5px', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}
+                        >
+                            <Link size={16} />
+                            <span style={{ fontSize: '0.5rem', fontWeight: '900' }}>FREELANCE SYNC</span>
+                        </button>
+                        <button 
+                            onClick={() => alert("POCKET LISTING: Take 5 photos of any car. Elliot will use AI to identify the Year/Make/Model and add it to your lot.")}
+                            style={{ background: 'rgba(255, 75, 43, 0.1)', border: '1px solid #FF4B2B', borderRadius: '12px', padding: '12px 5px', color: '#FF4B2B', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}
+                        >
+                            <Camera size={16} />
+                            <span style={{ fontSize: '0.5rem', fontWeight: '900' }}>POCKET LISTING</span>
+                        </button>
+                        <div style={{ background: 'rgba(0,184,148,0.1)', border: '1px solid #00b894', borderRadius: '12px', padding: '12px 5px', color: '#00b894', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', opacity: 1 }}>
+                            <Building2 size={16} />
+                            <span style={{ fontSize: '0.5rem', fontWeight: '900' }}>FILCAN SYNC (ACTIVE)</span>
                         </div>
-                    ))}
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+                        {inventory.length === 0 && <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.2)' }}>No inventory found.</div>}
+                        {inventory.map(car => (
+                            <div key={car.id} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', position: 'relative' }}>
+                                <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,184,148,0.2)', color: '#00b894', padding: '4px 8px', borderRadius: '8px', fontSize: '0.6rem', fontWeight: '900', border: '1px solid rgba(0,184,148,0.3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <Zap size={10} fill="currentColor" /> {Math.floor(80 + Math.random() * 19)}% DEMAND
+                                </div>
+                                <div style={{ display: 'flex', gap: '20px', padding: '20px' }}>
+                                    <div style={{ width: '110px', height: '80px', borderRadius: '15px', background: '#111', flexShrink: 0, overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
+                                        {car.image ? <img src={car.image} alt={car.model} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={24} style={{ margin: '28px 43px', opacity: 0.1 }} />}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: '900', fontSize: '1rem', color: 'white' }}>{car.year} {car.make}</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{car.model} • ${car.price.toLocaleString()}</div>
+                                        <button 
+                                            onClick={() => handleOrganize(car)}
+                                            style={{ marginTop: '15px', width: '100%', padding: '10px', background: 'rgba(255, 75, 43, 0.1)', color: '#FF4B2B', border: '1px solid rgba(255, 75, 43, 0.2)', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                        >
+                                            🚀 SYNC TO MARKETPLACE
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
 
