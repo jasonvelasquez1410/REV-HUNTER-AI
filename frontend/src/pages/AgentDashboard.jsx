@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Bell, LogOut, FileSpreadsheet, CheckCircle, AlertCircle, Share2, Settings, LayoutDashboard, Image as ImageIcon, Send, MessageSquare, Mic, Link, Camera, Building2 } from 'lucide-react';
+import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Bell, LogOut, FileSpreadsheet, CheckCircle, AlertCircle, Share2, Settings, LayoutDashboard, Image as ImageIcon, Send, MessageSquare, Mic, Link, Camera, Building2, HelpCircle } from 'lucide-react';
 import { useTenant } from '../context/TenantContext';
 import * as XLSX from 'xlsx';
 
@@ -415,7 +415,7 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                     onClick={() => setShowPlaybook(!showPlaybook)}
                     style={{ width: '45px', borderRadius: '12px', background: 'rgba(255, 75, 43, 0.1)', color: '#FF4B2B', border: '1px solid rgba(255, 75, 43, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                    <Clock size={18} />
+                    <HelpCircle size={18} />
                 </button>
             </div>
 
