@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Zap, Target, Mic, MessageSquare, HelpCircle, PhoneCall } from 'lucide-react';
+import { Zap, Target, Mic, MessageSquare, HelpCircle, PhoneCall, Dna } from 'lucide-react';
 import { Vapi as VapiNamed } from '@vapi-ai/web';
 import VapiDefault from '@vapi-ai/web';
 import ChatModal from '../components/ChatModal';
@@ -42,6 +42,7 @@ export default function Admin() {
     const [showAdModal, setShowAdModal] = useState(false);
     const [pendingAd, setPendingAd] = useState(null);
     const [isGeneratingAd, setIsGeneratingAd] = useState(false);
+    const [selectedDNAModal, setSelectedDNAModal] = useState(null);
     const [isElliotOpsActive, setIsElliotOpsActive] = useState(false);
     const [elliotThought, setElliotThought] = useState("");
     const [elliotResponse, setElliotResponse] = useState("");
@@ -527,6 +528,7 @@ export default function Admin() {
                                                 {lead.assigned_to ? `Assigned: ${MOCK_AGENTS.find(a => a.id === lead.assigned_to)?.name}` : 'Unassigned'}
                                             </div>
                                         </div>
+                                        <button title="Lead DNA & Deep Insights" onClick={() => setSelectedDNAModal(lead)} style={{ padding: '10px 14px', background: 'rgba(108,92,231,0.2)', border: 'none', borderRadius: '12px', color: '#6c5ce7', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Dna size={18} /></button>
                                         <button title="View SMS/Chat Logs" onClick={() => setSelectedLeadChat(lead)} style={{ padding: '10px 14px', background: '#f0f2f5', border: 'none', borderRadius: '12px', color: '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><MessageSquare size={18} /></button>
                                         <button title="Zap (Relentless Nudge): Trigger AI to send a follow-up text instantly" onClick={() => handleAutoNudge(lead.id)} style={{ padding: '10px 14px', background: '#003366', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Zap size={18} /></button>
                                         <button title="Target (Command Mode): Manually instruct the AI on the next move" onClick={() => setIsCommanding(lead)} style={{ padding: '10px 14px', background: '#D92027', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Target size={18} /></button>
@@ -1074,6 +1076,87 @@ export default function Admin() {
                     100% { background-position: 200% 0; }
                 }
             `}</style>
+            {selectedDNAModal && <EngagementHistoryModal lead={selectedDNAModal} onClose={() => setSelectedDNAModal(null)} />}
+        </div>
+    );
+}
+
+function EngagementHistoryModal({ lead, onClose }) {
+    if (!lead) return null;
+    let history = [];
+    try {
+        history = JSON.parse(lead.interaction_history || "[]");
+    } catch {
+        history = [];
+    }
+
+    return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(15px)', zIndex: 20000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+            <div style={{ width: '100%', maxWidth: '500px', background: '#fff', borderRadius: '32px', overflow: 'hidden', height: '85vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)', color: '#333' }}>
+                {/* Header */}
+                <div style={{ padding: '25px', background: 'linear-gradient(135deg, #003366 0%, #001a33 100%)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <div style={{ color: '#00b894', fontSize: '0.65rem', fontWeight: '900', letterSpacing: '2px', marginBottom: '4px' }}>LEAD DNA COMMAND</div>
+                        <h2 style={{ margin: 0, fontSize: '1.2rem' }}>{lead.name}</h2>
+                    </div>
+                    <button onClick={onClose} style={{ padding: '10px', borderRadius: '12px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer' }}>✕</button>
+                </div>
+
+                {/* Lead Profile DNA Card */}
+                <div style={{ padding: '20px', background: '#f8f9fa', borderBottom: '1px solid #eee', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                    <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #eee' }}>
+                        <div style={{ fontSize: '0.6rem', color: '#999', fontWeight: 'bold' }}>CAR INTEREST</div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#D92027' }}>{lead.car || 'Discovery Mode'}</div>
+                    </div>
+                    <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #eee' }}>
+                        <div style={{ fontSize: '0.6rem', color: '#999', fontWeight: 'bold' }}>TRADE-IN</div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{lead.trade_in_details || 'No records'}</div>
+                    </div>
+                    <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #eee' }}>
+                        <div style={{ fontSize: '0.6rem', color: '#999', fontWeight: 'bold' }}>CREDIT SCORE</div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: (lead.credit_score > 700 ? '#00b894' : '#fdcb6e') }}>{lead.credit_score || 'Calculating...'}</div>
+                    </div>
+                    <div style={{ background: 'white', padding: '12px', borderRadius: '12px', border: '1px solid #eee' }}>
+                        <div style={{ fontSize: '0.6rem', color: '#999', fontWeight: 'bold' }}>MONTHLY BUDGET</div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>${lead.monthly_budget || 'Unknown'}/mo</div>
+                    </div>
+                </div>
+
+                {/* Timeline */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '25px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 'bold', borderBottom: '2px solid #D92027', pb: '5px', width: 'fit-content' }}>INTERACTION HISTORY</div>
+                    {lead.vapi_recording_url && (
+                        <div style={{ padding: '15px', background: '#f0f2f5', borderRadius: '15px', border: '1px solid #ddd' }}>
+                            <div style={{ fontSize: '0.65rem', color: '#003366', fontWeight: '900', marginBottom: '8px' }}>🎙️ AI CALL RECORDING</div>
+                            <audio controls src={lead.vapi_recording_url} style={{ width: '100%', height: '35px' }} />
+                        </div>
+                    )}
+
+                    {history.length === 0 ? (
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', opacity: 0.3 }}>
+                            <div style={{ fontSize: '2rem' }}>📡</div>
+                            <p style={{ fontSize: '0.8rem' }}>AI is tracking leads 24/7...</p>
+                        </div>
+                    ) : history.map((msg, i) => {
+                        const isAI = msg.role?.toLowerCase().includes('ai');
+                        return (
+                            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: isAI ? 'flex-start' : 'flex-end', gap: '4px' }}>
+                                <div style={{ fontSize: '0.55rem', color: '#999', fontWeight: 'bold' }}>{msg.role?.toUpperCase()}</div>
+                                <div style={{ 
+                                    maxWidth: '85%', padding: '12px 16px', borderRadius: '18px', fontSize: '0.85rem', lineHeight: '1.4',
+                                    background: isAI ? '#f0f2f5' : '#D92027',
+                                    color: isAI ? '#333' : 'white',
+                                    borderBottomLeftRadius: isAI ? '4px' : '18px',
+                                    borderBottomRightRadius: isAI ? '18px' : '4px'
+                                }}>
+                                    {msg.text}
+                                </div>
+                                <div style={{ fontSize: '0.5rem', color: '#ccc' }}>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
         </div>
     );
 }

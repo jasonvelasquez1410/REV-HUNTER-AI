@@ -228,14 +228,16 @@ class Storage:
                         phone="587-555-9000", 
                         credit_score=680, 
                         monthly_budget=550, 
+                        car="VW Jetta GLI",
+                        trade_in_details="2019 Toyota Corolla SE",
                         status="Qualified", 
                         is_reported=True, 
                         quality_score=85, 
                         last_action_time="Today 9:15 AM", 
-                        conversation_summary="Comparing Atlas and CX-5. Financing approved.",
+                        conversation_summary="Considering the Jetta GLI. Trading in her Corolla. Pre-approved for $550/mo.",
                         interaction_history=json.dumps([
-                            {"role": "customer", "text": "What's the best price on the Mazda?", "timestamp": (datetime.now() - timedelta(hours=5)).isoformat()},
-                            {"role": "AI (Elliot)", "text": "The CX-5 Signature is currently $39,500. It's fully loaded!", "timestamp": (datetime.now() - timedelta(hours=4, minutes=50)).isoformat()}
+                            {"role": "customer", "text": "Do you have any Jetta GLIs in manual?", "timestamp": (datetime.now() - timedelta(hours=5)).isoformat()},
+                            {"role": "AI (Elliot)", "text": "Hi Jessica! We actually have a Pure White GLI with the 6-speed manual arriving tomorrow. Would you like me to hold it for a viewing?", "timestamp": (datetime.now() - timedelta(hours=4, minutes=50)).isoformat()}
                         ]),
                         assigned_agent="Jessica Cruz"
                     )

@@ -532,15 +532,35 @@ function EngagementHistoryModal({ lead, onClose }) {
     }
 
     return (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(15px)', zIndex: 20000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
-            <div style={{ width: '100%', maxWidth: '450px', background: '#111', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', height: '85vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 40000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+            <div style={{ width: '100%', maxWidth: '440px', background: '#111', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', height: '85vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
                 {/* Header */}
                 <div style={{ padding: '25px', background: 'linear-gradient(135deg, #1A1A2E 0%, #111 100%)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                        <div style={{ color: '#D92027', fontSize: '0.65rem', fontWeight: '900', letterSpacing: '2px', marginBottom: '4px' }}>LEAD DNA TIMELINE</div>
+                        <div style={{ color: '#00b894', fontSize: '0.65rem', fontWeight: '900', letterSpacing: '2px', marginBottom: '4px' }}>LEAD DNA COMMAND</div>
                         <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'white' }}>{lead.name}</h2>
                     </div>
                     <button onClick={onClose} style={{ padding: '10px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer' }}>✕</button>
+                </div>
+
+                {/* Lead Profile Cards (Mobile Friendly) */}
+                <div style={{ padding: '15px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>INTEREST</div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#D92027' }}>{lead.car || 'Discovery'}</div>
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>TRADE-IN</div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{lead.trade_in_details || 'None'}</div>
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>CREDIT</div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#fdcb6e' }}>{lead.credit_score || '??'}</div>
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>BUDGET</div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>${lead.monthly_budget || '0'}/mo</div>
+                    </div>
                 </div>
 
                 {/* Timeline */}
@@ -549,30 +569,29 @@ function EngagementHistoryModal({ lead, onClose }) {
                         <div style={{ padding: '20px', background: 'rgba(217,32,39,0.1)', borderRadius: '20px', border: '1px solid rgba(217,32,39,0.2)', marginBottom: '10px' }}>
                             <div style={{ fontSize: '0.7rem', color: '#D92027', fontWeight: '900', marginBottom: '10px' }}>🎙️ AI CALL RECORDING</div>
                             <audio controls src={lead.vapi_recording_url} style={{ width: '100%', filter: 'invert(1) hue-rotate(180deg)' }} />
-                            <div style={{ fontSize: '0.6rem', color: 'rgba(217,32,39,0.5)', marginTop: '8px', textAlign: 'center' }}>Elliot Voice Outbound Link • Completed</div>
                         </div>
                     )}
 
                     {history.length === 0 ? (
                         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', opacity: 0.3 }}>
                             <div style={{ fontSize: '2rem' }}>📡</div>
-                            <p style={{ fontSize: '0.8rem' }}>Waiting for interaction data...</p>
+                            <p style={{ fontSize: '0.8rem' }}>AI Monitoring...</p>
                         </div>
                     ) : history.map((msg, i) => {
                         const isAI = msg.role?.toLowerCase().includes('ai');
                         return (
                             <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: isAI ? 'flex-start' : 'flex-end', gap: '4px' }}>
-                                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>{msg.role?.toUpperCase()}</div>
+                                <div style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.2)', fontWeight: 'bold' }}>{msg.role?.toUpperCase()}</div>
                                 <div style={{ 
-                                    maxWidth: '85%', padding: '12px 16px', borderRadius: '18px', fontSize: '0.9rem', lineHeight: '1.4',
-                                    background: isAI ? 'rgba(255,255,255,0.08)' : '#D92027',
+                                    maxWidth: '85%', padding: '12px 16px', borderRadius: '18px', fontSize: '0.85rem', lineHeight: '1.4',
+                                    background: isAI ? 'rgba(255,255,255,0.06)' : '#D92027',
                                     color: 'white',
                                     borderBottomLeftRadius: isAI ? '4px' : '18px',
                                     borderBottomRightRadius: isAI ? '18px' : '4px'
                                 }}>
                                     {msg.text}
                                 </div>
-                                <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.15)' }}>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                <div style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.1)' }}>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                             </div>
                         );
                     })}
@@ -580,7 +599,7 @@ function EngagementHistoryModal({ lead, onClose }) {
 
                 {/* Footer Info */}
                 <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
-                    Relentless AI is 24/7 monitoring this lead DNA chain.
+                    Relentless AI DNA Tracking Active.
                 </div>
             </div>
         </div>
