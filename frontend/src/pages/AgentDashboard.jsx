@@ -316,6 +316,7 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
     const [activeSourceModal, setActiveSourceModal] = useState(null); // 'freelance' | 'pocket'
     const [scrapingUrl, setScrapingUrl] = useState('');
     const [sourceStatus, setSourceStatus] = useState(null);
+    const [showPlaybook, setShowPlaybook] = useState(false);
 
     const handlePost = async () => {
         if (!postingCar) return;
@@ -369,19 +370,52 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Marketing Tabs */}
-            <div style={{ display: 'flex', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '5px', borderRadius: '12px', width: 'fit-content' }}>
+            {/* AGENT PLAYBOOK (GUIDE) */}
+            {showPlaybook && (
+                <div style={{ background: 'rgba(255, 255, 255, 0.05)', borderRadius: '24px', padding: '20px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.1)', animation: 'fadeIn 0.4s ease' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Star size={18} color="#FF4B2B" fill="#FF4B2B" />
+                            <span style={{ fontWeight: '900', fontSize: '0.9rem' }}>AGENT PLAYBOOK</span>
+                        </div>
+                        <button onClick={() => setShowPlaybook(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontWeight: 'bold' }}>✕</button>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <div style={{ paddingLeft: '12px', borderLeft: '3px solid #FF4B2B' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#FF4B2B' }}>1. FB SETUP</div>
+                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginTop: '4px' }}>Go to <b>FB SETTINGS</b> above. Enter credentials and tap "CONNECT" to link your phone's Facebook authority to Elliot.</div>
+                        </div>
+                        <div style={{ paddingLeft: '12px', borderLeft: '3px solid #00b894' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#00b894' }}>2. THE ZAP (⚡)</div>
+                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginTop: '4px' }}>Check the <b>INVENTORY</b> list. Look for the green <b>% DEMAND</b> badge in the top-right. This tells you which cars will sell fastest today.</div>
+                        </div>
+                        <div style={{ paddingLeft: '12px', borderLeft: '3px solid #fdcb6e' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#fdcb6e' }}>3. THE SYNC</div>
+                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginTop: '4px' }}>Tap <b>SYNC TO MARKETPLACE</b>. Use the "COPY" buttons for Title/Description, then hit <b>LAUNCH</b> to post directly to your Facebook app.</div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
                 <button 
                     onClick={() => setSubView('inventory')}
-                    style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold', background: subView === 'inventory' ? 'rgba(217,32,39,0.15)' : 'transparent', color: subView === 'inventory' ? '#D92027' : 'rgba(255,255,255,0.4)' }}
+                    style={{ flex: 1, padding: '12px', borderRadius: '12px', background: subView === 'inventory' ? 'rgba(255,255,255,0.1)' : 'transparent', color: subView === 'inventory' ? 'white' : 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 'bold', fontSize: '0.8rem' }}
                 >
-                    <Share2 size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> INVENTORY
+                    INVENTORY
                 </button>
                 <button 
                     onClick={() => setSubView('settings')}
-                    style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold', background: subView === 'settings' ? 'rgba(217,32,39,0.15)' : 'transparent', color: subView === 'settings' ? '#D92027' : 'rgba(255,255,255,0.4)' }}
+                    style={{ flex: 1, padding: '12px', borderRadius: '12px', background: subView === 'settings' ? 'rgba(255,255,255,0.1)' : 'transparent', color: subView === 'settings' ? 'white' : 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 'bold', fontSize: '0.8rem' }}
                 >
-                    <Settings size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> FB SETTINGS
+                    FB SETTINGS
+                </button>
+                <button 
+                    onClick={() => setShowPlaybook(!showPlaybook)}
+                    style={{ width: '45px', borderRadius: '12px', background: 'rgba(255, 75, 43, 0.1)', color: '#FF4B2B', border: '1px solid rgba(255, 75, 43, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                    <Clock size={18} />
                 </button>
             </div>
 
