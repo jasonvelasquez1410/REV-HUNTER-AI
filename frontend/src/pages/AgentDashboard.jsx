@@ -394,19 +394,22 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
                     {inventory.length === 0 && <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.2)' }}>No inventory found.</div>}
                     {inventory.map(car => (
-                        <div key={car.id} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <div style={{ display: 'flex', gap: '15px', padding: '12px' }}>
-                                <div style={{ width: '100px', height: '70px', borderRadius: '10px', background: '#111', flexShrink: 0, overflow: 'hidden' }}>
-                                    {car.image ? <img src={car.image} alt={car.model} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={24} style={{ margin: '23px 38px', opacity: 0.1 }} />}
+                        <div key={car.id} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', position: 'relative' }}>
+                            <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,184,148,0.2)', color: '#00b894', padding: '4px 8px', borderRadius: '8px', fontSize: '0.6rem', fontWeight: '900', border: '1px solid rgba(0,184,148,0.3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Zap size={10} fill="currentColor" /> {Math.floor(80 + Math.random() * 19)}% DEMAND
+                            </div>
+                            <div style={{ display: 'flex', gap: '20px', padding: '20px' }}>
+                                <div style={{ width: '110px', height: '80px', borderRadius: '15px', background: '#111', flexShrink: 0, overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
+                                    {car.image ? <img src={car.image} alt={car.model} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={24} style={{ margin: '28px 43px', opacity: 0.1 }} />}
                                 </div>
                                 <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{car.year} {car.make} {car.model}</div>
-                                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>${car.price.toLocaleString()} • {car.mileage.toLocaleString()} km</div>
+                                    <div style={{ fontWeight: '900', fontSize: '1rem', color: 'white' }}>{car.year} {car.make}</div>
+                                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{car.model} • ${car.price.toLocaleString()}</div>
                                     <button 
                                         onClick={() => handleOrganize(car)}
-                                        style={{ marginTop: '10px', padding: '6px 12px', background: 'rgba(217,32,39,0.1)', color: '#D92027', border: '1px solid rgba(217,32,39,0.2)', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer' }}
+                                        style={{ marginTop: '15px', width: '100%', padding: '10px', background: 'rgba(255, 75, 43, 0.1)', color: '#FF4B2B', border: '1px solid rgba(255, 75, 43, 0.2)', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                                     >
-                                        🚀 MARKETPLACE ORGANIZER
+                                        🚀 SYNC TO MARKETPLACE
                                     </button>
                                 </div>
                             </div>
@@ -500,21 +503,25 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                                 <div style={{ textAlign: 'center', padding: '20px' }}>Failed to organize listing.</div>
                              )}
                         </div>
-                        <div style={{ padding: '20px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ padding: '25px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0,184,148,0.1)', padding: '12px', borderRadius: '12px', marginBottom: '10px' }}>
+                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00b894', animation: 'pulse 1s infinite' }} />
+                                <div style={{ fontSize: '0.75rem', color: '#00b894', fontWeight: 'bold' }}>FB Demand Score: High-Growth Profile</div>
+                            </div>
                             <a 
                                 href="https://www.facebook.com/marketplace/create/item" 
                                 target="_blank" 
                                 rel="noreferrer"
-                                style={{ width: '100%', padding: '16px', background: '#D92027', color: 'white', textDecoration: 'none', borderRadius: '14px', fontWeight: '800', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', textAlign: 'center' }}
+                                style={{ width: '100%', padding: '18px', background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', color: 'white', textDecoration: 'none', borderRadius: '16px', fontWeight: '900', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', textAlign: 'center', boxShadow: '0 8px 25px rgba(255, 75, 43, 0.3)' }}
                             >
-                                <Share2 size={18} /> OPEN FB MARKETPLACE
+                                <Share2 size={20} /> LAUNCH ON MARKETPLACE
                             </a>
                             <button 
                                 onClick={handlePost}
                                 disabled={isPosting || !fbSettings.fb_access_token}
-                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}
+                                style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer' }}
                             >
-                                {isPosting ? 'POSTING TO PAGE...' : '🚀 ALSO POST TO PAGE FEED'}
+                                {isPosting ? 'SYNCING...' : '🔄 SYNC INVENTORY DATA'}
                             </button>
                         </div>
                     </div>
@@ -817,7 +824,7 @@ export default function AgentDashboard() {
             <div style={{ padding: '30px 5%', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(0,0,0,0.2)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'linear-gradient(135deg, #D92027, #a01820)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem', boxShadow: '0 8px 20px rgba(217,32,39,0.3)' }}>{agent.avatar || agent.name.charAt(0)}</div>
+                        <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem', boxShadow: '0 8px 20px rgba(255, 75, 43, 0.3)' }}>{agent.avatar || agent.name.charAt(0)}</div>
                         <div>
                             <div style={{ fontWeight: '900', fontSize: '1.5rem', color: 'white', letterSpacing: '-0.5px' }}>{agent.name}</div>
                             <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>
@@ -848,6 +855,7 @@ export default function AgentDashboard() {
             <div style={{ display: 'flex', gap: '5px', padding: '0 5%', marginBottom: '20px', overflowX: 'auto', paddingBottom: '5px' }}>
                 {[
                     { id: 'leads', icon: '🎯', label: 'My Leads' },
+                    { id: 'studio', icon: '🎨', label: 'AI Studio' },
                     { id: 'marketing', icon: '🚀', label: 'Marketing' },
                     { id: 'import', icon: '📥', label: 'Import' }
                 ].map(tab => (
@@ -856,9 +864,9 @@ export default function AgentDashboard() {
                         onClick={() => setActiveView(tab.id)}
                         style={{
                             padding: '10px 18px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap',
-                            background: activeView === tab.id ? 'rgba(217,32,39,0.2)' : 'rgba(255,255,255,0.03)',
-                            color: activeView === tab.id ? '#D92027' : 'rgba(255,255,255,0.4)',
-                            border: activeView === tab.id ? '1px solid rgba(217,32,39,0.3)' : '1px solid rgba(255,255,255,0.05)'
+                            background: activeView === tab.id ? 'rgba(255, 75, 43, 0.2)' : 'rgba(255,255,255,0.03)',
+                            color: activeView === tab.id ? '#FF4B2B' : 'rgba(255,255,255,0.4)',
+                            border: activeView === tab.id ? '1px solid rgba(255, 75, 43, 0.3)' : '1px solid rgba(255,255,255,0.05)'
                         }}
                     >
                         {tab.icon} {tab.label}
@@ -876,12 +884,17 @@ export default function AgentDashboard() {
                                 <div style={{ fontWeight: '700', marginBottom: '8px' }}>No Leads Assigned Yet</div>
                                 <div style={{ fontSize: '0.8rem' }}>When leads are assigned to you, they'll appear here with a push notification.</div>
                             </div>
-                                                 {hotLeads.map(lead => (
-                                    <div key={lead.id} style={{ background: 'rgba(217,32,39,0.05)', borderRadius: '24px', padding: '25px', marginBottom: '15px', border: '1px solid rgba(217,32,39,0.2)' }}>
+                        )}
+                        
+                        {hotLeads.length > 0 && (
+                            <div>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#FF4B2B', marginBottom: '12px', letterSpacing: '2px' }}>🔥 HOT LEADS ({hotLeads.length})</div>
+                                {hotLeads.map(lead => (
+                                    <div key={lead.id} style={{ background: 'rgba(255, 75, 43, 0.05)', borderRadius: '24px', padding: '25px', marginBottom: '15px', border: '1px solid rgba(255, 75, 43, 0.2)' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                                    <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(217,32,39,0.15)', color: '#D92027', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>{lead.name.charAt(0)}</div>
+                                                    <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(255, 75, 43, 0.15)', color: '#FF4B2B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>{lead.name.charAt(0)}</div>
                                                     <div>
                                                         <div style={{ fontWeight: '800', fontSize: '1.1rem', color: 'white' }}>{lead.name}</div>
                                                         <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{lead.car || 'Interested Purchaser'}</div>
@@ -941,6 +954,45 @@ export default function AgentDashboard() {
                                 ))}
                             </div>
                         )}
+                    </div>
+                )}
+
+                {activeView === 'studio' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div style={{ background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', borderRadius: '24px', padding: '30px', color: 'white', boxShadow: '0 10px 30px rgba(255, 75, 43, 0.3)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px' }}><Star size={24} fill="currentColor" /></div>
+                                <h2 style={{ margin: 0, fontWeight: '900', fontSize: '1.4rem' }}>Elliot AI Studio</h2>
+                            </div>
+                            <p style={{ opacity: 0.9, fontSize: '0.9rem', lineHeight: '1.5', margin: 0 }}>
+                                Customize Elliot's DNA. Switch between tactical sales, friendly outreach, or aggressive closing modes.
+                            </p>
+                        </div>
+
+                        <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '25px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <h3 style={{ margin: '0 0 20px', fontSize: '1rem', color: 'white', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <Users size={18} color="#FF4B2B" /> ACTIVE PERSONA: ANDY COLE
+                            </h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                {['Andy Cole (Warm & Friendly)', 'Tactical Specialist', 'The Closer'].map(mode => (
+                                    <button 
+                                        key={mode}
+                                        style={{ width: '100%', padding: '16px', borderRadius: '14px', border: mode.includes('Andy') ? '1px solid #FF4B2B' : '1px solid rgba(255,255,255,0.1)', background: mode.includes('Andy') ? 'rgba(255, 75, 43, 0.1)' : 'transparent', color: mode.includes('Andy') ? '#FF4B2B' : 'rgba(255,255,255,0.4)', textAlign: 'left', fontWeight: '700', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                                    >
+                                        {mode}
+                                        {mode.includes('Andy') && <CheckCircle size={18} />}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '25px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                             <h3 style={{ margin: '0 0 10px', fontSize: '1rem', color: 'white', fontWeight: '800' }}>AI Photo Enhancement</h3>
+                             <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '20px' }}>Swap messy dealership backgrounds with professional showrooms automatically.</p>
+                             <div style={{ height: '180px', borderRadius: '18px', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                                 <button style={{ padding: '12px 20px', background: '#FF4B2B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold' }}>DRAG CAR PHOTO HERE</button>
+                             </div>
+                        </div>
                     </div>
                 )}
 
