@@ -240,6 +240,16 @@ class Storage:
                             {"role": "AI (Elliot)", "text": "Hi Jessica! We actually have a Pure White GLI with the 6-speed manual arriving tomorrow. Would you like me to hold it for a viewing?", "timestamp": (datetime.now() - timedelta(hours=4, minutes=50)).isoformat()}
                         ]),
                         assigned_agent="Jessica Cruz"
+                    ),
+                    LeadTable(
+                        tenant_id="filcan",
+                        name="Cousin Test Lead",
+                        email="test@example.com",
+                        phone="5875551234", # Placeholder - cousin should change this
+                        status="Hot",
+                        quality_score=95,
+                        conversation_summary="Ready for an outbound test call.",
+                        assigned_agent="Cousin"
                     )
                 ]
                 session.add_all(leads)
