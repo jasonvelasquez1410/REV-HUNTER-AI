@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from .models import UserMessage, Lead, AdApproval, Car
-from .ai_logic import qualify_lead, generate_ad_copy, generate_ad_image_prompt, generate_seo_content, manage_system_jarvis
+from .ai_logic import qualify_lead, generate_ad_copy, generate_ad_image_prompt, generate_seo_content, manage_system_ops
 from .import_leads import import_dealer_socket_excel
 from .facebook_marketing import post_to_facebook_marketplace, generate_marketplace_payload
 from pydantic import BaseModel
@@ -321,10 +321,10 @@ async def seo_generate(req: SEORequest):
 class JarvisRequest(BaseModel):
     message: str
 
-@api_router.post("/admin/jarvis")
-async def admin_jarvis(req: JarvisRequest, tenant_id: str = Depends(get_tenant_id)):
-    """The 'Jarvis' operational assistant for managers."""
-    result = manage_system_jarvis(req.message, tenant_id)
+@api_router.post("/admin/ops")
+async def admin_ops(req: JarvisRequest, tenant_id: str = Depends(get_tenant_id)):
+    """The 'Elliot' operational assistant for managers."""
+    result = manage_system_ops(req.message, tenant_id)
     return result
 
 # ── AGENT MANAGEMENT ──────────────────────────────

@@ -401,9 +401,9 @@ def generate_seo_content(topic: str, location: str = "Sherwood Park"):
     except Exception as e:
         print(f"SEO Generation Error: {e}")
         return {"error": str(e)}
-def manage_system_jarvis(message, tenant_id="filcan"):
+def manage_system_ops(message, tenant_id="filcan"):
     """
-    Manager Jarvis Mode: Elliot acts as an Operational Assistant for the Dealer Manager.
+    Elliot Operations Mode: Elliot acts as an Operational Assistant for the Dealer Manager.
     Can extract system commands (Calendar, Inventory, Assignments).
     """
     tenant = db.get_tenant_config(tenant_id)
@@ -418,13 +418,14 @@ def manage_system_jarvis(message, tenant_id="filcan"):
     appts_summary = f"Appointments today: {len(appointments)}. Latest: {appointments[-1]['time'] if appointments else 'None'}"
     
     system_prompt = f"""
-    PERSONA: You are Elliot, the **Operational AI (Manager Jarvis)** for {tenant['name']}.
+    PERSONA: You are Elliot, the **Operational AI Assistant** for {tenant['name']}.
     ROLE: You assist the Dealer Principal and Sales Managers in running the store.
     
     SYSTEM CONTEXT:
     - Inventory: {inventory_summary}
     - CRM: {leads_summary}
     - Staff: {agents_summary}
+    - Schedule: {appts_summary}
     
     CAPABILITIES:
     - You can answer questions about performance and inventory.
@@ -446,8 +447,8 @@ def manage_system_jarvis(message, tenant_id="filcan"):
     
     if not GOOGLE_API_KEY:
         return {
-            "response": "Jarvis Demo Mode: I understand you want to manage the system. Please configure API keys for full operational command processing.",
-            "summary": "Jarvis in Passive Demo Mode"
+            "response": "Elliot (Ops Mode): I understand you want to manage the system. Please configure API keys for full operational command processing.",
+            "summary": "Elliot in Passive Demo Mode"
         }
 
     try:
@@ -458,7 +459,7 @@ def manage_system_jarvis(message, tenant_id="filcan"):
         if match:
             return json.loads(match.group())
     except Exception as e:
-        print(f"Jarvis Logic Error: {e}")
-        return {"response": f"Jarvis is having a synchronization issue: {str(e)}", "summary": "Sync Error"}
+        print(f"Elliot Ops Error: {e}")
+        return {"response": f"I'm having a synchronization issue: {str(e)}", "summary": "Sync Error"}
 
     return {"response": "System nominal, but no command identified.", "summary": "Passive Monitoring"}

@@ -129,7 +129,7 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
         const apiUrl = import.meta.env.VITE_API_URL || '/api';
 
         try {
-            const res = await fetch(`${apiUrl}/admin/jarvis`, {
+            const res = await fetch(`${apiUrl}/admin/ops`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: input })
@@ -143,7 +143,7 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
             if (data.command) {
                 const cmd = data.command;
                 if (cmd.type === 'calendar' && cmd.action === 'book') {
-                    alert(`📅 JARVIS SYNC: I have booked this appointment into your mobile calendar for Lead #${cmd.lead_id}. Check your push notifications.`);
+                    alert(`📅 ELLIOT OPS SYNC: I have booked this appointment into your mobile calendar for Lead #${cmd.lead_id}. Check your push notifications.`);
                 } else if (cmd.type === 'crm' && cmd.action === 'assign') {
                     alert(`✅ SYSTEM ACTION: Lead assignment updated per your request.`);
                 }
