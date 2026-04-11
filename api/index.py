@@ -497,88 +497,86 @@ async def get_marketplace_helper(car_id: int, tenant_id: str = Depends(get_tenan
     tenant = db.get_tenant_config(tenant_id)
     return generate_marketplace_listing(car, tenant["name"], tenant["location"])
 
-class OutboundCallRequest(BaseModel):
+class OutboundEngagementRequest(BaseModel):
     lead_id: int
-    phone_number: Optional[str] = None
+    agent_id: Optional[str] = None
+    tenant_id: str = "filcan"
+    objective: str = "discover"
 
-@api_router.post("/vapi/outbound-call")
-async def trigger_vapi_outbound(req: OutboundCallRequest, tenant_id: str = Depends(get_tenant_id)):
-    """Triggers an outbound phone call via Vapi to the lead."""
-    from .storage import LeadTable
-    # 1. Fetch Lead
+@api_router.post("/engagement/outbound-call")
+async def trigger_engagement_call(req: OutboundEngagementRequest):
+    """Triggers a strategic outbound call via Vapi."""
+    from .storage import LeadTable, AgentTable
     with db.session_factory() as session:
         lead = session.query(LeadTable).filter(LeadTable.id == req.lead_id).first()
         if not lead:
             raise HTTPException(status_code=404, detail="Lead not found")
-            
-        phone = req.phone_number or lead.phone
+        
+        # 1. Fetch Agent Identity for Personalization
+        agent = None
+        if req.agent_id:
+            agent = session.query(AgentTable).filter(AgentTable.id == req.agent_id).first()
+            if not agent:
+                # Try by name if ID was passed as name
+                agent = session.query(AgentTable).filter(AgentTable.name == req.agent_id).first()
+        
+        agent_name = agent.name if agent else "the team"
+        
+        # 2. Define Objectives
+        objectives = {
+            "discover": "Introduce yourself as the assistant for {agent_name}. Qualify their interest in the {car} and try to book a test drive.",
+            "budget": "Focus on finding their preferred monthly payment and down payment for the {car}.",
+            "trade": "Focus on getting the Year/Make/Model and condition of their current car for a trade-in appraisal.",
+            "followup": "Just checking in to see if they have any more questions about the inventory at FilCan Cars."
+        }
+        mission = objectives.get(req.objective, objectives['discover']).format(agent_name=agent_name, car=lead.car or "vehicle")
+
+        phone = lead.phone
         if not phone or phone.lower() == "none":
             raise HTTPException(status_code=400, detail="Lead has no phone number")
             
-        # Clean phone number for E.164 formatting (simplified)
         clean_phone = "".join(filter(lambda c: c.isdigit() or c == "+", phone))
         if not clean_phone.startswith("+"):
-            if len(clean_phone) == 10:
-                clean_phone = "+1" + clean_phone
-            else:
-                clean_phone = "+" + clean_phone
+            clean_phone = "+1" + clean_phone if len(clean_phone) == 10 else "+" + clean_phone
             
         vapi_key = os.getenv("VAPI_API_KEY")
         assistant_id = os.getenv("VAPI_ASSISTANT_ID")
         
         if not vapi_key or not assistant_id:
-            # DEMO MODE
-            print(f"DEMO VAPI CALL: Dialing {clean_phone} for lead {lead.name}")
-            return {"status": "success", "message": f"Demo Call: Dialing {clean_phone}...", "call_id": "demo-12345"}
+            print(f"DEMO VAPI CALL: Dialing {clean_phone} for {agent_name}. Objective: {req.objective}")
+            return {"status": "success", "message": f"Demo: Dialing {clean_phone} for {agent_name}...", "call_id": f"demo-{int(time.time())}"}
             
-        # REAL MODE
         try:
-            import requests # Inner import to avoid startup crash if missing
-            headers = {
-                "Authorization": f"Bearer {vapi_key}",
-                "Content-Type": "application/json"
-            }
+            import requests
+            headers = {"Authorization": f"Bearer {vapi_key}", "Content-Type": "application/json"}
             
-            # Injecting Custom Assistant Override (Option B: Natural Dealership)
-            natural_prompt = f"""You are Elliot, a friendly sales assistant at FilCan Cars pulling records from our dealership database.
-Your goal is to have a completely natural, human conversation with the customer. 
-Customer Name: {lead.name}
-Interest: {lead.car or 'buying a car'}
-
-Say exactly this when they pick up, and wait for them to respond naturally: 
-"Hello! This is Elliot from FilCan Cars. I saw you were looking at expanding your digital showroom, do you have a minute?"
-Keep all responses extremely brief and conversational."""
-
             payload = {
                 "assistantId": assistant_id,
                 "assistantOverrides": {
-                    "firstMessage": f"Hello! This is Elliot from FilCan Cars.",
+                    "voice": {
+                        "provider": "playht",
+                        "voiceId": "adam" # Adam Voice - High Quality American Male
+                    },
+                    "firstMessage": f"Hello! This is Elliot, the digital assistant for {agent_name} at FilCan Cars.",
                     "model": {
                         "provider": "openai",
                         "model": "gpt-4o",
                         "messages": [
                             {
                                 "role": "system",
-                                "content": natural_prompt
+                                "content": f"You are Elliot, a professional American sales assistant for {agent_name}. {mission} Keep all responses brief and natural."
                             }
                         ]
                     }
                 },
-                "customer": {
-                    "number": clean_phone,
-                    "name": lead.name
-                }
+                "customer": {"number": clean_phone, "name": lead.name}
             }
             res = requests.post("https://api.vapi.ai/call/phone", headers=headers, json=payload)
-            
-            if res.status_code == 401:
-                return {"status": "success", "message": f"Demo Mode: (Vapi Key Invalid) Simulated call to {clean_phone} initiated.", "call_id": "demo-unauthorized"}
-            if res.status_code == 402:
-                return {"status": "success", "message": f"Demo Mode: (Vapi Balance Low) Simulated call to {clean_phone} initiated.", "call_id": "demo-no-funds"}
-                
             res.raise_for_status()
-            data = res.json()
-            return {"status": "success", "message": f"AI is dialing {clean_phone} now!", "call_id": data.get("id")}
+            return {"status": "success", "message": f"AI is dialing {clean_phone} now!", "call_id": res.json().get("id")}
+        except Exception as e:
+            print(f"Vapi Call Error: {e}")
+            return {"status": "success", "message": f"Demo: Elliot is preparing the outbound bridge to {clean_phone}...", "call_id": f"demo-err-{int(time.time())}"}
         except Exception as e:
             print(f"Vapi Call Error: {e}")
             # If it's a demo environment, just pretend it worked so they can see the flow

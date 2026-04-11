@@ -40,12 +40,11 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
             const msg = new SpeechSynthesisUtterance(text);
             const voices = window.speechSynthesis.getVoices();
             
-            let elliot = voices.find(v => v.lang.startsWith('en') && v.name.includes('Natural') && v.name.includes('Male'))
-                || voices.find(v => v.lang.startsWith('en') && v.name.includes('Google') && v.name.includes('Male'))
-                || voices.find(v => v.lang.startsWith('en') && v.name.includes('David'))
-                || voices.find(v => v.lang.startsWith('en') && v.name.includes('Male'))
-                || voices.find(v => v.lang.startsWith('en') && v.name.includes('Guy'))
-                || voices.find(v => v.lang.startsWith('en'))
+            let elliot = voices.find(v => v.lang.includes('en-US') && (v.name.includes('Natural') || v.name.includes('Neural')) && v.name.includes('Male'))
+                || voices.find(v => v.lang.includes('en-US') && v.name.includes('Google') && v.name.includes('Male'))
+                || voices.find(v => v.lang.includes('en-US') && v.name.includes('Male'))
+                || voices.find(v => v.lang.includes('en') && v.name.includes('Male'))
+                || voices.find(v => v.lang.includes('en-US'))
                 || voices[0];
 
             if (elliot) msg.voice = elliot;
@@ -149,7 +148,14 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
                 }
             }
         } catch (err) {
-            const fallback = "System core is temporarily offline, but I'm still monitoring your local activity. Try again in a minute.";
+            let fallback = "System core is temporarily offline, but I'm still monitoring your local activity.";
+            
+            if (leads.length === 0) {
+                fallback = "I'm ready to hunt, but your pipeline is looking thin! Why don't you import your first lead list so I can start qualifying them for you?";
+            } else if (hotLeads.length === 0) {
+                fallback = "I've analyzed your leads, and we don't have any 'HOT' buyers yet. Let's trigger some 'Nudge' calls to heat them up!";
+            }
+
             setAiResponse(fallback);
             speak(fallback);
         } finally {
