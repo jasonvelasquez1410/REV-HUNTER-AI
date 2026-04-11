@@ -263,34 +263,35 @@ function AgentLogin({ onLogin }) {
     return (
         <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', -apple-system, sans-serif" }}>
             <div style={{ width: '100%', maxWidth: '400px', padding: '0 20px' }}>
-                <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>⚡</div>
-                    <h1 style={{ color: 'white', fontSize: '1.5rem', fontWeight: '900', margin: 0 }}>REVHUNTER AGENT</h1>
-                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', marginTop: '8px' }}>Sign in to access your leads</p>
+                <div style={{ textAlign: 'center', marginBottom: '50px' }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '15px', textShadow: '0 0 30px rgba(255,255,0,0.4)' }}>⚡</div>
+                    <h1 style={{ color: 'white', fontSize: '2.2rem', fontWeight: '900', margin: 0, letterSpacing: '-1px' }}>REVHUNTER</h1>
+                    <div style={{ color: '#D92027', fontWeight: '900', letterSpacing: '2px', fontSize: '0.8rem', marginTop: '5px' }}>AGENT OS v2.0</div>
+                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '1rem', marginTop: '15px' }}>Access your lead intelligence</p>
                 </div>
-                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '30px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '30px', padding: '40px 30px', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
                     <input
                         value={name}
                         onChange={e => setName(e.target.value)}
-                        placeholder="Your Full Name"
-                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '1rem', marginBottom: '12px', boxSizing: 'border-box' }}
+                        placeholder="Agent Name"
+                        style={{ width: '100%', padding: '20px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '1.1rem', marginBottom: '15px', boxSizing: 'border-box' }}
                     />
                     <input
                         value={pin}
                         onChange={e => setPin(e.target.value)}
-                        placeholder="4-Digit PIN"
+                        placeholder="PIN"
                         type="password"
                         maxLength={4}
                         onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '1.5rem', textAlign: 'center', letterSpacing: '15px', marginBottom: '20px', boxSizing: 'border-box' }}
+                        style={{ width: '100%', padding: '20px', borderRadius: '15px', border: '1px solid rgba(217,32,39,0.3)', background: 'rgba(217,32,39,0.05)', color: 'white', fontSize: '2rem', textAlign: 'center', letterSpacing: '15px', marginBottom: '25px', boxSizing: 'border-box', boxShadow: '0 0 20px rgba(217,32,39,0.1)' }}
                     />
-                    {error && <div style={{ color: '#D92027', fontSize: '0.8rem', marginBottom: '15px', textAlign: 'center' }}>{error}</div>}
+                    {error && <div style={{ color: '#D92027', fontSize: '0.9rem', marginBottom: '20px', textAlign: 'center', fontWeight: 'bold' }}>{error}</div>}
                     <button
                         onClick={handleLogin}
                         disabled={loading}
-                        style={{ width: '100%', padding: '16px', background: loading ? 'rgba(217,32,39,0.3)' : 'linear-gradient(135deg, #D92027, #a01820)', color: 'white', border: 'none', borderRadius: '14px', fontWeight: '800', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 8px 25px rgba(217,32,39,0.3)' }}
+                        style={{ width: '100%', padding: '20px', background: loading ? 'rgba(217,32,39,0.3)' : 'linear-gradient(135deg, #D92027, #a01820)', color: 'white', border: 'none', borderRadius: '18px', fontWeight: '900', fontSize: '1.2rem', cursor: 'pointer', boxShadow: '0 10px 30px rgba(217,32,39,0.4)', transition: 'all 0.2s' }}
                     >
-                        {loading ? 'SIGNING IN...' : 'SIGN IN'}
+                        {loading ? 'INITIALIZING...' : 'AUTHORIZE LOGIN 🏹'}
                     </button>
                 </div>
                 <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)' }}>
