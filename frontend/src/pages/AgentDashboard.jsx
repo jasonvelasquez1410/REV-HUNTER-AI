@@ -1012,8 +1012,6 @@ export default function AgentDashboard() {
             <div style={{ padding: '0 5%', paddingBottom: '80px' }}>
                 {activeView === 'leads' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {leads.length === 0 && (
-                            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.3)' }}>
                         {/* FILTER BAR */}
                         <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                             {[
