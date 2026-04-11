@@ -1000,12 +1000,20 @@ export default function AgentDashboard() {
                         </div>
                     </div>
                     
-                    <button 
-                        onClick={handleLogout}
-                        style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '14px', width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', transition: 'all 0.2s' }}
-                    >
-                        <LogOut size={22} />
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                            onClick={() => setIsStrategistOpen(true)}
+                            style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '14px', width: '45px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fdcb6e', cursor: 'pointer' }}
+                        >
+                            <Zap size={22} fill="currentColor" />
+                        </button>
+                        <button 
+                            onClick={handleLogout}
+                            style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '14px', width: '45px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}
+                        >
+                            <LogOut size={22} />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1074,10 +1082,25 @@ export default function AgentDashboard() {
                         </div>
 
                         {leads.length === 0 && (
-                            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.3)' }}>
+                            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.02)', borderRadius: '30px', border: '1px dashed rgba(255,255,255,0.1)' }}>
                                 <Bell size={40} style={{ marginBottom: '15px', opacity: 0.3 }} />
-                                <div style={{ fontWeight: '700', marginBottom: '8px' }}>No Leads Assigned Yet</div>
-                                <div style={{ fontSize: '0.8rem' }}>When leads are assigned to you, they'll appear here with a push notification.</div>
+                                <div style={{ fontWeight: '700', marginBottom: '8px', color: 'white', fontSize: '1.2rem' }}>Ready to Hunt? 🏹</div>
+                                <div style={{ fontSize: '0.8rem', marginBottom: '25px', lineHeight: '1.5' }}>You haven't assigned any leads to Elliot yet. Let's get your pipeline moving!</div>
+                                
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    <button 
+                                        onClick={() => setActiveView('import')}
+                                        style={{ width: '100%', padding: '16px', background: '#FF4B2B', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 8px 15px rgba(255, 75, 43, 0.2)' }}
+                                    >
+                                        📥 IMPORT MY FIRST LIST
+                                    </button>
+                                    <button 
+                                        onClick={() => { setActiveView('marketing'); }}
+                                        style={{ width: '100%', padding: '16px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer' }}
+                                    >
+                                        🚀 CONNECT FACEBOOK MARKETPLACE
+                                    </button>
+                                </div>
                             </div>
                         )}
 
