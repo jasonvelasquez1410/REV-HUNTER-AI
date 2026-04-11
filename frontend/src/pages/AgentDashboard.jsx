@@ -650,6 +650,7 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
 
 // ── ENGAGEMENT HISTORY MODAL ──────────────────────
 function EngagementHistoryModal({ lead, onClose, onDial }) {
+    const [callObjective, setCallObjective] = useState('discover');
     if (!lead) return null;
     let history = [];
     try {
@@ -691,19 +692,51 @@ function EngagementHistoryModal({ lead, onClose, onDial }) {
                 </div>
 
                 {/* Next Steps / Controls */}
-                <div style={{ padding: '15px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
                     {lead.appointment_date && (
-                        <div style={{ background: 'rgba(0,184,148,0.1)', padding: '12px', borderRadius: '12px', border: '1px solid #00b894', marginBottom: '8px' }}>
+                        <div style={{ background: 'rgba(0,184,148,0.1)', padding: '12px', borderRadius: '12px', border: '1px solid #00b894', marginBottom: '5px' }}>
                             <div style={{ fontSize: '0.6rem', color: '#00b894', fontWeight: '900', letterSpacing: '1px' }}>📅 APPOINTMENT SCHEDULED</div>
                             <div style={{ fontSize: '0.9rem', fontWeight: 'bold', marginTop: '2px' }}>{new Date(lead.appointment_date).toLocaleString()}</div>
                         </div>
                     )}
-                    <button 
-                        onClick={() => { onDial(lead.id); onClose(); }} 
-                        style={{ width: '100%', padding: '16px', background: '#00b894', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
-                    >
-                        <Phone size={20} /> ASSIGN OUTBOUND CALL TO ELLIOT
-                    </button>
+
+                    <div style={{ background: 'rgba(255, 75, 43, 0.05)', padding: '20px', borderRadius: '24px', border: '1px dashed rgba(255, 75, 43, 0.3)' }}>
+                        <div style={{ fontSize: '0.65rem', color: '#FF4B2B', fontWeight: '900', letterSpacing: '2px', marginBottom: '12px' }}>🎯 CALL OBJECTIVE FOR ELLIOT</div>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                            {[
+                                { id: 'discover', label: 'QUALIFY & BOOK', icon: '📅' },
+                                { id: 'budget', label: 'GET BUDGET', icon: '💰' },
+                                { id: 'trade', label: 'ASK TRADE-IN', icon: '🚗' },
+                                { id: 'followup', label: 'FOLLOW UP', icon: '👋' }
+                            ].map(obj => (
+                                <button
+                                    key={obj.id}
+                                    onClick={() => setCallObjective(obj.id)}
+                                    style={{ 
+                                        padding: '12px 8px', borderRadius: '14px', border: callObjective === obj.id ? '1px solid #FF4B2B' : '1px solid rgba(255,255,255,0.1)', 
+                                        background: callObjective === obj.id ? 'rgba(255, 75, 43, 0.15)' : 'rgba(255,255,255,0.03)',
+                                        color: callObjective === obj.id ? '#FF4B2B' : 'rgba(255,255,255,0.4)',
+                                        fontSize: '0.6rem', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px'
+                                    }}
+                                >
+                                    <span>{obj.icon}</span> {obj.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        <button 
+                            onClick={() => { onDial(lead.id, callObjective); onClose(); }} 
+                            style={{ 
+                                width: '100%', padding: '18px', background: 'linear-gradient(135deg, #00b894, #008f72)', color: 'white', border: 'none', borderRadius: '16px', 
+                                fontWeight: '900', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                                boxShadow: '0 8px 20px rgba(0,184,148,0.3)'
+                            }}
+                        >
+                            <Phone size={20} /> EXECUTE AI {callObjective?.toUpperCase() || 'OUTBOUND'} CALL
+                        </button>
+                    </div>
                 </div>
 
                 {/* Timeline */}
