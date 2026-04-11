@@ -966,6 +966,13 @@ export default function AgentDashboard() {
                             </div>
                         </div>
                     </div>
+                    
+                    <button 
+                        onClick={handleLogout}
+                        style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '14px', width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', transition: 'all 0.2s' }}
+                    >
+                        <LogOut size={22} />
+                    </button>
                 </div>
             </div>
 
