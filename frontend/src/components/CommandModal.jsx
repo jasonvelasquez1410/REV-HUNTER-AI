@@ -24,22 +24,22 @@ export default function CommandModal({ lead, onClose, onSuccess }) {
                         { 
                             icon: '🦁', 
                             label: lead.status === 'Hot' ? 'Showroom Closer' : 'Persistence Nudge', 
-                            desc: `Push for booking the ${lead.car || 'vehicle'}` 
+                            desc: lead.status === 'Hot' ? `Push for booking the ${lead.car || 'vehicle'}` : `Re-engage for ${lead.car || 'interest'}`
                         },
                         { 
                             icon: '💰', 
-                            label: lead.name.includes('Marvin') ? 'RAV4 Focus' : 'Trade-in Focus', 
-                            desc: `Ask about their ${lead.name.includes('Marvin') ? '2018 RAV4' : 'current car'}` 
+                            label: lead.car ? `${lead.car} Focus` : 'Inventory Match', 
+                            desc: `Ask about their trade-in for the ${lead.car || 'preferred model'}`
                         },
                         { 
                             icon: '🏦', 
                             label: 'Finance Qualifier', 
-                            desc: `Verify credit status for ${lead.car || 'vehicle'}` 
+                            desc: `Verify credit status for ${lead.car || 'selection'}` 
                         },
                         { 
                             icon: '🚗', 
-                            label: `Hook: ${lead.car || 'VW Atlas'}`, 
-                            desc: `Suggest the ${lead.name.includes('Marvin') ? 'Grey' : 'Elite'} variant` 
+                            label: `Hook: ${lead.car || 'Elite Select'}`, 
+                            desc: `Suggest a premium trim or colors`
                         }
                     ].map(cmd => (
                         <button 
