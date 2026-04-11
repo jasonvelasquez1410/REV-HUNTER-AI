@@ -811,44 +811,32 @@ export default function AgentDashboard() {
             )}
 
             {/* Header */}
-            <div style={{ padding: '20px 5%', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ padding: '30px 5%', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(0,0,0,0.2)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <div style={{ width: '45px', height: '45px', borderRadius: '14px', background: 'linear-gradient(135deg, #D92027, #D9202788)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.9rem' }}>{agent.avatar || agent.name.charAt(0)}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'linear-gradient(135deg, #D92027, #a01820)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem', boxShadow: '0 8px 20px rgba(217,32,39,0.3)' }}>{agent.avatar || agent.name.charAt(0)}</div>
                         <div>
-                            <div style={{ fontWeight: '900', fontSize: '1.2rem', color: 'white' }}>{agent.name}</div>
-                            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.73)', fontWeight: '600' }}>
-                                {agent.role} • {tenant?.name || 'FilCan Cars'} {agent.subscription_status === 'active' && '⭐'}
+                            <div style={{ fontWeight: '900', fontSize: '1.5rem', color: 'white', letterSpacing: '-0.5px' }}>{agent.name}</div>
+                            <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                {agent.role}
                             </div>
                         </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00b894', boxShadow: '0 0 8px #00b894' }} />
-                            <span style={{ fontSize: '0.65rem', color: '#00b894' }}>ELLIOT LIVE</span>
-                        </div>
-                        <button onClick={() => setIsStrategistOpen(true)} style={{ background: 'rgba(217,32,39,0.15)', border: '1px solid rgba(217,32,39,0.3)', color: '#D92027', borderRadius: '10px', padding: '10px', cursor: 'pointer', boxShadow: '0 0 10px rgba(217,32,39,0.2)' }} title="Elliot Strategist">
-                            <Mic size={18} />
-                        </button>
-                        <button onClick={handleLogout} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'rgba(255,255,255,0.4)', borderRadius: '10px', padding: '8px', cursor: 'pointer' }} title="Sign Out">
-                            <LogOut size={16} />
-                        </button>
                     </div>
                 </div>
             </div>
 
             {/* Stats Bar */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', padding: '20px 5%' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px', padding: '25px 5%' }}>
                 {[
-                    { icon: <Users size={18} />, label: 'My Leads', value: leads.length, color: '#6c5ce7' },
-                    { icon: <Star size={18} />, label: 'Hot Leads', value: hotLeads.length, color: '#D92027' },
-                    { icon: <Zap size={18} />, label: 'AI Follow-Ups', value: totalFollowUps, color: '#fdcb6e' },
-                    { icon: <TrendingUp size={18} />, label: 'Close Rate', value: leads.length > 0 ? Math.round((hotLeads.length / leads.length) * 100) + '%' : '0%', color: '#00b894' }
+                    { icon: <Users size={24} />, label: 'My Leads', value: leads.length, color: '#6c5ce7' },
+                    { icon: <Star size={24} />, label: 'Hot Leads', value: hotLeads.length, color: '#D92027' },
+                    { icon: <Zap size={24} />, label: 'AI Nudges', value: totalFollowUps, color: '#fdcb6e' },
+                    { icon: <TrendingUp size={24} />, label: 'Close Rate', value: leads.length > 0 ? Math.round((hotLeads.length / leads.length) * 100) + '%' : '0%', color: '#00b894' }
                 ].map((stat, i) => (
-                    <div key={i} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                        <div style={{ color: stat.color, marginBottom: '8px' }}>{stat.icon}</div>
-                        <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'white' }}>{stat.value}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', marginTop: '4px', fontWeight: '600' }}>{stat.label}</div>
+                    <div key={i} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '25px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+                        <div style={{ color: stat.color, marginBottom: '12px' }}>{stat.icon}</div>
+                        <div style={{ fontSize: '2.2rem', fontWeight: '900', color: 'white', lineHeight: '1' }}>{stat.value}</div>
+                        <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', marginTop: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>{stat.label}</div>
                     </div>
                 ))}
             </div>
@@ -885,47 +873,42 @@ export default function AgentDashboard() {
                                 <div style={{ fontWeight: '700', marginBottom: '8px' }}>No Leads Assigned Yet</div>
                                 <div style={{ fontSize: '0.8rem' }}>When leads are assigned to you, they'll appear here with a push notification.</div>
                             </div>
-                        )}
-
-                        {/* Hot Leads Section */}
-                        {hotLeads.length > 0 && (
-                            <div style={{ marginBottom: '10px' }}>
-                                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#D92027', marginBottom: '12px', letterSpacing: '2px' }}>🔥 READY TO CLOSE ({hotLeads.length})</div>
-                                {hotLeads.map(lead => (
-                                    <div key={lead.id} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '18px', marginBottom: '10px', border: '1px solid rgba(217,32,39,0.15)' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                                                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(217,32,39,0.15)', color: '#D92027', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.8rem' }}>{lead.name.charAt(0)}</div>
+                                                 {hotLeads.map(lead => (
+                                    <div key={lead.id} style={{ background: 'rgba(217,32,39,0.05)', borderRadius: '24px', padding: '25px', marginBottom: '15px', border: '1px solid rgba(217,32,39,0.2)' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                                    <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(217,32,39,0.15)', color: '#D92027', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>{lead.name.charAt(0)}</div>
                                                     <div>
-                                                        <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>{lead.name}</div>
-                                                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>{lead.car || lead.conversation_summary || 'Interested'} • {lead.source}</div>
+                                                        <div style={{ fontWeight: '800', fontSize: '1.1rem', color: 'white' }}>{lead.name}</div>
+                                                        <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{lead.car || 'Interested Purchaser'}</div>
                                                     </div>
                                                 </div>
-                                                <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
-                                                    <span style={{ fontSize: '0.65rem', background: 'rgba(0,184,148,0.15)', color: '#00b894', padding: '3px 10px', borderRadius: '20px', fontWeight: 'bold' }}>SCORE: {lead.quality_score}%</span>
-                                                    <span style={{ fontSize: '0.65rem', background: 'rgba(253,203,110,0.15)', color: '#fdcb6e', padding: '3px 10px', borderRadius: '20px', fontWeight: 'bold' }}>
-                                                        <Clock size={10} style={{ verticalAlign: 'middle', marginRight: '3px' }} />{lead.last_action_time}
-                                                    </span>
-                                                    {(lead.follow_up_streak || 0) > 0 && (
-                                                        <span style={{ fontSize: '0.65rem', background: 'rgba(108,92,231,0.15)', color: '#a29bfe', padding: '3px 10px', borderRadius: '20px', fontWeight: 'bold' }}>⚡ {lead.follow_up_streak}x nudged</span>
-                                                    )}
-                                                    {lead.phone && (
-                                                        <span style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', padding: '3px 10px', borderRadius: '20px' }}>📞 {lead.phone}</span>
-                                                    )}
-                                                </div>
+                                                <div style={{ background: '#00b894', color: 'white', padding: '6px 12px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: '900' }}>{lead.quality_score}% DNA</div>
                                             </div>
-                                            <div style={{ display: 'flex', gap: '8px' }}>
-                                                <button title="Engagement DNA" onClick={() => setSelectedDNA(lead)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(217,32,39,0.1)', border: 'none', color: '#D92027', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <MessageSquare size={18} />
+
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                                                <button onClick={() => setSelectedDNA(lead)} style={{ background: 'white', color: '#000', border: 'none', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                                                    <MessageSquare size={20} />
+                                                    <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>DETAILS</span>
                                                 </button>
-                                                <button title="AI Auto-Dial via Vapi" onClick={() => handleAutoDial(lead.id)} disabled={dialing === lead.id} style={{ width: '40px', height: '40px', borderRadius: '12px', background: dialing === lead.id ? 'rgba(255,255,255,0.05)' : 'rgba(217,32,39,0.15)', border: 'none', color: '#D92027', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    {dialing === lead.id ? '...' : '🤖'}
+                                                <button onClick={() => handleAutoDial(lead.id)} style={{ background: 'rgba(0,184,148,0.1)', color: '#00b894', border: '1px solid #00b894', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                                                    <Phone size={20} />
+                                                    <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>AI CALL</span>
                                                 </button>
-                                                <button title="AI Auto-Nudge" onClick={() => handleNudge(lead.id)} disabled={nudging === lead.id} style={{ width: '40px', height: '40px', borderRadius: '12px', background: nudging === lead.id ? 'rgba(255,255,255,0.05)' : 'rgba(108,92,231,0.15)', border: 'none', color: '#a29bfe', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <Zap size={18} />
+                                                <button onClick={() => handleNudge(lead.id)} style={{ background: 'rgba(108,92,231,0.1)', color: '#a29bfe', border: '1px solid #a29bfe', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                                                    <Zap size={20} />
+                                                    <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>NUDGE</span>
                                                 </button>
-                                                <a href={lead.phone ? `tel:${lead.phone}` : '#'} title="Manual Phone Call" style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(0,184,148,0.15)', border: 'none', color: '#00b894', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+                                                <a href={`tel:${lead.phone}`} style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: 'none', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', textDecoration: 'none' }}>
+                                                    <Phone size={20} />
+                                                    <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>DIAL</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
                                                     <Phone size={18} />
                                                 </a>
                                             </div>
