@@ -10,6 +10,24 @@ if GOOGLE_API_KEY:
     except Exception as e:
         print(f"Gemini Config Error: {e}")
 
+# Robust Model List for Fallbacks
+GEMINI_VARIANTS = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-pro', 'models/gemini-1.5-flash']
+
+def run_gemini_logic(prompt, message, variants=GEMINI_VARIANTS):
+    """Helper to run Gemini with multiple model ID fallbacks."""
+    for model_id in variants:
+        try:
+            model = genai.GenerativeModel(model_id)
+            res = model.generate_content(f"{prompt}\n\nUser/Manager: {message}\n\nJSON ONLY.")
+            import re, json
+            match = re.search(r'\{.*\}', res.text, re.DOTALL)
+            if match:
+                return json.loads(match.group()), model_id
+        except Exception as e:
+            print(f"Gemini {model_id} Error: {str(e)[:100]}")
+            continue
+    return None, None
+
 def get_tenant_config(tenant_id="filcan"):
     return db.get_tenant_config(tenant_id)
 
@@ -91,28 +109,19 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     
     # PROVIDER 1: GEMINI (Primary for v13.0 Test)
     if GOOGLE_API_KEY:
-        try:
-            # Try both short and long model names for robustness
-            for model_id in ['gemini-1.5-flash', 'models/gemini-1.5-flash', 'gemini-1.5-pro']:
-                try:
-                    model = genai.GenerativeModel(model_id)
-                    res = model.generate_content(f"{system_prompt}\n\nUser: {message}\n\nJSON ONLY.")
-                    match = re.search(r'\{.*\}', res.text, re.DOTALL)
-                    if match:
-                        data = json.loads(match.group())
-                        new_ctx = {
-                            "step": data.get("next_step", current_step), 
-                            "persona": "Elliot",
-                            "data": {**collected_data, **data.get("extracted_data", {})}, 
-                            "last_msg": message, 
-                            "v": "16.0 [UNIFIED]", 
-                            "engine": f"gemini-{model_id}"
-                        }
-                        return data["response"], new_ctx, data["summary"]
-                except Exception as inner_e: 
-                    error_log.append(f"Gemini-{model_id}: {str(inner_e)[:100]}")
-                    continue
-        except Exception as e: error_log.append(f"Gemini: {str(e)[:100]}")
+        data, model_used = run_gemini_logic(system_prompt, message)
+        if data:
+            new_ctx = {
+                "step": data.get("next_step", current_step), 
+                "persona": "Elliot",
+                "data": {**collected_data, **data.get("extracted_data", {})}, 
+                "last_msg": message, 
+                "v": "16.1 [AUTO-FIX]", 
+                "engine": f"gemini-{model_used}"
+            }
+            return data["response"], new_ctx, data["summary"]
+        else:
+            error_log.append("Gemini: All model variants failed (404/Quota)")
 
     # PROVIDER 2: GROQ (Secondary)
     # ---------------------------------------------------------
@@ -261,15 +270,13 @@ def generate_marketplace_listing(car: dict, tenant_name: str, location: str) -> 
         }
 
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(prompt)
-        import json, re
-        match = re.search(r'\{.*\}', response.text, re.DOTALL)
-        if match:
-            return json.loads(match.group())
+        data, _ = run_gemini_logic(prompt, f"Car: {car['make']} {car['model']}")
+        if data:
+            return data
     except Exception as e:
         print(f"Marketplace Generation Error: {e}")
-        return {"error": str(e)}
+    
+    return {"error": "AI variant failed to respond"}
 
 def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> str:
     """
@@ -303,9 +310,14 @@ def generate_ad_copy(tenant_id: str = "filcan", context: str = "tactical") -> st
         return f"🔥 FLASH SALE at {tenant['name']}! Looking for a reliable ride? ✅ $0 Down Options ✅ All Credit Levels Approved. DM us today! #RevHunterAI"
 
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(prompt)
-        return response.text.strip()
+        # For non-JSON responses, we'll try the variants manually
+        for model_id in GEMINI_VARIANTS:
+            try:
+                model = genai.GenerativeModel(model_id)
+                response = model.generate_content(prompt)
+                return response.text.strip()
+            except: continue
+        return f"Check out the latest deals at {tenant['name']}!"
     except Exception as e:
         print(f"Ad Generation Error: {e}")
         return f"Check out the latest deals at {tenant['name']}! #{tenant['name'].replace(' ', '')}"
@@ -320,9 +332,13 @@ def generate_ad_image_prompt(ad_copy: str) -> str:
         return "A premium car dealership lot with new SUVs under a bright sky."
 
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(prompt)
-        return response.text.strip()
+        for model_id in GEMINI_VARIANTS:
+            try:
+                model = genai.GenerativeModel(model_id)
+                response = model.generate_content(prompt)
+                return response.text.strip()
+            except: continue
+        return "Luxury car on a modern showroom floor."
     except:
         return "Luxury car on a modern showroom floor."
 
@@ -392,15 +408,13 @@ def generate_seo_content(topic: str, location: str = "Sherwood Park"):
         }
 
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(prompt)
-        import json, re
-        match = re.search(r'\{.*\}', response.text, re.DOTALL)
-        if match:
-            return json.loads(match.group())
+        data, _ = run_gemini_logic(prompt, f"SEO Topic: {topic}")
+        if data:
+            return data
     except Exception as e:
         print(f"SEO Generation Error: {e}")
-        return {"error": str(e)}
+    
+    return {"error": "SEO AI Offline"}
 def manage_system_ops(message, tenant_id="filcan"):
     """
     Elliot Operations Mode: Elliot acts as an Operational Assistant for the Dealer Manager.
@@ -452,12 +466,11 @@ def manage_system_ops(message, tenant_id="filcan"):
         }
 
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        res = model.generate_content(f"{system_prompt}\n\nManager: {message}\n\nJSON ONLY.")
-        import re, json
-        match = re.search(r'\{.*\}', res.text, re.DOTALL)
-        if match:
-            return json.loads(match.group())
+        data, model_used = run_gemini_logic(system_prompt, message)
+        if data:
+            return data
+        else:
+            return {"response": "I'm having a synchronization issue with my neural link. Please try again in 5 seconds.", "summary": "Gemini 404/Fallback"}
     except Exception as e:
         print(f"Elliot Ops Error: {e}")
         return {"response": f"I'm having a synchronization issue: {str(e)}", "summary": "Sync Error"}
