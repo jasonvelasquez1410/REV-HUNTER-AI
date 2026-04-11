@@ -649,7 +649,7 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
 }
 
 // ── ENGAGEMENT HISTORY MODAL ──────────────────────
-function EngagementHistoryModal({ lead, onClose }) {
+function EngagementHistoryModal({ lead, onClose, onDial }) {
     if (!lead) return null;
     let history = [];
     try {
@@ -688,6 +688,22 @@ function EngagementHistoryModal({ lead, onClose }) {
                         <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>BUDGET</div>
                         <div style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>${lead.monthly_budget || '0'}/mo</div>
                     </div>
+                </div>
+
+                {/* Next Steps / Controls */}
+                <div style={{ padding: '15px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {lead.appointment_date && (
+                        <div style={{ background: 'rgba(0,184,148,0.1)', padding: '12px', borderRadius: '12px', border: '1px solid #00b894', marginBottom: '8px' }}>
+                            <div style={{ fontSize: '0.6rem', color: '#00b894', fontWeight: '900', letterSpacing: '1px' }}>📅 APPOINTMENT SCHEDULED</div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 'bold', marginTop: '2px' }}>{new Date(lead.appointment_date).toLocaleString()}</div>
+                        </div>
+                    )}
+                    <button 
+                        onClick={() => { onDial(lead.id); onClose(); }} 
+                        style={{ width: '100%', padding: '16px', background: '#00b894', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                    >
+                        <Phone size={20} /> ASSIGN OUTBOUND CALL TO ELLIOT
+                    </button>
                 </div>
 
                 {/* Timeline */}
@@ -1248,7 +1264,7 @@ export default function AgentDashboard() {
                     Elliot is monitoring {leads.length} leads for {agent.name.split(' ')[0]} • Polling every 30s
                 </div>
                 {/* DNA Engagement Modal */}
-            <EngagementHistoryModal lead={selectedDNA} onClose={() => setSelectedDNA(null)} />
+            <EngagementHistoryModal lead={selectedDNA} onClose={() => setSelectedDNA(null)} onDial={handleAutoDial} />
         </div>
 
             <style>{`
