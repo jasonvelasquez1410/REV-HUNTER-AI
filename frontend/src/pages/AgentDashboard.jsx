@@ -779,9 +779,20 @@ function EngagementHistoryModal({ lead, onClose, onDial }) {
                     })}
                 </div>
 
-                {/* Footer Info */}
-                <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
-                    Relentless AI DNA Tracking Active.
+                {/* Footer Info / Delete */}
+                <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)', textAlign: 'center' }}>Relentless AI DNA Tracking Active.</div>
+                    <button 
+                        onClick={() => {
+                            if(confirm(`Delete ${lead.name}?`)) {
+                                setLeads(prev => prev.filter(l => l.id !== lead.id));
+                                onClose();
+                            }
+                        }}
+                        style={{ background: 'none', border: 'none', color: 'rgba(217,32,39,0.5)', fontSize: '0.65rem', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
+                    >
+                        PERMANENTLY DELETE LEAD
+                    </button>
                 </div>
             </div>
         </div>
@@ -1085,6 +1096,12 @@ export default function AgentDashboard() {
                                     {f.label}
                                 </button>
                             ))}
+                            <button
+                                onClick={() => { if(confirm('⚠️ DELETE ALL LEADS? This cannot be undone.')) setLeads([]); }}
+                                style={{ padding: '8px 15px', borderRadius: '10px', fontSize: '0.65rem', fontWeight: '900', border: '1px solid rgba(217,32,39,0.3)', background: 'rgba(217,32,39,0.05)', color: '#D92027', cursor: 'pointer', marginLeft: 'auto' }}
+                            >
+                                CLEAR ALL
+                            </button>
                         </div>
 
                         {leads.length === 0 && (
