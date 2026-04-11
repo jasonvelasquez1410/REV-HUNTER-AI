@@ -911,13 +911,6 @@ export default function AgentDashboard() {
                                         </div>
                                     </div>
                                 ))}
-'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
-                                                    <Phone size={18} />
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
                             </div>
                         )}
 
