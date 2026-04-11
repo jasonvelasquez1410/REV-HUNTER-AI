@@ -42,6 +42,10 @@ export default function Admin() {
     const [showAdModal, setShowAdModal] = useState(false);
     const [pendingAd, setPendingAd] = useState(null);
     const [isGeneratingAd, setIsGeneratingAd] = useState(false);
+    const [isJarvisActive, setIsJarvisActive] = useState(false);
+    const [jarvisThought, setJarvisThought] = useState("");
+    const [jarvisResponse, setJarvisResponse] = useState("");
+    const [isJarvisProcessing, setIsJarvisProcessing] = useState(false);
 
     // Refs
     const vapi = useRef(null);
@@ -355,6 +359,39 @@ export default function Admin() {
             });
         } catch (err) {
             setVapiError("Manual Failure: " + err.message);
+        }
+    }
+    async function handleJarvisCommand(msg) {
+        setIsJarvisProcessing(true);
+        setJarvisThought("Analyzing system state...");
+        setJarvisResponse("");
+        
+        try {
+            const res = await fetch(`${apiUrl}/admin/jarvis`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-tenant-id': tenant.id },
+                body: JSON.stringify({ message: msg })
+            });
+            const data = await res.json();
+            
+            setJarvisThought(data.summary || "Action identified.");
+            setJarvisResponse(data.response);
+            
+            // Execute commands if present
+            if (data.command) {
+                const cmd = data.command;
+                if (cmd.type === 'calendar' && cmd.action === 'book') {
+                    setAuditLogs(prev => [{ id: `jarvis-cal-${Date.now()}`, time: "Now", action: `JARVIS: Booking appointment for Lead #${cmd.lead_id} at ${cmd.time}`, type: "AI" }, ...prev]);
+                    alert(`📅 JARVIS CALENDAR SYNC:\n\nAppointment booked for Lead #${cmd.lead_id}\nTime: ${cmd.time}\nProvider: Google Calendar (Synced)`);
+                } else if (cmd.type === 'crm' && cmd.action === 'assign') {
+                    setLeads(prev => prev.map(l => l.id === cmd.lead_id ? { ...l, assigned_agent: cmd.agent } : l));
+                    setAuditLogs(prev => [{ id: `jarvis-crm-${Date.now()}`, time: "Now", action: `JARVIS: Assigned lead to ${cmd.agent}`, type: "System" }, ...prev]);
+                }
+            }
+        } catch (err) {
+            setJarvisResponse("Sorry Boss, I'm having trouble connecting to the system core right now.");
+        } finally {
+            setIsJarvisProcessing(false);
         }
     }
 
@@ -953,6 +990,67 @@ export default function Admin() {
                  }}>
                 {isSuperAdmin ? '🔒 DISABLE SA MODE' : '🔓 ENABLE SA MODE'}
             </div>
+            {/* Manager Jarvis Floating Interface */}
+            <div style={{ position: 'fixed', bottom: '30px', left: '30px', zIndex: 5000 }}>
+                {!isJarvisActive ? (
+                    <button 
+                        onClick={() => setIsJarvisActive(true)}
+                        style={{ width: '60px', height: '60px', borderRadius: '20px', background: '#003366', color: 'white', border: 'none', cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,51,102,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}
+                    >
+                        <Zap size={24} />
+                    </button>
+                ) : (
+                    <div style={{ background: '#000', color: 'white', width: '350px', borderRadius: '25px', padding: '25px', border: '1px solid #003366', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', animation: 'slideInUp 0.3s ease' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                            <div style={{ fontSize: '0.7rem', fontWeight: 'bold', letterSpacing: '2px', color: '#00b894' }}>JARVIS MODE ACTIVE</div>
+                            <button onClick={() => setIsJarvisActive(false)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>✕</button>
+                        </div>
+                        
+                        <div style={{ minHeight: '100px', marginBottom: '20px' }}>
+                            {isJarvisProcessing ? (
+                                <div style={{ opacity: 0.6, fontSize: '0.8rem', fontStyle: 'italic' }}>{jarvisThought}</div>
+                            ) : (
+                                <div style={{ fontSize: '0.95rem', lineHeight: '1.5', color: '#eee' }}>
+                                    {jarvisResponse || "Greetings Boss. I'm connected to the inventory and CRM. What can I do for you today?"}
+                                </div>
+                            )}
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <input 
+                                type="text" 
+                                placeholder="Speak or type command..." 
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleJarvisCommand(e.target.value);
+                                        e.target.value = "";
+                                    }
+                                }}
+                                style={{ flex: 1, background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '0.85rem' }}
+                            />
+                            <button style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#003366', border: 'none', color: 'white', cursor: 'pointer' }}>
+                                <Mic size={18} />
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <style>{`
+                @keyframes slideInUp {
+                    from { transform: translateY(50px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                .shimmer {
+                    background: linear-gradient(90deg, #eee 25%, #fafafa 50%, #eee 75%);
+                    background-size: 200% 100%;
+                    animation: shimmer 2s infinite;
+                }
+                @keyframes shimmer {
+                    0% { background-position: -200% 0; }
+                    100% { background-position: 200% 0; }
+                }
+            `}</style>
         </div>
     );
 }

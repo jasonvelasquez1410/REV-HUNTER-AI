@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from .models import UserMessage, Lead, AdApproval, Car
-from .ai_logic import qualify_lead, generate_ad_copy, generate_ad_image_prompt, generate_seo_content
+from .ai_logic import qualify_lead, generate_ad_copy, generate_ad_image_prompt, generate_seo_content, manage_system_jarvis
 from .import_leads import import_dealer_socket_excel
 from .facebook_marketing import post_to_facebook_marketplace, generate_marketplace_payload
 from pydantic import BaseModel
@@ -317,6 +317,15 @@ class SEORequest(BaseModel):
 async def seo_generate(req: SEORequest):
     """Generates SEO content kit."""
     return generate_seo_content(req.topic, req.location)
+
+class JarvisRequest(BaseModel):
+    message: str
+
+@api_router.post("/admin/jarvis")
+async def admin_jarvis(req: JarvisRequest, tenant_id: str = Depends(get_tenant_id)):
+    """The 'Jarvis' operational assistant for managers."""
+    result = manage_system_jarvis(req.message, tenant_id)
+    return result
 
 # ── AGENT MANAGEMENT ──────────────────────────────
 

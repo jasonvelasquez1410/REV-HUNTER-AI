@@ -401,3 +401,64 @@ def generate_seo_content(topic: str, location: str = "Sherwood Park"):
     except Exception as e:
         print(f"SEO Generation Error: {e}")
         return {"error": str(e)}
+def manage_system_jarvis(message, tenant_id="filcan"):
+    """
+    Manager Jarvis Mode: Elliot acts as an Operational Assistant for the Dealer Manager.
+    Can extract system commands (Calendar, Inventory, Assignments).
+    """
+    tenant = db.get_tenant_config(tenant_id)
+    inventory = db.get_inventory(tenant_id)
+    leads = db.get_leads(tenant_id)
+    agents = db.get_agents(tenant_id)
+    appointments = db.get_appointments(tenant_id)
+    
+    inventory_summary = f"Total: {len(inventory)} units. Models: {', '.join(set(c['model'] for c in inventory))}"
+    leads_summary = f"Total: {len(leads)} leads. Hot: {sum(1 for l in leads if l.status == 'Hot')}"
+    agents_summary = f"Team: {', '.join(a['name'] for a in agents)}"
+    appts_summary = f"Appointments today: {len(appointments)}. Latest: {appointments[-1]['time'] if appointments else 'None'}"
+    
+    system_prompt = f"""
+    PERSONA: You are Elliot, the **Operational AI (Manager Jarvis)** for {tenant['name']}.
+    ROLE: You assist the Dealer Principal and Sales Managers in running the store.
+    
+    SYSTEM CONTEXT:
+    - Inventory: {inventory_summary}
+    - CRM: {leads_summary}
+    - Staff: {agents_summary}
+    
+    CAPABILITIES:
+    - You can answer questions about performance and inventory.
+    - You can trigger "Global Commands" like booking appointments, assigning leads, or generating reports.
+    
+    COMMAND EXTRACTION:
+    If the manager asks you to do something, include a "command" in your JSON response.
+    - BOOK: {{"type": "calendar", "action": "book", "lead_id": ID, "time": "ISO_DATE"}}
+    - ASSIGN: {{"type": "crm", "action": "assign", "lead_id": ID, "agent": "NAME"}}
+    - REPORT: {{"type": "system", "action": "generate_report", "target": "sales|marketing"}}
+    
+    Return your response ONLY in this JSON format:
+    {{
+        "response": "Your spoken/written reply to the manager",
+        "command": {{ "type": "tool_type", "action": "action_name", ... }},
+        "summary": "Brief admin action log"
+    }}
+    """
+    
+    if not GOOGLE_API_KEY:
+        return {
+            "response": "Jarvis Demo Mode: I understand you want to manage the system. Please configure API keys for full operational command processing.",
+            "summary": "Jarvis in Passive Demo Mode"
+        }
+
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        res = model.generate_content(f"{system_prompt}\n\nManager: {message}\n\nJSON ONLY.")
+        import re, json
+        match = re.search(r'\{.*\}', res.text, re.DOTALL)
+        if match:
+            return json.loads(match.group())
+    except Exception as e:
+        print(f"Jarvis Logic Error: {e}")
+        return {"response": f"Jarvis is having a synchronization issue: {str(e)}", "summary": "Sync Error"}
+
+    return {"response": "System nominal, but no command identified.", "summary": "Passive Monitoring"}

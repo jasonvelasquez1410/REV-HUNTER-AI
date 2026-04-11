@@ -126,6 +126,16 @@ class AdTable(Base):
     platform = Column(String)
     status = Column(String, default="Pending")
 
+class AppointmentTable(Base):
+    __tablename__ = "appointments"
+    id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(String, ForeignKey("tenants.id"), index=True, default="filcan")
+    lead_id = Column(Integer, ForeignKey("leads.id"))
+    car_id = Column(Integer, ForeignKey("inventory.id"), nullable=True)
+    time = Column(String)
+    status = Column(String, default="CONFIRMED")
+    notes = Column(Text, nullable=True)
+
 # Note: metadata.create_all is moved to init_db()
 
 # Default configuration path
@@ -609,6 +619,55 @@ class Storage:
         except Exception as e:
             print(f"DB Fetch Error (get_agent_settings): {e}")
             return {}
+
+    def get_appointments(self, tenant_id: str = "filcan") -> List[Dict]:
+        if not self.session_factory: return []
+        try:
+            with self.session_factory() as session:
+                appts = session.query(AppointmentTable).filter(AppointmentTable.tenant_id == tenant_id).all()
+                return [{
+                    "id": a.id,
+                    "lead_id": a.lead_id,
+                    "time": a.time,
+                    "status": a.status,
+                    "notes": a.notes
+                } for a in appts]
+        except Exception as e:
+            print(f"DB Fetch Error (get_appointments): {e}")
+            return []
+
+    def create_appointment(self, appt_data: Dict, tenant_id: str = "filcan") -> bool:
+        if not self.session_factory: return False
+        try:
+            with self.session_factory() as session:
+                new_appt = AppointmentTable(
+                    tenant_id=tenant_id,
+                    lead_id=appt_data.get("lead_id"),
+                    time=appt_data.get("time"),
+                    notes=appt_data.get("notes"),
+                    status=appt_data.get("status", "CONFIRMED")
+                )
+                session.add(new_appt)
+                session.commit()
+                return True
+        except Exception as e:
+            print(f"DB Create Error (create_appointment): {e}")
+            return False
+
+    def get_agents(self, tenant_id: str = "filcan") -> List[Dict]:
+        if not self.session_factory: return []
+        try:
+            with self.session_factory() as session:
+                agents = session.query(AgentTable).filter(AgentTable.tenant_id == tenant_id).all()
+                return [{
+                    "id": a.id,
+                    "name": a.name,
+                    "role": a.role,
+                    "avatar": a.avatar
+                } for a in agents]
+        except Exception as e:
+            print(f"DB Fetch Error (get_agents): {e}")
+            return []
 
 # Singleton instance
 db = Storage()

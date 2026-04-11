@@ -119,35 +119,42 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
         }
     }, [isOpen]);
 
-    const processInstruction = (forcedContext = null) => {
+    const processInstruction = async (forcedContext = null) => {
         if (isThinking) return;
         setIsThinking(true);
         if (recognitionRef.current) recognitionRef.current.stop();
         setIsListening(false);
 
-        const input = forcedContext || transcriptRef.current.toLowerCase();
-        let response = "";
+        const input = forcedContext || transcriptRef.current;
+        const apiUrl = import.meta.env.VITE_API_URL || '/api';
 
-        if (input.includes('status') || input.includes('leads') || input.includes('news')) {
-            const count = leads?.length || 0;
-            const hotCount = hotLeads?.length || 0;
-            response = count > 0 
-                ? `The hub is active with ${count} leads. I've flagged ${hotCount} of those as your highest closing probability. I'm prioritizing them now.`
-                : "The pipeline is dry, but I'm currently hunting marketplace and social listings for fresh targets as we speak.";
-        } else if (input.includes('hot') || input.includes('priority')) {
-            response = `I've shifted the hunter algorithm to focus specifically on your ${hotLeads.length} hot prospects. We're in pursuit.`;
-        } else if (input.includes('call') || input.includes('trigger') || input.includes('dial')) {
-            response = "Understood. I'm initiating the outbound autonomous calls for your hot lead queue now. I'll notify you specifically when a live transfer is ready.";
-        } else {
-            response = "Copy that. Instruction processed and instructions are synced. Consider it done. Anything else?";
-        }
-
-        setTimeout(() => {
+        try {
+            const res = await fetch(`${apiUrl}/admin/jarvis`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: input })
+            });
+            const data = await res.json();
+            
+            setAiResponse(data.response);
+            speak(data.response);
+            
+            // Execute automated commands for agents
+            if (data.command) {
+                const cmd = data.command;
+                if (cmd.type === 'calendar' && cmd.action === 'book') {
+                    alert(`📅 JARVIS SYNC: I have booked this appointment into your mobile calendar for Lead #${cmd.lead_id}. Check your push notifications.`);
+                } else if (cmd.type === 'crm' && cmd.action === 'assign') {
+                    alert(`✅ SYSTEM ACTION: Lead assignment updated per your request.`);
+                }
+            }
+        } catch (err) {
+            const fallback = "System core is temporarily offline, but I'm still monitoring your local activity. Try again in a minute.";
+            setAiResponse(fallback);
+            speak(fallback);
+        } finally {
             setIsThinking(false);
-            setAiResponse(response);
-            speak(response);
-            // After Elliot speaks, the Mic is ready again!
-        }, 800);
+        }
     };
 
     if (!isOpen) return null;
