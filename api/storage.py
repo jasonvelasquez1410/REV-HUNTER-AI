@@ -243,13 +243,13 @@ class Storage:
                     ),
                     LeadTable(
                         tenant_id="filcan",
-                        name="Cousin Test Lead",
+                        name="Rjay Test Lead",
                         email="test@example.com",
-                        phone="5875551234", # Placeholder - cousin should change this
+                        phone="5875551234", 
                         status="Hot",
                         quality_score=95,
                         conversation_summary="Ready for an outbound test call.",
-                        assigned_agent="Cousin"
+                        assigned_agent="Rjay"
                     )
                 ]
                 session.add_all(leads)
@@ -262,7 +262,7 @@ class Storage:
                     AgentTable(tenant_id="filcan", name="Mark Santos", pin="5678", avatar="MS", role="Sales Consultant"),
                     AgentTable(tenant_id="filcan", name="Jessica Cruz", pin="9012", avatar="JC", role="Junior Sales Consultant"),
                     AgentTable(tenant_id="filcan", name="R-Jay", pin="1410", avatar="RJ", role="Sales Manager", subscription_status="active"),
-                    AgentTable(tenant_id="filcan", name="Cousin", pin="2024", avatar="CN", role="Sales Associate", subscription_status="active")
+                    AgentTable(tenant_id="filcan", name="Rjay", pin="2026", avatar="RJ", role="Sales Associate", subscription_status="active")
                 ]
                 session.add_all(agents)
                 session.commit()

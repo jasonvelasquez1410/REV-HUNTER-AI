@@ -253,7 +253,7 @@ function AgentLogin({ onLogin }) {
                 { id: 2, name: 'Mark Santos', pin: '5678', avatar: 'MS', role: 'Sales Consultant' },
                 { id: 3, name: 'Jessica Cruz', pin: '9012', avatar: 'JC', role: 'Junior Sales Consultant' },
                 { id: 4, name: 'R-Jay', pin: '1410', avatar: 'RJ', role: 'Sales Manager' },
-                { id: 5, name: 'Cousin', pin: '2024', avatar: 'CN', role: 'Sales Associate' }
+                { id: 5, name: 'Rjay', pin: '2026', avatar: 'RJ', role: 'Sales Associate' }
             ];
             const match = demoAgents.find(a => a.name.toLowerCase() === name.toLowerCase() && a.pin === pin);
             if (match) { onLogin(match); }

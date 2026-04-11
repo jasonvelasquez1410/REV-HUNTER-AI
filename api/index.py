@@ -334,7 +334,7 @@ DEMO_AGENTS = [
     {"id": 2, "name": "Mark Santos", "pin": "5678", "avatar": "MS", "role": "Sales Consultant", "is_active": True},
     {"id": 3, "name": "Jessica Cruz", "pin": "9012", "avatar": "JC", "role": "Junior Sales Consultant", "is_active": True},
     {"id": 4, "name": "R-Jay", "pin": "1410", "avatar": "RJ", "role": "Sales Manager", "is_active": True},
-    {"id": 5, "name": "Cousin", "pin": "2024", "avatar": "CN", "role": "Sales Associate", "is_active": True}
+    {"id": 5, "name": "Rjay", "pin": "2026", "avatar": "RJ", "role": "Sales Associate", "is_active": True}
 ]
 
 class AgentLoginRequest(BaseModel):
