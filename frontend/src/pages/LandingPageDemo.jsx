@@ -11,8 +11,10 @@ const LandingPageDemo = () => {
     const { tenant } = useTenant();
     const [cars, setCars] = useState([]);
     const [showNudge, setShowNudge] = useState(true);
-    const [nudgeStep, setNudgeStep] = useState('initial'); // 'initial', 'loading', 'result'
+    const [nudgeStep, setNudgeStep] = useState('initial'); 
     const [isCalling, setIsCalling] = useState(false);
+    const [vin, setVin] = useState('');
+    const [creditRange, setCreditRange] = useState('');
     const vapi = useRef(null);
 
     useEffect(() => {
@@ -225,62 +227,90 @@ const LandingPageDemo = () => {
 
             {/* Smart VDP Nudge Simulation */}
             {showNudge && (
-                <div style={{ position: 'fixed', left: '20px', bottom: '100px', maxWidth: '300px', background: '#fff', borderRadius: '15px', padding: '15px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)', borderLeft: `5px solid ${tenant.theme_color || '#D92027'}`, zIndex: 1500, animation: 'slideRight 0.5s ease-out' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: tenant.theme_color || '#D92027', marginBottom: '5px' }}>ELLIOT (RELENTLESS NUDGE) 📱</div>
-                        <button onClick={() => setShowNudge(false)} style={{ border: 'none', background: 'none', fontSize: '0.8rem', cursor: 'pointer', color: '#999' }}>✕</button>
+                <div style={{ position: 'fixed', left: '20px', bottom: '100px', maxWidth: '320px', background: '#fff', borderRadius: '15px', padding: '15px', boxShadow: '0 10px 40px rgba(0,0,0,0.2)', borderLeft: `5px solid ${tenant.theme_color || '#D92027'}`, zIndex: 1500 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: tenant.theme_color || '#D92027' }}>ELLIOT (PREMIUM QUALIFIER) 🤖</div>
+                        <button onClick={() => setShowNudge(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#999' }}>✕</button>
                     </div>
                     
                     {nudgeStep === 'initial' && (
                         <>
                             <div style={{ fontSize: '0.85rem', color: '#333', lineHeight: '1.4' }}>
-                                Boss, I see you're looking at the Atlas. Want a <b>"Fast-Pass"</b> trade-in value for your car while you browse?
+                                Want a <b>"Fast-Pass"</b> trade-in value for your car while you browse? Our AI uses <b>vAuto</b> to give you a real number in seconds.
                             </div>
-                            <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+                            <div style={{ marginTop: '12px' }}>
+                                <input 
+                                    type="text" 
+                                    placeholder="Enter VIN (Optional)" 
+                                    value={vin}
+                                    onChange={(e) => setVin(e.target.value)}
+                                    style={{ width: '100%', padding: '8px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '5px', fontSize: '0.8rem' }}
+                                />
                                 <button 
-                                    onClick={() => {
-                                        setNudgeStep('loading');
-                                        setTimeout(() => setNudgeStep('result'), 2000);
-                                    }}
-                                    style={{ flex: 1, padding: '8px', background: tenant.theme_color || '#D92027', color: '#fff', border: 'none', borderRadius: '5px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer' }}
+                                    onClick={() => setNudgeStep('credit')}
+                                    style={{ width: '100%', padding: '10px', background: tenant.theme_color || '#D92027', color: '#fff', border: 'none', borderRadius: '5px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
                                 >
-                                    YES, GET VALUE
-                                </button>
-                                <button 
-                                    onClick={() => setShowNudge(false)}
-                                    style={{ flex: 1, padding: '8px', background: '#eee', color: '#666', border: 'none', borderRadius: '5px', fontSize: '0.7rem', cursor: 'pointer' }}
-                                >
-                                    MAYBE LATER
+                                    GET APPRAISAL
                                 </button>
                             </div>
                         </>
                     )}
 
+                    {nudgeStep === 'credit' && (
+                        <>
+                            <div style={{ fontSize: '0.85rem', color: '#333', marginBottom: '10px' }}>
+                                To match you with the best bank, what is your estimated credit score?
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                {[
+                                    { l: 'Excellent (740+)', v: '740' },
+                                    { l: 'Good (680-739)', v: '700' },
+                                    { l: 'Fair (580-679)', v: '600' },
+                                    { l: 'Need Help', v: 'rebuild' }
+                                ].map(r => (
+                                    <button 
+                                        key={r.v}
+                                        onClick={() => {
+                                            setCreditRange(r.l);
+                                            setNudgeStep('loading');
+                                            setTimeout(() => setNudgeStep('result'), 2500);
+                                        }}
+                                        style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '5px', background: '#fff', fontSize: '0.65rem', cursor: 'pointer' }}
+                                    >
+                                        {r.l}
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    )}
+
                     {nudgeStep === 'loading' && (
-                        <div style={{ textAlign: 'center', padding: '10px' }}>
-                            <div className="nudge-spinner" style={{ border: '3px solid #f3f3f3', borderTop: `3px solid ${tenant.theme_color || '#D92027'}`, borderRadius: '50%', width: '20px', height: '20px', animation: 'spin 1s linear infinite', margin: '0 auto 10px' }}></div>
-                            <div style={{ fontSize: '0.75rem', color: '#666' }}>AI is calculating trade-in value...</div>
+                        <div style={{ textAlign: 'center', padding: '20px' }}>
+                            <div style={{ width: '30px', height: '30px', border: `3px solid ${tenant.theme_color || '#D92027'}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 10px' }}></div>
+                            <div style={{ fontSize: '0.75rem', color: '#666' }}>AI is checking vAuto & DealerTrack...</div>
                         </div>
                     )}
 
                     {nudgeStep === 'result' && (
                         <>
                             <div style={{ fontSize: '0.85rem', color: '#333', lineHeight: '1.4' }}>
-                                📊 **Value Detected!** Your 2018 Toyota RAV4 is estimated at **$21,450**.
+                                ✅ **Qualification Success!**
                                 <br/><br/>
-                                Should I add this to your dealer file?
+                                📊 vAuto Appraisal: **$${vin ? '23,450' : '21,100'}**
+                                <br/>
+                                🏦 Credit Tier: **{creditRange}**
+                                <br/><br/>
+                                Should I sync this "Lead DNA" to the Sales Manager?
                             </div>
-                            <div style={{ marginTop: '10px' }}>
-                                <button 
-                                    onClick={() => {
-                                        setShowNudge(false);
-                                        alert("Success! Your trade-in value has been synced to the dealer CRM.");
-                                    }}
-                                    style={{ width: '100%', padding: '8px', background: '#00b894', color: '#fff', border: 'none', borderRadius: '5px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer' }}
-                                >
-                                    YES, SYNC TO CRM
-                                </button>
-                            </div>
+                            <button 
+                                onClick={() => {
+                                    setShowNudge(false);
+                                    alert("Lead DNA Synced! Agents now see your Credit Score and Trade-in Value.");
+                                }}
+                                style={{ width: '100%', marginTop: '12px', padding: '10px', background: '#00b894', color: '#fff', border: 'none', borderRadius: '5px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
+                            >
+                                YES, SEND TO CRM
+                            </button>
                         </>
                     )}
                 </div>

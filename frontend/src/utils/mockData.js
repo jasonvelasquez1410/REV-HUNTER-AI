@@ -3,7 +3,7 @@ import React from 'react';
 export const MOCK_AGENTS = [
     { id: 'agent-1', name: "Sarah Johnson", role: "Senior Closer", status: "Online", avatar: "SJ", color: "#6c5ce7", closing_rate: "98%", deals_this_month: 24 },
     { id: 'agent-2', name: "Mike Miller", role: "SUV Specialist", status: "On Call", avatar: "MM", color: "#e67e22", closing_rate: "89%", deals_this_month: 18 },
-    { id: 'agent-3', name: "Elliot (AI)", role: "Digital Assistant", status: "Hunting", avatar: "🤖", color: "#D92027", closing_rate: "N/A", deals_this_month: "142 Leads Qualified" }
+    { id: 'agent-3', name: "Elliot (AI)", role: "Digital Sales Specialist", status: "Hunting", avatar: "🤖", color: "#D92027", closing_rate: "N/A", deals_this_month: "142 Leads Qualified" }
 ];
 
 export const MOCK_FALLBACK_LEADS = [

@@ -115,6 +115,10 @@ If you need to restart your Antigravity Phone Connect (Mobile Remote Control), f
 1. [x] **Vapi Outbound 2.0**: Migrated to server-side PSTN calling with dynamic dialer and script injection.
 2. [x] **Agent Trials**: Implemented subscription enforcement and trial countdowns in Agent Edition.
 3. [x] **Demo Safety**: Added fallback logic for flawless manager presentations.
+4. [x] **Relentless Auto-Assignment**: Implemented Round-Robin logic for lead distribution.
+5. [x] **Persona Unification**: Consolidated Elliot into a single full-stack sales specialized role.
+6. [x] **vAuto Appraisal**: Integrated simulated VIN-based valuation into the AI script and demo widget.
+7. [x] **Shiftly Automation**: Added one-click Marketplace posting demo button.
 
 ## Memory Log
 
@@ -129,20 +133,18 @@ If you need to restart your Antigravity Phone Connect (Mobile Remote Control), f
 
 ## Antigravity Phone Connect Setup & Remote Debugging
 
-If you need to restart your Antigravity Phone Connect (Mobile Remote Control), follow these steps to ensure the editor is in debug mode:
+If you need to restart your Antigravity Phone Connect (Mobile Remote Control), follow these steps:
 
 1. **Close Antigravity**: Completely close the currently running Antigravity editor window.
 2. **Launch in Debug Mode**:
    - Open standard Windows **Command Prompt** (`cmd`).
-   - Run the exact following command:
-     `code-insiders "C:\Users\ACER\Documents\Programming Folder Rep\AI Sales Engine FilCan Cars" --remote-debugging-port=9000`
-   - *(Note: If `code-insiders` isn't recognized, try `antigravity` or `code` instead).*
+   - Run: `code-insiders "C:\Users\ACER\Documents\Programming Folder Rep\AI Sales Engine FilCan Cars" --remote-debugging-port=9000`
+   - *(Note: Use `ap` region for Ngrok in `.env` to prevent timeouts).*
 3. **Start the Web/Mobile Server**:
-   - Once Antigravity reopens, open your File Explorer.
-   - Navigate to the special folder without the dot: `C:\Users\ACER\Antigravity\Remote-Control`
+   - Navigate to `C:\Users\ACER\Antigravity\Remote-Control`
    - Double-click **`start_ag_phone_connect_web.bat`**.
-   - A terminal will pop up, successfully connect to the CDP endpoint, and print your Magic QR Code.
-4. **Scan & Connect**: Scan the QR code with your phone's camera. You're logged in!
+4. **Scan & Connect**: Scan the Magic QR Code on your phone.
+
 
 ---
 
@@ -162,4 +164,19 @@ If you need to restart your Antigravity Phone Connect (Mobile Remote Control), f
   - **Round-Robin High Performance**: New leads from Facebook, Google, and Web are automatically assigned to the best-fit active agent.
   - **Push Notification Loop**: Verified the PWA notification cycle. Agents are now alerted within 30 seconds of a lead arriving.
   - **Premium Suite Evolution**: Documented the "Elliot-to-Agent" handoff protocol for FilCan presentation.
+
+- **2026-04-09 (V24.0)**: **PREMIUM QUALIFICATION SUITE & PERSONA UNIFICATION**.
+  - **Unified Elliot Persona**: Merged all receptionist and closer duties into a single "Full-Stack Specialist" role for Elliot. Removed Jason AI to simplify the sales journey.
+  - **vAuto Appraisal Integration**: Added simulated appraisal logic into the AI script. Elliot can now run a "vAuto/Shiftly" valuation using a customer's VIN live in the chat/voice call.
+  - **Credit Verification Step**: Added interactive credit range selection to the demo widget, extracting "Lead DNA" (Excellent, Good, Fair) before agent handover.
+  - **Shiftly Marketplace Automation**: Added a dedicated "Marketplace (Shiftly)" button in the Admin HQ to demonstrate automated inventory posting.
+  - **Lead DNA Dashboard**: Enhanced Agent and Admin views to display "Credit Tier" and "vAuto Trade-in Estimate" directly on the lead cards.
+
+- **2026-04-10 (V25.0)**: **CONNECTIVITY & MULTI-TOOL OPS**.
+  - **Antigravity Phone Connect**: FIXED heartbeat timeouts by switching Ngrok to the `ap` (Asia-Pacific) region default.
+  - **Odoo Helpdesk**: Paused automated survey sending for customer feedback. Created structured favorite reports for company-based ticket analytics.
+  - **GLPI Deployment**: Began local WAMP setup for KEGI IT Asset Management system.
+  - **System Stability**: Verified all local servers and tunnels are resilient for the next session.
+
+
 

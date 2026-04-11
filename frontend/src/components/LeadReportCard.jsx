@@ -61,11 +61,19 @@ export default function LeadReportCard({ lead, onCharge }) {
             </div>
 
             <div style={{ backgroundColor: '#f1f2f6', padding: '12px', borderRadius: '8px', marginBottom: '15px' }}>
-                <div style={{ fontSize: '0.65rem', color: '#00b894', fontWeight: 'bold', marginBottom: '5px' }}>
-                    ⚡ INSTANT ENGAGEMENT: {lead.last_action_time}
+                <div style={{ fontSize: '0.65rem', color: '#00b894', fontWeight: 'bold', marginBottom: '8px' }}>
+                    🧬 LEAD DNA (AI-VERIFIED)
                 </div>
-                <p style={{ margin: 0, fontSize: '0.9rem', fontStyle: 'italic', color: '#2d3436' }}>
-                    "Ready to buy 2021 F-150, has trade-in. Budget approved."
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: '15px', background: '#e1f5fe', color: '#01579b', border: '1px solid #b3e5fc' }}>
+                        💳 Credit: {lead.credit_status || 'Checking...'}
+                    </span>
+                    <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: '15px', background: '#f1f8e9', color: '#33691e', border: '1px solid #dcedc8' }}>
+                        📊 vAuto: $21,450 Est.
+                    </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.85rem', fontStyle: 'italic', color: '#2d3436', lineHeight: '1.4' }}>
+                    "{lead.conversation_summary || 'Interested in VW Atlas. Ready to buy.'}"
                 </p>
             </div>
 

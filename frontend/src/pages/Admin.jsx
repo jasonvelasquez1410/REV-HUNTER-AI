@@ -704,7 +704,7 @@ export default function Admin() {
                                 <div style={{ color: '#D92027', fontWeight: 'bold', letterSpacing: '2px' }}>DEALER PITCH MODE</div>
                                 <h2 style={{ fontSize: '2.5rem', margin: '10px 0' }}>
                                     {presentationStep === 0 && "The 10-Lead-A-Day Revenue Machine"}
-                                    {presentationStep === 1 && "Relentless AI in Action (Live DNA)"}
+                                    {presentationStep === 1 && "Relentless AI in Action (Elliot DNA)"}
                                     {presentationStep === 2 && "The RevHunter Premium Suite Investment"}
                                 </h2>
                             </div>
@@ -910,12 +910,22 @@ export default function Admin() {
                                     /imagine: {pendingAd.imagePrompt}
                                 </div>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
                                 <button 
                                     onClick={() => handleGenerateAd()} 
-                                    style={{ padding: '15px', background: '#f0f2f5', color: '#333', border: 'none', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer' }}
+                                    style={{ padding: '15px', background: '#f0f2f5', color: '#333', border: 'none', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}
                                 >
                                     🔄 REGENERATE
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        setShowAdModal(false);
+                                        setAuditLogs(prev => [{ id: `ad-shiftly-${Date.now()}`, time: "Now", action: "SHIFTLY: Inventory post automated to Facebook Marketplace.", type: "Marketing" }, ...prev]);
+                                        alert("📦 SHIFTLY AUTOMATION ACTIVE!\n\nInventory has been posted to Facebook Marketplace.\nRevHunter AI is now monitoring the comments.");
+                                    }}
+                                    style={{ padding: '15px', background: '#003366', color: 'white', border: 'none', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}
+                                >
+                                    🛒 MARKETPLACE (SHIFTLY)
                                 </button>
                                 <button 
                                     onClick={() => {
@@ -923,9 +933,9 @@ export default function Admin() {
                                         setAuditLogs(prev => [{ id: `ad-live-${Date.now()}`, time: "Now", action: `MARKETING: Campaign #${pendingAd.id} is now LIVE targeted to Sherwood Park.`, type: "Marketing" }, ...prev]);
                                         alert("🚀 RELENTLESS CAMPAIGN LIVE!\n\nTargeting: Sherwood Park (50km)\nPlatform: Facebook / Instagram\nBudget: Optimization Active");
                                     }} 
-                                    style={{ padding: '15px', background: '#00b894', color: 'white', border: 'none', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 10px 20px rgba(0,184,148,0.3)' }}
+                                    style={{ padding: '15px', background: '#00b894', color: 'white', border: 'none', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 10px 20px rgba(0,184,148,0.3)' }}
                                 >
-                                    ✅ APPROVE & GO LIVE
+                                    ✅ GO LIVE (ADS)
                                 </button>
                             </div>
                         </div>

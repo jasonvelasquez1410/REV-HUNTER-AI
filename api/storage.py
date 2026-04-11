@@ -152,7 +152,7 @@ class Storage:
                         name="FilCan Cars",
                         location="Sherwood Park",
                         address="983 Fir Street",
-                        welcome_message="Welcome to FilCan Cars! I'm Elliot, your digital specialist. I'm multilingual and can assist you in English, Tagalog, or Bisaya! What brings you in today—looking for an upgrade, or just browsing?",
+                        welcome_message="Welcome to FilCan Cars! I'm Elliot, your digital specialist. I'm here to help you find the perfect vehicle. What brings you in today—looking for an upgrade, or just browsing?",
                         theme_color="#003366"
                     ),
                     TenantTable(
@@ -160,7 +160,7 @@ class Storage:
                         name="RevHunter Demo Shop",
                         location="Digital",
                         address="123 AI Avenue",
-                        welcome_message="Welcome to the RevHunter AI Demo Shop! I can assist you in English, Tagalog, or Bisaya. What are you looking for today?",
+                        welcome_message="Welcome to the RevHunter AI Demo Shop! I'm Elliot, your digital assistant. What are you looking for today?",
                         theme_color="#D92027"
                     )
                 ]
@@ -288,7 +288,7 @@ class Storage:
             "name": "FilCan Cars" if tenant_id == "filcan" else "Demo Motors",
             "location": "Sherwood Park" if tenant_id == "filcan" else "Digital",
             "address": "983 Fir Street" if tenant_id == "filcan" else "123 AI Avenue",
-            "welcome_message": "Welcome to FilCan Cars! I'm Elliot, your digital specialist. I'm multilingual and can assist you in English, Tagalog, or Bisaya! What brings you in today?",
+            "welcome_message": "Welcome to FilCan Cars! I'm Elliot, your digital specialist. What brings you in today?",
             "theme_color": "#003366"
         }
         
