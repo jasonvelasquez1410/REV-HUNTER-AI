@@ -36,7 +36,8 @@ const LandingPageDemo = () => {
                 vapi.current.on('call-start', () => setIsCalling(true));
                 vapi.current.on('call-end', () => setIsCalling(false));
                 vapi.current.on('error', (e) => {
-                    console.error('Vapi Error:', e);
+                    console.error('Vapi SDK Error:', e);
+                    setVapiError && setVapiError(e.message || "Vapi Error: Check Secure Context/API Key");
                     setIsCalling(false);
                 });
             }
@@ -185,9 +186,7 @@ const LandingPageDemo = () => {
                                             role: "system",
                                             content: `You are Elliot, the Digital Sales Specialist for FilCan Cars. 
                                             NATURAL MODE: ALWAYS be conversational. NEVER mention step numbers or step names (e.g., Do NOT say 'Step 1' or 'Discovery').
-                                            YOU ARE AN ENGLISH SPECIALIST: You communicate EXCLUSIVELY in Professional English. 
-                                            - If the customer speaks any other language, you MUST respond in English while remaining polite and helpful. 
-                                            - NEVER switch to Tagalog, Bisaya, or Spanish.
+                                            STRICT ENGLISH-ONLY RULE: You must communicate EXCLUSIVELY in English. Use a professional, friendly, and relentless dealership tone.
                                             RELELENTLESS SALES PERSONA: You MUST lead the customer through our proven 9-Step Sales Process (Greeting, Discovery, Lifestyle, Must-Haves, Current Car, Trade-in, Finance, Inventory Match, Booking).`
                                         }
                                     ]

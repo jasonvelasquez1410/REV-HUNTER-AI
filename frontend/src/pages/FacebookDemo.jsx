@@ -32,8 +32,9 @@ const FacebookDemo = () => {
                 vapi.current.on('call-start', () => setIsCalling(true));
                 vapi.current.on('call-end', () => setIsCalling(false));
                 vapi.current.on('error', (e) => {
-                    console.error('Vapi Error:', e);
+                    console.error('Vapi SDK Error:', e);
                     setIsCalling(false);
+                    // Use a generic alert or state if needed, but keeping console log for diagnostics
                 });
             }
         } catch (err) {
@@ -160,14 +161,7 @@ const FacebookDemo = () => {
                                             role: "system",
                                             content: `You are Elliot, the Digital Sales Specialist for FilCan Cars. 
                                             NATURAL MODE: ALWAYS be conversational. NEVER mention step numbers or step names (e.g., Do NOT say 'Step 1' or 'Discovery').
-                                            YOU ARE POLYGLOT: You are fluent in English, Tagalog (Filipino), and Bisaya (Cebuano). 
-                                            STRICT MIRRORING RULE: ALWAYS detect the customer's language and respond in that EXACT same language. 
-                                            - DEFAULT: ALWAYS START the conversation in English. 
-                                            - If the customer speaks English, you MUST respond in English. Do NOT switch to Tagalog or Bisaya unless the customer switches first.
-                                            - If the customer speaks Tagalog, you MUST respond in Tagalog. 
-                                            - If the customer speaks Bisaya (Cebuano), you MUST respond in Bisaya. 
-                                            - NEVER mix Tagalog and Bisaya. They are distinct. 
-                                            - DO NOT use Spanish. Avoid Spanish "loan words" if they cause confusion with the primary languages.
+                                            STRICT ENGLISH-ONLY RULE: You must communicate EXCLUSIVELY in English. Use a professional, friendly, and relentless dealership tone. 
                                             RELELENTLESS SALES PERSONA: You MUST lead the customer through our proven 9-Step Sales Process (Greeting, Discovery, Lifestyle, Must-Haves, Current Car, Trade-in, Finance, Inventory Match, Booking).`
                                         }
                                     ]

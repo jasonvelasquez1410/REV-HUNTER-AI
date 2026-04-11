@@ -176,8 +176,11 @@ If you need to restart your Antigravity Phone Connect (Mobile Remote Control), f
   - Removed all Tagalog/Bisaya traces from Elliot's persona and Vapi voice configuration. 
   - Elliot is now a strict English-only specialist globally.
 
-- **2026-04-11 (V26.2)**: **PREMIUM APPRAISAL & PITCH STRATEGY**.
+- **2026-04-11 (V26.2)**: **PREMIUM APPRAISAL & VAPI DIAGNOSTICS**.
   - **Enhanced vAuto Simulation**: Upgraded the appraisal math to use VIN patterns and year-based market premiums.
+  - **Vapi Diagnostics**: Implemented enhanced error reporting and secure context checks in Admin Hub.
+  - **Credential Virtualization**: Refactored frontend to support VITE environment variables for Vapi keys.
+  - **English Consolidation**: Completed global removal of polyglot logic from all Elliot persona scripts.
   - **Dealer Pitch Framework**: Established the "Simulated-to-Live" strategy for presentations.
   - **Auto-Sync Active**: GitHub/Vercel continuous sync enabled.
 

@@ -11,8 +11,8 @@ import BillingDashboard from '../components/BillingDashboard';
 import { useTenant } from '../context/TenantContext';
 import { MOCK_FALLBACK_LEADS, MOCK_APPOINTMENTS, PRESENTATION_INSIGHTS, MOCK_AGENTS } from '../utils/mockData';
 
-const VAPI_PUBLIC_KEY = '012fbe2f-192f-44f3-a1b3-76db83ce299c';
-const VAPI_ASSISTANT_ID = '5921ac52-3ea4-443f-a531-993b5e43fddf';
+const VAPI_PUBLIC_KEY = import.meta.env.VITE_VAPI_PUBLIC_KEY || '012fbe2f-192f-44f3-a1b3-76db83ce299c';
+const VAPI_ASSISTANT_ID = import.meta.env.VITE_VAPI_ASSISTANT_ID || '5921ac52-3ea4-443f-a531-993b5e43fddf';
 
 export default function Admin() {
     const { tenant } = useTenant();
@@ -114,6 +114,12 @@ export default function Admin() {
     useEffect(() => {
         const VapiBase = VapiNamed || VapiDefault;
         try {
+            if (!window.isSecureContext) {
+                console.warn("Vapi Requires HTTPS/Localhost for Voice");
+                // Don't set error immediately on load to keep UI clean, but log it
+                return;
+            }
+
             let constructor = null;
             if (typeof VapiBase === 'function') constructor = VapiBase;
             else if (VapiBase?.default && typeof VapiBase.default === 'function') constructor = VapiBase.default;
@@ -125,9 +131,15 @@ export default function Admin() {
                 vapi.current = new constructor(VAPI_PUBLIC_KEY);
                 vapi.current.on('call-start', () => setIsCalling(true));
                 vapi.current.on('call-end', () => setIsCalling(false));
-                vapi.current.on('error', (e) => setVapiError(e.message || "Vapi Error"));
+                vapi.current.on('error', (e) => {
+                    console.error("Vapi SDK Error:", e);
+                    setVapiError(e.message || "Vapi Connection Error: Check API Key or Secure Context");
+                });
             }
-        } catch (err) { console.error("Vapi Init Error:", err); }
+        } catch (err) { 
+            console.error("Vapi Init Error:", err);
+            setVapiError("Vapi Init Failed: " + err.message);
+        }
         
         return () => { if (vapi.current) vapi.current.stop(); };
     }, []);
@@ -379,7 +391,14 @@ export default function Admin() {
             vapi.current.start(VAPI_ASSISTANT_ID, {
                 firstMessage: greeting,
                 variableValues: { customerName: lead.name.split(' ')[0], carModel: lead.car || 'vehicle' },
-                model: { provider: "openai", model: "gpt-4o", messages: [{ role: "system", content: "You are Elliot, the Digital Sales Specialist... " }] }
+                model: { 
+                    provider: "openai", 
+                    model: "gpt-4o", 
+                    messages: [{ 
+                        role: "system", 
+                        content: "You are Elliot, the Digital Sales Specialist for FilCan Cars. You are a strict ENGLISH-ONLY specialist. NEVER use Tagalog, Bisaya, or any other language even if the customer does. Keep your tone professional, relentless, and focused on booking a showroom appointment." 
+                    }] 
+                }
             });
         } catch (err) {
             setVapiError("Manual Failure: " + err.message);
@@ -432,7 +451,7 @@ export default function Admin() {
         <div className="admin-container" style={{ padding: '30px 5%', background: '#f4f7f6', minHeight: '100vh' }}>
             <h1 style={{ marginBottom: '30px', color: '#003366', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ background: '#D92027', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '1.2rem' }}>REVHUNTER AI v15.0-FORCE-REFRESH [ELITE]</div>
+                    <div style={{ background: '#D92027', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '1.2rem' }}>REVHUNTER AI v26.2-ELITE [ENGLISH CONSOLIDATED]</div>
                     <div style={{ fontSize: '1.5rem', fontWeight: '900' }}>Marketing Command Center</div>
                 </div>
                 <div style={{ display: 'flex', gap: '15px' }}>
