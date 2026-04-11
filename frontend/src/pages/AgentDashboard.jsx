@@ -1142,23 +1142,13 @@ export default function AgentDashboard() {
 
                 {activeView === 'studio' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div style={{ background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', borderRadius: '24px', padding: '30px', color: 'white', boxShadow: '0 10px 30px rgba(255, 75, 43, 0.3)' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
-                                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px' }}><Star size={24} fill="currentColor" /></div>
-                                <h2 style={{ margin: 0, fontWeight: '900', fontSize: '1.4rem' }}>Elliot AI Studio</h2>
-                            </div>
-                            <p style={{ opacity: 0.9, fontSize: '0.9rem', lineHeight: '1.5', margin: 0 }}>
-                                Customize Elliot's DNA. Switch between tactical sales, friendly outreach, or aggressive closing modes.
-                            </p>
-                        </div>
-
-                        {/* Agent AI Profile Section */}
-                        <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '25px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        {/* Agent AI Profile Section (TOP PRIORITY) */}
+                        <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '25px', border: '1px solid rgba(255, 75, 43, 0.4)', boxShadow: '0 0 20px rgba(255, 75, 43, 0.1)' }}>
                             <h3 style={{ margin: '0 0 15px', fontSize: '1rem', color: 'white', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <Settings size={18} color="#FF4B2B" /> YOUR AGENT PROFILE
+                                <Settings size={18} color="#FF4B2B" /> YOUR AGENT IDENTITY
                             </h3>
                             <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: '20px' }}>
-                                Elliot uses this info to introduce himself as your assistant and book meetings directly into your calendar.
+                                This info allows Elliot to introduce himself as your dedicated digital assistant during calls and bookings.
                             </p>
                             
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1174,7 +1164,7 @@ export default function AgentDashboard() {
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                         <label style={{ fontSize: '0.6rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)' }}>TITLE/ROLE</label>
                                         <input 
-                                            placeholder="e.g. Sales Executive" 
+                                            placeholder="Sales Specialist" 
                                             defaultValue={agent.role}
                                             style={{ padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.8rem' }}
                                         />
@@ -1182,24 +1172,34 @@ export default function AgentDashboard() {
                                 </div>
                                 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ fontSize: '0.6rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)' }}>CALENDAR / BOOKING LINK</label>
+                                    <label style={{ fontSize: '0.6rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)' }}>BOOKING URL (CALENDLY/ETC)</label>
                                     <input 
-                                        placeholder="calendly.com/your-link" 
+                                        placeholder="calendly.com/your-name" 
                                         style={{ padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(0,184,148,0.2)', color: 'white', fontSize: '0.8rem' }}
                                     />
                                 </div>
 
-                                <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255, 75, 43, 0.05)', borderRadius: '14px', border: '1px dashed rgba(255, 75, 43, 0.3)' }}>
-                                    <div style={{ fontSize: '0.6rem', fontWeight: '900', color: '#FF4B2B', marginBottom: '8px' }}>🤖 ELLIOT'S INTRODUCTION PREVIEW:</div>
-                                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: '1.4' }}>
-                                        "Hello! I'm Elliot, the digital assistant for <b>{agent.name}</b>, {agent.role || 'Sales Associate'}. I noticed you were interested in a vehicle on our lot..."
+                                <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255, 75, 43, 0.08)', borderRadius: '14px', border: '1px dashed #FF4B2B' }}>
+                                    <div style={{ fontSize: '0.6rem', fontWeight: '900', color: '#FF4B2B', marginBottom: '8px' }}>🤖 ELLIOT READY TO SAY:</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'white', fontStyle: 'italic', lineHeight: '1.4' }}>
+                                        "Hi, I'm Elliot, the AI assistant for <b>{agent.name}</b>. I'm calling to help you with..."
                                     </div>
                                 </div>
                                 
-                                <button style={{ width: '100%', padding: '14px', background: '#FF4B2B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.85rem', marginTop: '5px' }}>
-                                    SAVE AGENT IDENTITY
+                                <button style={{ width: '100%', padding: '14px', background: '#FF4B2B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                                    SAVE MY AI IDENTITY
                                 </button>
                             </div>
+                        </div>
+
+                        <div style={{ background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', borderRadius: '24px', padding: '30px', color: 'white', boxShadow: '0 10px 30px rgba(255, 75, 43, 0.3)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px' }}><Star size={24} fill="currentColor" /></div>
+                                <h2 style={{ margin: 0, fontWeight: '900', fontSize: '1.4rem' }}>Elliot AI Studio</h2>
+                            </div>
+                            <p style={{ opacity: 0.9, fontSize: '0.9rem', lineHeight: '1.5', margin: 0 }}>
+                                Customize Elliot's DNA. Switch between tactical sales, friendly outreach, or aggressive closing modes.
+                            </p>
                         </div>
 
                         <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '25px', border: '1px solid rgba(255,255,255,0.06)' }}>
