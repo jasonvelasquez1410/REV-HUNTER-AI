@@ -768,6 +768,7 @@ export default function AgentDashboard() {
     const [dialing, setDialing] = useState(null);
     const [selectedDNA, setSelectedDNA] = useState(null);
     const [isStrategistOpen, setIsStrategistOpen] = useState(false);
+    const [leadFilter, setLeadFilter] = useState('all'); // 'all' | 'ai' | 'imported'
     const fileInputRef = useRef(null);
 
     const handleLogin = (agentData) => {
@@ -1013,80 +1014,129 @@ export default function AgentDashboard() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {leads.length === 0 && (
                             <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.3)' }}>
+                        {/* FILTER BAR */}
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                            {[
+                                { id: 'all', label: 'ALL LEADS' },
+                                { id: 'ai', label: '✨ AI CAPTURED' },
+                                { id: 'imported', label: '📥 MY IMPORTS' }
+                            ].map(f => (
+                                <button
+                                    key={f.id}
+                                    onClick={() => setLeadFilter(f.id)}
+                                    style={{ 
+                                        padding: '8px 15px', borderRadius: '10px', fontSize: '0.65rem', fontWeight: '900', border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+                                        background: leadFilter === f.id ? '#FF4B2B' : 'rgba(255,255,255,0.05)',
+                                        color: leadFilter === f.id ? 'white' : 'rgba(255,255,255,0.4)',
+                                    }}
+                                >
+                                    {f.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {leads.length === 0 && (
+                            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.3)' }}>
                                 <Bell size={40} style={{ marginBottom: '15px', opacity: 0.3 }} />
                                 <div style={{ fontWeight: '700', marginBottom: '8px' }}>No Leads Assigned Yet</div>
                                 <div style={{ fontSize: '0.8rem' }}>When leads are assigned to you, they'll appear here with a push notification.</div>
                             </div>
                         )}
-                        
-                        {hotLeads.length > 0 && (
-                            <div>
-                                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#FF4B2B', marginBottom: '12px', letterSpacing: '2px' }}>🔥 HOT LEADS ({hotLeads.length})</div>
-                                {hotLeads.map(lead => (
-                                    <div key={lead.id} style={{ background: 'rgba(255, 75, 43, 0.05)', borderRadius: '24px', padding: '25px', marginBottom: '15px', border: '1px solid rgba(255, 75, 43, 0.2)' }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                                    <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(255, 75, 43, 0.15)', color: '#FF4B2B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>{lead.name.charAt(0)}</div>
-                                                    <div>
-                                                        <div style={{ fontWeight: '800', fontSize: '1.1rem', color: 'white' }}>{lead.name}</div>
-                                                        <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{lead.car || 'Interested Purchaser'}</div>
+
+                        {/* Filtered Logic */}
+                        {(() => {
+                            const filtered = leads.filter(l => {
+                                if (leadFilter === 'all') return true;
+                                if (leadFilter === 'ai') return l.source !== 'Imported' && l.source !== 'File';
+                                if (leadFilter === 'imported') return l.source === 'Imported' || l.source === 'File';
+                                return true;
+                            });
+
+                            const hLimit = filtered.filter(l => (l.quality_score || 0) >= 80);
+                            const wLimit = filtered.filter(l => (l.quality_score || 0) >= 50 && (l.quality_score || 0) < 80);
+
+                            return (
+                                <>
+                                    {hLimit.length > 0 && (
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#FF4B2B', marginBottom: '12px', letterSpacing: '2px' }}>🔥 HOT LEADS ({hLimit.length})</div>
+                                            {hLimit.map(lead => (
+                                                <div key={lead.id} style={{ background: 'rgba(255, 75, 43, 0.05)', borderRadius: '24px', padding: '25px', marginBottom: '15px', border: '1px solid rgba(255, 75, 43, 0.2)' }}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                                                <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(255, 75, 43, 0.15)', color: '#FF4B2B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>{lead.name.charAt(0)}</div>
+                                                                <div>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                        <div style={{ fontWeight: '800', fontSize: '1.1rem', color: 'white' }}>{lead.name}</div>
+                                                                        <span style={{ fontSize: '0.55rem', padding: '2px 6px', borderRadius: '4px', background: (lead.source === 'Imported' || lead.source === 'File') ? '#6c5ce7' : '#00b894', color: 'white', fontWeight: '900' }}>
+                                                                            {(lead.source === 'Imported' || lead.source === 'File') ? '📥 IMPORT' : '✨ ELLIOT'}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{lead.car || 'Interested Purchaser'}</div>
+                                                                </div>
+                                                            </div>
+                                                            <div style={{ background: '#00b894', color: 'white', padding: '6px 12px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: '900' }}>{lead.quality_score}% DNA</div>
+                                                        </div>
+
+                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                                                            <button onClick={() => setSelectedDNA(lead)} style={{ background: 'white', color: '#000', border: 'none', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                                                                <MessageSquare size={20} />
+                                                                <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>DETAILS</span>
+                                                            </button>
+                                                            <button onClick={() => handleAutoDial(lead.id)} style={{ background: 'rgba(0,184,148,0.1)', color: '#00b894', border: '1px solid #00b894', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                                                                <Phone size={20} />
+                                                                <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>AI CALL</span>
+                                                            </button>
+                                                            <button onClick={() => handleNudge(lead.id)} style={{ background: 'rgba(108,92,231,0.1)', color: '#a29bfe', border: '1px solid #a29bfe', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                                                                <Zap size={20} />
+                                                                <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>NUDGE</span>
+                                                            </button>
+                                                            <a href={`tel:${lead.phone}`} style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: 'none', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', textDecoration: 'none' }}>
+                                                                <Phone size={20} />
+                                                                <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>DIAL</span>
+                                                            </a>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div style={{ background: '#00b894', color: 'white', padding: '6px 12px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: '900' }}>{lead.quality_score}% DNA</div>
-                                            </div>
-
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-                                                <button onClick={() => setSelectedDNA(lead)} style={{ background: 'white', color: '#000', border: 'none', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
-                                                    <MessageSquare size={20} />
-                                                    <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>DETAILS</span>
-                                                </button>
-                                                <button onClick={() => handleAutoDial(lead.id)} style={{ background: 'rgba(0,184,148,0.1)', color: '#00b894', border: '1px solid #00b894', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
-                                                    <Phone size={20} />
-                                                    <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>AI CALL</span>
-                                                </button>
-                                                <button onClick={() => handleNudge(lead.id)} style={{ background: 'rgba(108,92,231,0.1)', color: '#a29bfe', border: '1px solid #a29bfe', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
-                                                    <Zap size={20} />
-                                                    <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>NUDGE</span>
-                                                </button>
-                                                <a href={`tel:${lead.phone}`} style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: 'none', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', textDecoration: 'none' }}>
-                                                    <Phone size={20} />
-                                                    <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>DIAL</span>
-                                                </a>
-                                            </div>
+                                            ))}
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                                    )}
 
-                        {/* Warm Leads Section */}
-                        {warmLeads.length > 0 && (
-                            <div>
-                                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#fdcb6e', marginBottom: '12px', letterSpacing: '2px' }}>🟡 WARMING UP ({warmLeads.length})</div>
-                                {warmLeads.map(lead => (
-                                    <div key={lead.id} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', padding: '16px', marginBottom: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(253,203,110,0.1)', color: '#fdcb6e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.75rem' }}>{lead.name.charAt(0)}</div>
-                                                <div>
-                                                    <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{lead.name}</div>
-                                                    <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>{lead.car || 'Browsing'} • Score: {lead.quality_score}%</div>
+                                    {wLimit.length > 0 && (
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#fdcb6e', marginBottom: '12px', letterSpacing: '2px' }}>🟡 WARMING UP ({wLimit.length})</div>
+                                            {wLimit.map(lead => (
+                                                <div key={lead.id} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', padding: '16px', marginBottom: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(253,203,110,0.1)', color: '#fdcb6e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.75rem' }}>{lead.name.charAt(0)}</div>
+                                                            <div>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                                    <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{lead.name}</div>
+                                                                    <span style={{ fontSize: '0.45rem', padding: '1px 4px', borderRadius: '3px', background: (lead.source === 'Imported' || lead.source === 'File') ? 'rgba(108,92,231,0.2)' : 'rgba(0,184,148,0.2)', color: (lead.source === 'Imported' || lead.source === 'File') ? '#a29bfe' : '#00b894', fontWeight: '900' }}>
+                                                                        {(lead.source === 'Imported' || lead.source === 'File') ? 'IMPORT' : 'ELLIOT'}
+                                                                    </span>
+                                                                </div>
+                                                                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>{lead.car || 'Browsing'} • Score: {lead.quality_score}%</div>
+                                                            </div>
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: '5px' }}>
+                                                            <button onClick={() => setSelectedDNA(lead)} style={{ padding: '8px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.7rem' }}>
+                                                                DNA
+                                                            </button>
+                                                            <button onClick={() => handleNudge(lead.id)} disabled={nudging === lead.id} style={{ padding: '8px 14px', borderRadius: '10px', background: 'rgba(253,203,110,0.1)', border: 'none', color: '#fdcb6e', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                                <Zap size={14} /> NUDGE
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div style={{ display: 'flex', gap: '5px' }}>
-                                                <button onClick={() => setSelectedDNA(lead)} style={{ padding: '8px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.7rem' }}>
-                                                    DNA
-                                                </button>
-                                                <button onClick={() => handleNudge(lead.id)} disabled={nudging === lead.id} style={{ padding: '8px 14px', borderRadius: '10px', background: 'rgba(253,203,110,0.1)', border: 'none', color: '#fdcb6e', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                                    <Zap size={14} /> NUDGE
-                                                </button>
-                                            </div>
+                                            ))}
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                                    )}
+                                </>
+                            );
+                        })()}
                     </div>
                 )}
 
