@@ -250,7 +250,9 @@ class Storage:
                 agents = [
                     AgentTable(tenant_id="filcan", name="Juan Dela Cruz", pin="1234", avatar="JD", role="Senior Sales Consultant"),
                     AgentTable(tenant_id="filcan", name="Mark Santos", pin="5678", avatar="MS", role="Sales Consultant"),
-                    AgentTable(tenant_id="filcan", name="Jessica Cruz", pin="9012", avatar="JC", role="Junior Sales Consultant")
+                    AgentTable(tenant_id="filcan", name="Jessica Cruz", pin="9012", avatar="JC", role="Junior Sales Consultant"),
+                    AgentTable(tenant_id="filcan", name="R-Jay", pin="1410", avatar="RJ", role="Sales Manager", subscription_status="active"),
+                    AgentTable(tenant_id="filcan", name="Cousin", pin="2024", avatar="CN", role="Sales Associate", subscription_status="active")
                 ]
                 session.add_all(agents)
                 session.commit()
