@@ -131,6 +131,28 @@ export default function Admin() {
         return () => { if (vapi.current) vapi.current.stop(); };
     }, []);
 
+    useEffect(() => {
+        if (isAuthenticated) return;
+        const handleKeyDown = (e) => {
+            if (e.key >= '0' && e.key <= '9') {
+                if (pin.length < 4) setPin(prev => prev + e.key);
+            } else if (e.key === 'Backspace') {
+                setPin(prev => prev.slice(0, -1));
+            } else if (e.key === 'Enter') {
+                if (pin === '1234') setIsAuthenticated(true);
+                else {
+                    setLoginError('Invalid Authorization');
+                    setPin('');
+                    setTimeout(() => setLoginError(null), 2000);
+                }
+            } else if (e.key === 'Escape') {
+                setPin('');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [pin, isAuthenticated]);
+
     if (!isAuthenticated) {
         return (
             <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at center, #1a1a2e 0%, #000 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'Inter, sans-serif' }}>
