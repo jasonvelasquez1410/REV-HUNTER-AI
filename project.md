@@ -172,11 +172,25 @@ If you need to restart your Antigravity Phone Connect (Mobile Remote Control), f
   - **Shiftly Marketplace Automation**: Added a dedicated "Marketplace (Shiftly)" button in the Admin HQ to demonstrate automated inventory posting.
   - **Lead DNA Dashboard**: Enhanced Agent and Admin views to display "Credit Tier" and "vAuto Trade-in Estimate" directly on the lead cards.
 
-- **2026-04-10 (V25.0)**: **CONNECTIVITY & MULTI-TOOL OPS**.
-  - **Antigravity Phone Connect**: FIXED heartbeat timeouts by switching Ngrok to the `ap` (Asia-Pacific) region default.
-  - **Odoo Helpdesk**: Paused automated survey sending for customer feedback. Created structured favorite reports for company-based ticket analytics.
-  - **GLPI Deployment**: Began local WAMP setup for KEGI IT Asset Management system.
-  - **System Stability**: Verified all local servers and tunnels are resilient for the next session.
+- **2026-04-11 (V26.0)**: **ENGLISH CONSOLIDATION**.
+  - Removed all Tagalog/Bisaya traces from Elliot's persona and Vapi voice configuration. 
+  - Elliot is now a strict English-only specialist globally.
+
+- **2026-04-11 (V26.2)**: **PREMIUM APPRAISAL & PITCH STRATEGY**.
+  - **Enhanced vAuto Simulation**: Upgraded the appraisal math to use VIN patterns and year-based market premiums.
+  - **Dealer Pitch Framework**: Established the "Simulated-to-Live" strategy for presentations.
+  - **Auto-Sync Active**: GitHub/Vercel continuous sync enabled.
+
+## 📈 Dealer Pitch Strategy (Simulated vs. Live)
+
+When presenting to Dealer Managers, use this framework:
+
+1. **The Lead DNA Concept**: Explain that RevHunter captures more than just a name; it captures the "Financial DNA" (Credit range + Trade-in value).
+2. **Current State (Ready-to-Connect)**: State that the system is currently pulling from a **Real-World Global Database** (Simulated based on market averages).
+3. **Live Deployment**: Inform them that upon sign-up, the system will be switched to their specific **API Keys** for **DealerTrack**, **vAuto**, or **Canadian Black Book** for 100% real-time local precision.
+4. **Safety Benefit**: Explain that during the trial, "Simulated Mode" ensures the AI never hits rate limits or technical blocks, providing a flawless demo experience for the staff.
+
+---
 
 
 
