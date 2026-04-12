@@ -390,23 +390,39 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                         <button onClick={() => setShowPlaybook(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontWeight: 'bold' }}>✕</button>
                     </div>
                     
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)', marginBottom: '15px', fontStyle: 'italic' }}>
+                        Here is how you connect your account so you can start firing out inventory posts:
+                    </div>
+                    
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <div style={{ paddingLeft: '12px', borderLeft: '3px solid #1877F2' }}>
-                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#1877F2' }}>1. FB AUTO-CONNECT</div>
+                        <div style={{ paddingLeft: '12px', borderLeft: '3px solid rgba(255,255,255,0.3)' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: 'white' }}>Step 1: Open the Agent Dashboard</div>
                             <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginTop: '4px', lineHeight: '1.4' }}>
-                                Go to the <b>FB SETTINGS</b> tab. Enter your Facebook Email and Password, then tap <b>CONNECT TO FB APP</b>. Wait for the green ✅ confirmation to sync your Marketplace account.
+                                Log in to your Agent OS. At the bottom navigation menu, click on the <b>🚀 Marketing</b> tab.
+                            </div>
+                        </div>
+                        <div style={{ paddingLeft: '12px', borderLeft: '3px solid rgba(255,255,255,0.3)' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: 'white' }}>Step 2: Go to Facebook Settings</div>
+                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginTop: '4px', lineHeight: '1.4' }}>
+                                At the top of the Marketing Hub, tap the <b>FB SETTINGS</b> button.
+                            </div>
+                        </div>
+                        <div style={{ paddingLeft: '12px', borderLeft: '3px solid rgba(255,255,255,0.3)' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: 'white' }}>Step 3: Enter Your Credentials</div>
+                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginTop: '4px', lineHeight: '1.4' }}>
+                                Under "Account Integration", type in the exact Facebook Email (or Phone number) and Password for the account you use for your auto sales and Marketplace posts.
+                            </div>
+                        </div>
+                        <div style={{ paddingLeft: '12px', borderLeft: '3px solid #1877F2' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#1877F2' }}>Step 4: Connect the App</div>
+                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginTop: '4px', lineHeight: '1.4' }}>
+                                Tap the blue <b>"CONNECT TO FB APP"</b> button. Give it a second while Elliot authenticates the connection. Note: Once successful, the login screen will disappear, and you will see a big green checkmark ✅ saying "Connected to Facebook Marketplace".
                             </div>
                         </div>
                         <div style={{ paddingLeft: '12px', borderLeft: '3px solid #00b894' }}>
-                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#00b894' }}>2. THE ZAP (⚡)</div>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#00b894' }}>Step 5: Launch a Campaign (Test Sync)</div>
                             <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginTop: '4px', lineHeight: '1.4' }}>
-                                Check the <b>INVENTORY</b> list. Look for the green <b>% DEMAND</b> badge. This tells you which cars will sell fastest today.
-                            </div>
-                        </div>
-                        <div style={{ paddingLeft: '12px', borderLeft: '3px solid #fdcb6e' }}>
-                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#fdcb6e' }}>3. LAUNCH CAMPAIGN</div>
-                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginTop: '4px', lineHeight: '1.4' }}>
-                                Find a vehicle and tap <b>SYNC TO MARKETPLACE</b>. Inside the organizer, hit the <b>SYNC INVENTORY DATA</b> button (now unlocked!) to push data to your connected feed.
+                                Go back to the <b>INVENTORY</b> tab at the top.<br/>Pick any high-demand vehicle and tap <b>"🚀 SYNC TO MARKETPLACE"</b>.<br/>You'll notice the <b>"🔄 SYNC INVENTORY DATA"</b> button is now unlocked. Hit that button, and Elliot will push the data directly using your authorized account!
                             </div>
                         </div>
                     </div>
