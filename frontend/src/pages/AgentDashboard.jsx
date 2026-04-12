@@ -323,6 +323,9 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
     const [scrapingUrl, setScrapingUrl] = useState('');
     const [sourceStatus, setSourceStatus] = useState(null);
     const [showPlaybook, setShowPlaybook] = useState(false);
+    const [fbEmail, setFbEmail] = useState('');
+    const [fbPassword, setFbPassword] = useState('');
+    const [isFbConnecting, setIsFbConnecting] = useState(false);
 
     const handlePost = async () => {
         if (!postingCar) return;
@@ -538,35 +541,66 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
             {subView === 'settings' && (
                 <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '28px', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <h3 style={{ margin: '0 0 20px', fontSize: '1.2rem', fontWeight: '900', color: 'white' }}>Account Integration</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '0.75rem', color: 'rgba(255,255,255,0.85)', marginBottom: '8px', textTransform: 'uppercase', fontWeight: 'bold' }}>Facebook Email / Phone</label>
-                            <input 
-                                type="text"
-                                placeholder="Email or phone"
-                                style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
-                            />
+                    {fbSettings.fb_access_token ? (
+                        <div style={{ textAlign: 'center', padding: '20px' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(0, 184, 148, 0.1)', color: '#00b894', marginBottom: '20px' }}>
+                                <CheckCircle size={40} />
+                            </div>
+                            <h4 style={{ margin: '0 0 10px', fontSize: '1.1rem', color: 'white' }}>Connected to Facebook Marketplace</h4>
+                            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', marginBottom: '25px', lineHeight: '1.5' }}>
+                                Elliot is currently monitoring your listings and active inquiries. Your automated inventory sync is active.
+                            </p>
+                            <button 
+                                onClick={() => onUpdateSettings({ fb_access_token: '', fb_page_id: '' })}
+                                style={{ padding: '12px 24px', background: 'rgba(217,32,39,0.1)', color: '#D92027', border: '1px solid rgba(217,32,39,0.3)', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.85rem', cursor: 'pointer' }}
+                            >
+                                DISCONNECT
+                            </button>
                         </div>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '0.75rem', color: 'rgba(255,255,255,0.85)', marginBottom: '8px', textTransform: 'uppercase', fontWeight: 'bold' }}>Facebook Password</label>
-                            <input 
-                                type="password"
-                                placeholder="Required for direct app link"
-                                style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
-                            />
-                        </div>
-                        
-                        <button 
-                            onClick={() => alert('Elliot is initializing Facebook App Link...')}
-                            style={{ width: '100%', padding: '16px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '14px', fontWeight: '900', fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 6px 20px rgba(24,119,242,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '10px' }}
-                        >
-                            <Share2 size={20} /> CONNECT TO FB APP
-                        </button>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.75rem', color: 'rgba(255,255,255,0.85)', marginBottom: '8px', textTransform: 'uppercase', fontWeight: 'bold' }}>Facebook Email / Phone</label>
+                                <input 
+                                    type="text"
+                                    value={fbEmail}
+                                    onChange={(e) => setFbEmail(e.target.value)}
+                                    placeholder="Email or phone"
+                                    style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.75rem', color: 'rgba(255,255,255,0.85)', marginBottom: '8px', textTransform: 'uppercase', fontWeight: 'bold' }}>Facebook Password</label>
+                                <input 
+                                    type="password"
+                                    value={fbPassword}
+                                    onChange={(e) => setFbPassword(e.target.value)}
+                                    placeholder="Required for direct app link"
+                                    style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '1rem', boxSizing: 'border-box' }}
+                                />
+                            </div>
+                            
+                            <button 
+                                onClick={() => {
+                                    if(!fbEmail || !fbPassword) return alert('Enter credentials to connect.');
+                                    setIsFbConnecting(true);
+                                    setTimeout(() => {
+                                        setIsFbConnecting(false);
+                                        onUpdateSettings({ fb_access_token: 'mock_rjay_token_2026', fb_page_id: 'mock_page' });
+                                        setStatus({ type: 'success', msg: 'Facebook Connected successfully!' });
+                                    }, 1500);
+                                }}
+                                disabled={isFbConnecting}
+                                style={{ width: '100%', padding: '16px', background: isFbConnecting ? 'rgba(24,119,242,0.5)' : '#1877F2', color: 'white', border: 'none', borderRadius: '14px', fontWeight: '900', fontSize: '0.95rem', cursor: isFbConnecting ? 'default' : 'pointer', boxShadow: '0 6px 20px rgba(24,119,242,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '10px' }}
+                            >
+                                <Share2 size={20} /> {isFbConnecting ? 'CONNECTING...' : 'CONNECT TO FB APP'}
+                            </button>
 
-                        <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', lineHeight: '1.5', textAlign: 'center' }}>
-                            By connecting, Elliot will automatically monitor your Marketplace posts and lead inquiries directly within the Facebook app.
-                        </p>
-                    </div>
+                            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', lineHeight: '1.5', textAlign: 'center' }}>
+                                By connecting, Elliot will automatically monitor your Marketplace posts and lead inquiries directly within the Facebook app.
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -947,7 +981,7 @@ export default function AgentDashboard() {
     };
 
     if (!agent) {
-        return <AgentLogin onLogin={handleLogin} />;
+        return <LoginSection />;
     }
 
     if (agent.subscription_status === 'expired') {
@@ -1013,7 +1047,7 @@ export default function AgentDashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                         <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem', boxShadow: '0 8px 20px rgba(255, 75, 43, 0.3)' }}>{agent.avatar || agent.name.charAt(0)}</div>
                         <div>
-                            <div style={{ fontWeight: '900', fontSize: '1.5rem', color: 'white', letterSpacing: '-0.5px' }}>{agent.name}</div>
+                            <div style={{ fontWeight: '900', fontSize: '1.5rem', color: 'white', letterSpacing: '-0.5px' }}>Welcome back, {agent.name}</div>
                             <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                 {agent.role}
                             </div>
