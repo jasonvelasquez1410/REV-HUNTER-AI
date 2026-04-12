@@ -1462,13 +1462,33 @@ export default function AgentDashboard() {
                                     )}
                                 </div>
                                 <button
-                                    onClick={() => {
+                                    onClick={async () => {
                                         setImportStatus('importing');
-                                        setTimeout(() => {
-                                            setLeads(prev => [...importedLeads, ...prev]);
-                                            setImportStatus('done');
-                                            sendPushNotification('📥 Import Complete!', `${importedLeads.length} leads loaded. Elliot is now working them.`);
-                                        }, 2000);
+                                        try {
+                                            const res = await fetch(`${apiUrl}/import/leads`, {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'x-tenant-id': tenant?.id || 'filcan'
+                                                },
+                                                body: JSON.stringify({ leads: importedLeads })
+                                            });
+                                            if (res.ok) {
+                                                setLeads(prev => [...importedLeads, ...prev]); // Optimistic load
+                                                setImportStatus('done');
+                                                sendPushNotification('📥 Import Complete!', `${importedLeads.length} leads loaded. Elliot is now working them.`);
+                                                if (typeof fetchLeads === 'function') {
+                                                    setTimeout(fetchLeads, 500); // Fully sync with database
+                                                }
+                                            } else {
+                                                alert("Backend error saving leads.");
+                                                setImportStatus('preview');
+                                            }
+                                        } catch (e) {
+                                            console.error("Import Error:", e);
+                                            alert("Network error while importing leads.");
+                                            setImportStatus('preview');
+                                        }
                                     }}
                                     style={{ width: '100%', marginTop: '15px', padding: '16px', background: 'linear-gradient(135deg, #D92027, #a01820)', color: 'white', border: 'none', borderRadius: '14px', fontWeight: '800', cursor: 'pointer', fontSize: '0.95rem', boxShadow: '0 8px 25px rgba(217,32,39,0.3)' }}
                                 >

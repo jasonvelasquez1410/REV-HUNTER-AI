@@ -263,6 +263,60 @@ async def import_crm_leads(tenant_id: str = Depends(get_tenant_id)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class ImportedLead(BaseModel):
+    name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    assigned_agent: Optional[str] = None
+    car: Optional[str] = None
+    notes: Optional[str] = None
+    source: Optional[str] = "CRM Import"
+
+class ImportLeadsPayload(BaseModel):
+    leads: List[ImportedLead]
+
+@api_router.post("/import/leads")
+async def import_leads_frontend(payload: ImportLeadsPayload, tenant_id: str = Depends(get_tenant_id)):
+    try:
+        from .storage import LeadTable
+        count = 0
+        with db.session_factory() as session:
+            for l in payload.leads:
+                # Basic get or create logic manually so we can set extra fields efficiently
+                lead = session.query(LeadTable).filter(
+                    LeadTable.tenant_id == tenant_id,
+                    LeadTable.name == l.name
+                ).first()
+                
+                if not lead:
+                    lead = LeadTable(
+                        tenant_id=tenant_id,
+                        name=l.name,
+                        phone=l.phone,
+                        email=l.email,
+                        status="Discovery",
+                        source=l.source,
+                        is_manual_assignment=True if l.assigned_agent else False,
+                        assigned_agent=l.assigned_agent,
+                        conversation_summary=f"Imported. Car Int: {l.car or 'None'}. Notes: {l.notes or 'None'}",
+                        last_action_time="Just Imported"
+                    )
+                    session.add(lead)
+                else:
+                    # Update existing imported leads
+                    if l.phone: lead.phone = l.phone
+                    if l.email: lead.email = l.email
+                    if l.assigned_agent: 
+                        lead.assigned_agent = l.assigned_agent
+                        lead.is_manual_assignment = True
+                    lead.source = l.source
+                count += 1
+            session.commit()
+        return {"status": "success", "imported": count}
+    except Exception as e:
+        print(f"Import Leads Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/roi-analytics")
 async def get_roi_analytics(tenant_id: str = Depends(get_tenant_id)):
     """Advanced analytics for the ROI Dashboard."""
