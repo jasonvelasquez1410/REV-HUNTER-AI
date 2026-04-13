@@ -971,8 +971,9 @@ export default function AgentDashboard() {
                     window.speechSynthesis.speak(msg);
                 };
                 
+                const assistantName = agent.assistant_name || "Adam";
                 setTimeout(() => {
-                    speak(`Welcome, boss. I'm Adam, your digital assistant. Our pipeline is currently empty. To get started, you can import your leads or sync your Facebook marketplace inventory in Step One.`);
+                    speak(`Welcome, boss. I'm ${assistantName}, your digital assistant. Our pipeline is currently empty. To get started, you can import your leads or sync your Facebook marketplace inventory in Step One.`);
                     setWelcomeTriggered(true);
                 }, 1500);
             }
@@ -1362,6 +1363,19 @@ export default function AgentDashboard() {
                                             style={{ padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.8rem' }}
                                         />
                                     </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                        <label style={{ fontSize: '0.6rem', fontWeight: '900', color: '#FF4B2B' }}>AI ASSISTANT NAME</label>
+                                        <input 
+                                            placeholder="e.g. Adam" 
+                                            defaultValue={agent.assistant_name || "Adam"}
+                                            onChange={(e) => {
+                                                const newAgent = { ...agent, assistant_name: e.target.value };
+                                                setAgent(newAgent);
+                                                localStorage.setItem('revhunter_agent', JSON.stringify(newAgent));
+                                            }}
+                                            style={{ padding: '12px', borderRadius: '10px', background: 'rgba(217,32,39,0.05)', border: '1px solid rgba(217,32,39,0.2)', color: 'white', fontSize: '0.8rem', fontWeight: 'bold' }}
+                                        />
+                                    </div>
                                 </div>
                                 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -1373,9 +1387,9 @@ export default function AgentDashboard() {
                                 </div>
 
                                 <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255, 75, 43, 0.08)', borderRadius: '14px', border: '1px dashed #FF4B2B' }}>
-                                    <div style={{ fontSize: '0.6rem', fontWeight: '900', color: '#FF4B2B', marginBottom: '8px' }}>🤖 ELLIOT READY TO SAY:</div>
+                                    <div style={{ fontSize: '0.6rem', fontWeight: '900', color: '#FF4B2B', marginBottom: '8px' }}>🤖 {agent.assistant_name?.toUpperCase() || 'ADAM'} READY TO SAY:</div>
                                     <div style={{ fontSize: '0.75rem', color: 'white', fontStyle: 'italic', lineHeight: '1.4' }}>
-                                        "Hi, I'm Elliot, the AI assistant for <b>{agent.name}</b>. I'm calling to help you with..."
+                                        "Hi, I'm {agent.assistant_name || 'Adam'}, the AI assistant for <b>{agent.name}</b>. I'm calling to help you with..."
                                     </div>
                                 </div>
                                 
