@@ -488,7 +488,7 @@ export default function Admin() {
                         </button>
                     ))}
                 </div>
-            </header>
+            </div>
 
             <div className="dashboard-content" style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '30px' }}>
                 <main>
