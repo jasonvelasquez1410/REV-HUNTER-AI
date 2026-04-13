@@ -31,7 +31,21 @@ export default function Admin() {
     // ... rest of the many hooks ...
     const [isCommanding, setIsCommanding] = useState(null);
     const [activeTab, setActiveTab] = useState('inbox');
-    const [vapiError, setVapiError] = useState(null);
+    const [showDemoModal, setShowDemoModal] = useState(false);
+    
+    const handleManualAssign = async (leadId, agentName) => {
+        try {
+            await fetch(`${apiUrl}/leads/${leadId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ assigned_agent: agentName, action: 'reassign' })
+            });
+            setLeads(prev => prev.map(l => l.id === leadId ? { ...l, assigned_agent: agentName } : l));
+            setAuditLogs(prev => [{ id: `assign-${Date.now()}`, time: "Now", action: `ADMIN: Reassigned lead to ${agentName.toUpperCase()}`, type: "Admin" }, ...prev]);
+        } catch (err) { console.error(err); }
+    };
+    const [showDemoModal, setShowDemoModal] = useState(false);
+    const [stats, setStats] = useState({ leads24h: 12, impressions: '1,420', reach: '8,402' });
     const [isCalling, setIsCalling] = useState(false);
     const [activeHuntLog, setActiveHuntLog] = useState([]);
     const [isHunting, setIsHunting] = useState(false);
@@ -442,7 +456,7 @@ export default function Admin() {
     const queryParams = new URLSearchParams(window.location.search);
     const isSuperAdmin = queryParams.get('sa') === 'true';
 
-    const allTabs = ['inbox', 'analytics', 'roi', 'hunters', 'showroom', 'seo', 'billing', 'settings'];
+    const allTabs = ['inbox', 'analytics', 'roi', 'agents', 'hunters', 'showroom', 'seo', 'billing', 'settings'];
     const visibleTabs = allTabs.filter(tab => tab !== 'billing' || isSuperAdmin);
 
     return (
@@ -465,6 +479,7 @@ export default function Admin() {
                         <div style={{ fontSize: '0.6rem', color: '#666', fontWeight: 'bold' }}>THROUGHPUT</div>
                         <div style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '900' }}>{stats.leads24h} LEADS/24H</div>
                     </div>
+                    <button onClick={() => setShowDemoModal(true)} style={{ background: 'rgba(0,184,148,0.1)', color: '#00b894', border: '1px solid #00b894', padding: '8px 15px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>🚀 LIVE DEMO</button>
                     <button onClick={() => alert("Opening Technical Manual v3.2")} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '8px 15px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>DOCS</button>
                     <button onClick={() => window.location.reload()} style={{ background: '#D92027', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 5px 15px rgba(217,32,39,0.3)' }}>EMERGENCY RESET</button>
                 </div>
@@ -524,6 +539,14 @@ export default function Admin() {
                                         <button onClick={() => handleAutoNudge(lead.id)} style={{ background: '#11111a', border: '1px solid #1a1a2e', color: '#D92027', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer' }}><Zap size={14} /></button>
                                         <button onClick={() => setIsCommanding(lead)} style={{ background: '#11111a', border: '1px solid #1a1a2e', color: '#fdcb6e', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer' }}><Target size={14} /></button>
                                         <button onClick={() => handleServerVoiceCall(lead)} style={{ background: '#00b894', color: '#fff', border: 'none', padding: '6px 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.6rem' }}>VOICE DIAL</button>
+                                        <select 
+                                            value={lead.assigned_agent || ""} 
+                                            onChange={(e) => handleManualAssign(lead.id, e.target.value)}
+                                            style={{ background: '#11111a', border: '1px solid #1a1a2e', color: '#888', padding: '4px', borderRadius: '6px', fontSize: '0.6rem', cursor: 'pointer' }}
+                                        >
+                                            <option value="">UNASSIGNED</option>
+                                            {MOCK_AGENTS.map(a => <option key={a.id} value={a.name}>{a.name.toUpperCase()}</option>)}
+                                        </select>
                                     </div>
                                 </div>
                             ))}
@@ -837,6 +860,7 @@ export default function Admin() {
                     </div>
                 </div>
             )}
+            {showDemoModal && <LiveDemoModal onClose={() => setShowDemoModal(false)} apiUrl={apiUrl} />}
             {/* Subtle SuperAdmin Toggle for internal use */}
             <div style={{ position: 'fixed', bottom: '10px', right: '10px', opacity: 0.1, transition: '0.3s', cursor: 'pointer', fontSize: '0.6rem' }} 
                  onMouseEnter={(e) => e.currentTarget.style.opacity = 0.8}
@@ -993,4 +1017,61 @@ function EngagementHistoryModal({ lead, onClose }) {
         </div>
     );
 }
+
+const LiveDemoModal = ({ onClose, apiUrl }) => {
+    return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(10px)', zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <div style={{ width: '400px', background: '#000', borderRadius: '32px', border: '1px solid #00b894', padding: '40px', textAlign: 'center', boxShadow: '0 20px 80px rgba(0,184,148,0.2)' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⚡</div>
+                <h2 style={{ color: 'white', fontWeight: '900', margin: 0 }}>LIVE DIAL DEMO</h2>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', marginBottom: '30px' }}>Trigger a live Outbound AI call in behalf of FilCan Cars using the Vapi Bridge.</p>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <input 
+                        id="demo-name"
+                        placeholder="Customer Name (e.g. Jason)" 
+                        style={{ background: '#111', border: '1px solid #222', padding: '15px', borderRadius: '15px', color: 'white' }}
+                    />
+                    <input 
+                        id="demo-phone"
+                        placeholder="Live Phone Number (with +1)" 
+                        style={{ background: '#111', border: '1px solid #222', padding: '15px', borderRadius: '15px', color: 'white' }}
+                    />
+                    <input 
+                        id="demo-car"
+                        placeholder="Vehicle of Interest (e.g. VW Atlas)" 
+                        style={{ background: '#111', border: '1px solid #222', padding: '15px', borderRadius: '15px', color: 'white' }}
+                    />
+                    <button 
+                        onClick={async () => {
+                            const name = document.getElementById('demo-name').value;
+                            const phone = document.getElementById('demo-phone').value;
+                            const car = document.getElementById('demo-car')?.value || "";
+                            if(!name || !phone) return alert("Enter name and phone");
+                            
+                            const res = await fetch(`${apiUrl}/engagement/outbound-call`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                    lead_id: -1, 
+                                    assistant_name: "Adam",
+                                    lead_name: name,
+                                    lead_phone: phone,
+                                    car: car,
+                                    objective: "discover"
+                                })
+                            });
+                            if(res.ok) alert("🚀 AI IS DIALING NOW! Listen for your phone...");
+                            onClose();
+                        }}
+                        style={{ background: '#00b894', color: 'white', border: 'none', padding: '20px', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,184,148,0.3)' }}
+                    >
+                        INITIATE BROADCAST
+                    </button>
+                    <button onClick={onClose} style={{ background: 'transparent', color: '#666', border: 'none', padding: '10px', fontSize: '0.8rem', cursor: 'pointer' }}>CANCEL</button>
+                </div>
+            </div>
+        </div>
+    );
+};
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Bell, LogOut, FileSpreadsheet, CheckCircle, AlertCircle, Share2, Settings, LayoutDashboard, Image as ImageIcon, Send, MessageSquare, Mic, Link, Camera, Building2, HelpCircle } from 'lucide-react';
 import { useTenant } from '../context/TenantContext';
 import * as XLSX from 'xlsx';
+import ROIDashboard from '../components/ROIDashboard';
 
 // ── PUSH NOTIFICATION HELPER ──────────────────────
 function requestNotificationPermission() {
@@ -876,8 +877,12 @@ export default function AgentDashboard() {
     const [fbSettings, setFbSettings] = useState({ fb_access_token: '', fb_page_id: '' });
     const [dialing, setDialing] = useState(null);
     const [selectedDNA, setSelectedDNA] = useState(null);
+    const [selectedLead, setSelectedLead] = useState(null);
     const [isStrategistOpen, setIsStrategistOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('leads'); // 'leads' | 'marketing' | 'roi'
+    const [welcomeTriggered, setWelcomeTriggered] = useState(false);
+    const [leadFilter, setLeadFilter] = useState('all');
+    const [showManualModal, setShowManualModal] = useState(false);
     const fileInputRef = useRef(null);
 
     const hydrateDemo = () => {
@@ -1198,12 +1203,12 @@ export default function AgentDashboard() {
                 ].map(tab => (
                     <button
                         key={tab.id}
-                        onClick={() => setActiveView(tab.id)}
+                        onClick={() => { setActiveTab(tab.id); if(tab.id === 'import') fileInputRef.current?.click(); }}
                         style={{
                             padding: '10px 18px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap',
-                            background: activeView === tab.id ? 'rgba(255, 75, 43, 0.2)' : 'rgba(255,255,255,0.03)',
-                            color: activeView === tab.id ? '#FF4B2B' : 'rgba(255,255,255,0.4)',
-                            border: activeView === tab.id ? '1px solid rgba(255, 75, 43, 0.3)' : '1px solid rgba(255,255,255,0.05)'
+                            background: activeTab === tab.id ? 'rgba(255, 75, 43, 0.2)' : 'rgba(255,255,255,0.03)',
+                            color: activeTab === tab.id ? '#FF4B2B' : 'rgba(255,255,255,0.4)',
+                            border: activeTab === tab.id ? '1px solid rgba(255, 75, 43, 0.3)' : '1px solid rgba(255,255,255,0.05)'
                         }}
                     >
                         {tab.icon} {tab.label}
@@ -1332,9 +1337,6 @@ export default function AgentDashboard() {
                                                                     <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{lead.car || 'Interested Purchaser'}</div>
                                                                 </div>
                                                             </div>
-                                                            <div style={{ background: '#00b894', color: 'white', padding: '6px 12px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: '900' }}>{lead.quality_score}% DNA</div>
-                                                        </div>
-
                                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
                                                             <button onClick={() => setSelectedDNA(lead)} style={{ background: 'white', color: '#000', border: 'none', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
                                                                 <MessageSquare size={20} />
@@ -1356,6 +1358,12 @@ export default function AgentDashboard() {
                                                     </div>
                                                 </div>
                                             ))}
+                                            <button 
+                                                onClick={() => setShowManualModal(true)}
+                                                style={{ width: '100%', padding: '20px', background: 'rgba(255,255,255,0.03)', border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '24px', color: 'rgba(255,255,255,0.3)', fontWeight: '900', fontSize: '0.8rem', cursor: 'pointer', marginBottom: '30px' }}
+                                            >
+                                                + DIRECT ADD
+                                            </button>
                                         </div>
                                     )}
 
@@ -1402,15 +1410,91 @@ export default function AgentDashboard() {
                     </div>
                 )}
 
+                {activeTab === 'studio' && (
+                    <div style={{ animation: 'fadeIn 0.3s ease', background: 'rgba(255,255,255,0.02)', padding: '30px', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                         <div style={{ marginBottom: '30px' }}>
+                            <h2 style={{ fontWeight: '900', fontSize: '1.5rem', margin: 0 }}>AI Studio 🎨</h2>
+                            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>Personalize your AI Assistant's identity</p>
+                        </div>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.7rem', color: '#FF4B2B', fontWeight: '900', letterSpacing: '2px', marginBottom: '10px', textTransform: 'uppercase' }}>Assistant Identity</label>
+                                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '25px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '15px' }}>Give your agent a name. This name will be used in greeting calls and strategist modes.</div>
+                                    <input 
+                                        type="text"
+                                        placeholder="e.g. Jarvis, Elliot, Sarah"
+                                        value={agent.assistant_name || "Adam"}
+                                        onChange={(e) => {
+                                            const newAgent = { ...agent, assistant_name: e.target.value };
+                                            setAgent(newAgent);
+                                            localStorage.setItem('revhunter_agent', JSON.stringify(newAgent));
+                                        }}
+                                        style={{ width: '100%', padding: '18px', borderRadius: '15px', background: '#000', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '1.1rem', fontWeight: 'bold' }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ background: 'rgba(0,184,148,0.05)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(0,184,148,0.2)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#00b894', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                                    <Zap size={16} fill="currentColor" />
+                                    <span>High-Speed Inference Active</span>
+                                </div>
+                                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginTop: '5px' }}>
+                                    Your assistant is currently powered by Groq Llama-3 for sub-200ms response times during live calls.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {activeTab === 'roi' && (
                     <div style={{ animation: 'fadeIn 0.3s ease', background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.05)' }}>
                          <div style={{ marginBottom: '25px' }}>
                             <h2 style={{ fontWeight: '900', fontSize: '1.5rem', margin: 0 }}>Business Case 📈</h2>
                             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>Live performance & ROI projection for FilCan</p>
                         </div>
-                        {/* Adapt ROIDashboard for Dark Theme */}
+                        <ROIDashboard tenant={tenant} />
+                    </div>
+                )}
+
+                {selectedLead && (
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(10px)' }}>
+                        <div style={{ width: '100%', maxWidth: '450px', background: '#111', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', animation: 'slideUp 0.3s ease' }}>
+                            <div style={{ padding: '30px', background: 'linear-gradient(135deg, #FF4B2B 0%, #FF416C 100%)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <h2 style={{ color: 'white', margin: 0, fontSize: '1.2rem' }}>{selectedLead.name}</h2>
+                                    <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.8)' }}>LEAD DNA SUMMARY</div>
+                                </div>
+                                <button onClick={() => setSelectedLead(null)} style={{ background: 'white', color: '#000', border: 'none', width: '30px', height: '30px', borderRadius: '50%', fontWeight: 'bold' }}>×</button>
+                            </div>
+                            <div style={{ padding: '30px', maxHeight: '70vh', overflowY: 'auto' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '30px' }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '20px' }}>
+                                        <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', marginBottom: '5px' }}>CREDIT STATUS</div>
+                                        <div style={{ fontWeight: 'bold', color: '#00b894' }}>EXCELLENT (740+)</div>
+                                    </div>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '20px' }}>
+                                        <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', marginBottom: '5px' }}>TRADE-IN</div>
+                                        <div style={{ fontWeight: 'bold' }}>2019 MAZDA 3</div>
+                                    </div>
+                                </div>
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontWeight: 'bold' }}>AI CONVERSATION SUMMARY</label>
+                                    <p style={{ fontSize: '0.85rem', color: '#eee', lineHeight: '1.6', marginTop: '10px' }}>
+                                        Lead confirmed interest in the **{selectedLead.car}**. They have a monthly budget of **$800/mo** and are looking to finalize the deal by **next Saturday**. AI has already appraised the trade-in via vAuto at **$12,400**.
+                                    </p>
+                                </div>
+                                <button onClick={() => { handleAutoDial(selectedLead.id); setSelectedLead(null); }} style={{ width: '100%', padding: '20px', background: '#00b894', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer' }}>
+                                    PICK UP THE PHONE & CLOSE 📞
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                         <div style={{ filter: 'invert(1) hue-rotate(180deg)', opacity: 0.9 }}>
-                             <ROIDashboard />
+                             <ROIDashboard tenant={tenant} />
                         </div>
                     </div>
                 )}

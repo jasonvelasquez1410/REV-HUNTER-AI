@@ -22,6 +22,7 @@ const MOCK_ANALYTICS = {
     { label: 'Total Leads', value: '1,045', icon: Users, trend: '+24%', color: '#003366' },
     { label: 'Qualified (DNA)', value: '642', icon: Target, trend: '+32%', color: '#00b894' },
     { label: 'Appointments', value: '184', icon: PhoneCall, trend: '+45%', color: '#D92027' },
+    { label: 'Marketing Cost', value: '$0.00', icon: DollarSign, trend: 'Net Zero Risk', color: '#1877F2' },
     { label: 'Success Velocity', value: '84.5%', icon: TrendingUp, trend: '+18%', color: '#8e44ad' },
   ]
 };

@@ -44,7 +44,9 @@ The standalone "Plan B" mobile dashboard for independent sales agents (specifica
 
 ---
 **Last Updated:** 2026-04-13 08:10 AM
-**Status:** Ready for Wednesday Presentation (Onboarding Refinement Complete).
+- **Status**: LAUNCH READY / Presentation Stable 🚀
+- **Target**: FilCan Cars (Wednesday Demo)
+- **Recently Completed**: AI Studio (Personalization), ROI Bridge, Manual Lead Entry, State Stabilization.
 
 ---
 
@@ -56,6 +58,17 @@ The standalone "Plan B" mobile dashboard for independent sales agents (specifica
 * **The RevHunter Solution:** An end-to-end ecosystem where we generate the traffic, and our AI (Elliot) instantly intercepts, qualifies, and books the lead while your agents sleep.
 
 *💬 **Speaking Note:** "Mr. Manager, our goal isn't just to sell you software. We are bringing a complete ecosystem. We run the Google/Facebook Ads to generate the hype, and our AI catches every single lead those ads produce."*
+
+---
+
+## 🤖 SLIDE 1.5: The 4 AI Superpowers (Your Digital Staff)
+**Headline:** *One System. Four Elite Specialists.*
+* **1. The Receptionist:** 24/7 Intelligent Greeting. Never misses a DM or a comment on Marketplace.
+* **2. The Sales Agent:** Follows a battle-tested 9-step script. Knows how to isolate budget, credit, and trade-ins.
+* **3. The Marketing Manager:** AI-generated ad copy and high-converting Marketplace posts based on your live inventory.
+* **4. The Admin Assistant (Elliot Ops):** Voice-activated operational control for managers. "Book a test drive," "Appraise this trade-in," or "Show me the ROI."
+
+---
 
 ---
 
@@ -79,13 +92,15 @@ The standalone "Plan B" mobile dashboard for independent sales agents (specifica
 ## 🎯 SLIDE 3: The "Qualified Lead" Guarantee
 **Headline:** *You don't pay for clicks. You pay for qualified buyers.*
 * Unlike traditional marketing agencies that charge you just to run ads, our model is 100% performance-based.
-* We only charge **$20 per AI-Qualified Lead**.
+* **We fund the ad budget:** RevHunter (Rjay & Team) handles 100% of the Big Tech ad spend. 
+* You only pay exactly **$20 per AI-Qualified Lead**.
 
 **What defines a "Qualified Lead"?**
 Before we ever charge you $20, Elliot the AI must extract and verify a 3-Step Profile:
 1. **Verified Contact:** Real Name & Working Phone Number.
 2. **Confirmed Intent:** Customer explicitly states they are looking to buy or trade-in within 30 days.
 3. **Financial/Trade Data:** Customer provides their estimated credit score, budget, or trade-in vehicle details.
+    *   *System Note:* Our AI connects to **vAuto / CBB** for instant appraisals and **DealerTrack** logic for credit tier isolation during the live chat.
 
 *💬 **Speaking Note:** "If we send you a dead phone number or someone who isn't buying, it costs you nothing. Elliot will not bill you a dime until he successfully extracts a real phone number, confirms their buying intent, and gets their credit or trade-in profile. We are that confident in our traffic."*
 

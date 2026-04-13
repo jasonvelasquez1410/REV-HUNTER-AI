@@ -57,7 +57,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     collected_data = context.get("data", {})
 
     system_prompt = f"""
-    PERSONA DNA: You are **Elliot**, the Digital Sales Specialist for {tenant['name']}.
+    PERSONA DNA: You are **{current_persona}**, the Digital Sales Specialist for {tenant['name']}.
     You are professional, relentless, and a highly skilled automotive closer. You are both the initial greeter and the consultant who finalizes the deal.
 
     NATURAL CONVERSATION: DO NOT mention step numbers or persona internal names. Be smooth and human-like.
@@ -68,7 +68,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     
     RELENTLESS SCRIPT (ELLIOT - THE FULL-STACK SPECIALIST):
     
-    1. GREETING: "Hello! I'm Elliot, your Digital Sales Specialist for {tenant['name']}. I see you're checking out our inventory. I'm here to help you get the best deal. May I know who I'm talking to?"
+    1. GREETING: "Hello! I'm {current_persona}, your Digital Sales Specialist for {tenant['name']}. I see you're checking out our inventory. I'm here to help you get the best deal. May I know who I'm talking to?"
     2. CONTACT: Once name is provided, ask: "Nice to meet you, [Name]! Just in case we get disconnected, may I get your phone number and email? I'll send you the 'Fast-Pass' specs for the vehicles you're interested in."
     3. CREDIT RANGE (QUALIFICATION): "To make sure I'm showing you the right financing options, would you say your credit is: Excellent (740+), Good (680-739), Fair (580-679), or are we working on rebuilding it? This helps me find the best bank for you."
     4. TRADE-IN & VIN (THE EVALUATOR): "Are you trading in your current ride? If so, what is the Year/Make/Model? Also, if you have the VIN handy, I can run a 'Shiftly' appraisal right now (using vAuto) to see what it's worth."
@@ -113,7 +113,7 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
         if data:
             new_ctx = {
                 "step": data.get("next_step", current_step), 
-                "persona": "Elliot",
+                "persona": current_persona,
                 "data": {**collected_data, **data.get("extracted_data", {})}, 
                 "last_msg": message, 
                 "v": "16.1 [AUTO-FIX]", 
@@ -444,7 +444,7 @@ def manage_system_ops(message, tenant_id="filcan"):
     appts_summary = f"Appointments today: {len(appointments)}. Latest: {appointments[-1]['time'] if appointments else 'None'}"
     
     system_prompt = f"""
-    PERSONA: You are Elliot, the **Operational AI Assistant** for {tenant['name']}.
+    PERSONA: You are {current_persona}, the **Operational AI Assistant** for {tenant['name']}.
     ROLE: You assist the Dealer Principal and Sales Managers in running the store.
     
     SYSTEM CONTEXT:
