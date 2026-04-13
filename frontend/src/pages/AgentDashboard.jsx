@@ -877,10 +877,61 @@ export default function AgentDashboard() {
     const [dialing, setDialing] = useState(null);
     const [selectedDNA, setSelectedDNA] = useState(null);
     const [isStrategistOpen, setIsStrategistOpen] = useState(false);
-    const [leadFilter, setLeadFilter] = useState('all'); // 'all' | 'ai' | 'imported'
-    const [showManualModal, setShowManualModal] = useState(false);
-    const [welcomeTriggered, setWelcomeTriggered] = useState(false);
+    const [activeTab, setActiveTab] = useState('leads'); // 'leads' | 'marketing' | 'roi'
     const fileInputRef = useRef(null);
+
+    const hydrateDemo = () => {
+        const demoLeads = [
+            { 
+                id: 'demo-1', 
+                name: 'Marvin Raymundo', 
+                phone: '+15875551234', 
+                car: '2024 VW Atlas', 
+                quality_score: 98, 
+                status: 'Hot', 
+                source: 'AI Hunter', 
+                last_action_time: 'Just Now', 
+                assigned_agent: agent.name,
+                trade_in_details: '2019 Honda Civic (Paid off)',
+                credit_score: 750,
+                monthly_budget: 850,
+                conversation_summary: 'Highly interested in the Atlas. Ready for test drive. Trade-in appraised at $18,500.'
+            },
+            { 
+                id: 'demo-2', 
+                name: 'Jessica Chen', 
+                phone: '+15875559000', 
+                car: '2023 Honda CR-V', 
+                quality_score: 85, 
+                status: 'Hot', 
+                source: 'Facebook Marketplace', 
+                last_action_time: '2 mins ago', 
+                assigned_agent: agent.name,
+                trade_in_details: 'None',
+                credit_score: 680,
+                monthly_budget: 600,
+                conversation_summary: 'Looking for a reliable SUV. Pre-qualified via AI for $600/mo.'
+            },
+            { 
+                id: 'demo-3', 
+                name: 'Leo Valdez', 
+                phone: '+14035550199', 
+                car: '2021 Ford F-150', 
+                quality_score: 92, 
+                status: 'Hot', 
+                source: 'Manual Add', 
+                last_action_time: '5 mins ago', 
+                assigned_agent: agent.name,
+                trade_in_details: '2015 RAM 1500',
+                credit_score: 820,
+                monthly_budget: 1200,
+                conversation_summary: 'Experienced buyer. Needs V8. Ready to sign if trade value is right.'
+            }
+        ];
+        setLeads(demoLeads);
+        setWelcomeTriggered(true);
+        alert("🚀 PIPELINE HYDRATED! You now have 3 high-intent demo leads ready for the presentation.");
+    };
 
     const handleLogin = (agentData) => {
         setAgent(agentData);
@@ -1160,11 +1211,11 @@ export default function AgentDashboard() {
                 ))}
             </div>
 
-            {/* Main Content */}
-            <div style={{ padding: '0 5%', paddingBottom: '80px' }}>
-                {activeView === 'leads' && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {/* FILTER BAR */}
+            {/* Content Area */}
+            <div style={{ padding: '0 5% 120px 5%' }}>
+                {activeTab === 'leads' && (
+                    <>
+                        {/* Search & Filters */}
                         <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                             {[
                                 { id: 'all', label: 'ALL LEADS' },
@@ -1200,41 +1251,48 @@ export default function AgentDashboard() {
                                         <p style={{ margin: '10px 0 0', opacity: 0.9, fontSize: '0.85rem', fontWeight: 'bold' }}>Follow these 3 steps to activate your AI Revenue Machine.</p>
                                     </div>
 
-                                    <div style={{ padding: '25px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                        {/* STEP 1 */}
-                                        <div style={{ display: 'flex', gap: '15px' }}>
-                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#FF4B2B', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', flexShrink: 0 }}>1</div>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: '900', color: 'white', fontSize: '1rem', marginBottom: '4px' }}>FEED THE MACHINE</div>
-                                                <p style={{ margin: '0 0 15px', color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', lineHeight: '1.4' }}>Upload your current leads or enter them manually. Adam needs names and numbers to start hunting.</p>
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                                    <button onClick={() => setActiveView('import')} style={{ padding: '12px', background: 'white', color: 'black', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '0.75rem' }}>BULK IMPORT</button>
-                                                    <button onClick={() => setShowManualModal(true)} style={{ padding: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontWeight: '900', fontSize: '0.75rem' }}>+ DIRECT ADD</button>
-                                                </div>
+                                    <div style={{ padding: '25px', display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            style={{ padding: '20px', background: 'rgba(99,102,241,0.1)', border: '1px solid #6366f1', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' }}
+                                        >
+                                            <div style={{ width: '40px', height: '40px', background: '#6366f1', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Upload size={20} /></div>
+                                            <div>
+                                                <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>Step 1: Import Lead List</div>
+                                                <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>Upload Excel or CSV from dealer CRM</div>
                                             </div>
-                                        </div>
+                                        </button>
 
-                                        <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)' }} />
-
-                                        {/* STEP 2 */}
-                                        <div style={{ display: 'flex', gap: '15px', opacity: 0.8 }}>
-                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', flexShrink: 0 }}>2</div>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: '900', color: 'rgba(255,255,255,0.6)', fontSize: '1rem', marginBottom: '4px' }}>ACTIVATE MARKETPLACE</div>
-                                                <p style={{ margin: '0 0 12px', color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>Sync your inventory to Facebook to let Adam catch incoming inquiries 24/7.</p>
-                                                <button onClick={() => setActiveView('marketing')} style={{ padding: '10px 20px', background: 'rgba(24,119,242,0.15)', color: '#1877f2', border: 'none', borderRadius: '10px', fontWeight: '900', fontSize: '0.7rem' }}>LINK FACEBOOK ACCOUNT</button>
+                                        <button
+                                            onClick={() => setActiveTab('marketing')}
+                                            style={{ padding: '20px', background: 'rgba(255,107,107,0.1)', border: '1px solid #ff6b6b', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', textAlign: 'left' }}
+                                        >
+                                            <div style={{ width: '40px', height: '40px', background: '#ff6b6b', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><TrendingUp size={20} /></div>
+                                            <div>
+                                                <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>Step 2: Start FB Marketplace Sync</div>
+                                                <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>Allow AI to hunt inquiries on Facebook</div>
                                             </div>
-                                        </div>
+                                        </button>
 
-                                        <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)' }} />
-
-                                        {/* STEP 3 */}
-                                        <div style={{ display: 'flex', gap: '15px', opacity: 0.5 }}>
-                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', flexShrink: 0 }}>3</div>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: '900', color: 'rgba(255,255,255,0.6)', fontSize: '1rem', marginBottom: '4px' }}>TRIGGER REVENUE DIALING</div>
-                                                <p style={{ margin: 0, color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>Once leads are in, hit 'AI Call' and let Adam qualify, handle objections, and book appointments inside your calendar.</p>
+                                        <button
+                                            onClick={() => setIsStrategistOpen(true)}
+                                            style={{ padding: '20px', background: 'rgba(0,184,148,0.1)', border: '1px solid #00b894', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', textAlign: 'left' }}
+                                        >
+                                            <div style={{ width: '40px', height: '40px', background: '#00b894', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Phone size={20} /></div>
+                                            <div>
+                                                <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>Step 3: Trigger Rapid Dialing</div>
+                                                <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>Command Elliot to start qualifying leads</div>
                                             </div>
+                                        </button>
+                                        
+                                        <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(253,203,110,0.1)', border: '1px solid #fdcb6e', borderRadius: '24px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#fdcb6e', marginBottom: '10px' }}>PRESENTATION MODE</div>
+                                            <button 
+                                                onClick={hydrateDemo}
+                                                style={{ width: '100%', padding: '15px', background: '#fdcb6e', color: '#000', border: 'none', borderRadius: '14px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer' }}
+                                            >
+                                                ⚡ HYDRATE DEMO PIPELINE
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -1335,268 +1393,59 @@ export default function AgentDashboard() {
                                 </>
                             );
                         })()}
+                    </>
+                )}
+
+                {activeTab === 'marketing' && (
+                    <div style={{ animation: 'fadeIn 0.3s ease' }}>
+                        <MarketingHub agent={agent} inventory={inventory} fbSettings={fbSettings} />
                     </div>
                 )}
 
-                {activeView === 'studio' && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        {/* Agent AI Profile Section (TOP PRIORITY) */}
-                        <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '25px', border: '1px solid rgba(255, 75, 43, 0.4)', boxShadow: '0 0 20px rgba(255, 75, 43, 0.1)' }}>
-                            <h3 style={{ margin: '0 0 15px', fontSize: '1rem', color: 'white', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <Settings size={18} color="#FF4B2B" /> YOUR AGENT IDENTITY
-                            </h3>
-                            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: '20px' }}>
-                                This info allows Elliot to introduce himself as your dedicated digital assistant during calls and bookings.
-                            </p>
-                            
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ fontSize: '0.6rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)' }}>PROFESSIONAL NAME</label>
-                                        <input 
-                                            value={agent.name} 
-                                            readOnly 
-                                            style={{ padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.8rem' }}
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ fontSize: '0.6rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)' }}>TITLE/ROLE</label>
-                                        <input 
-                                            placeholder="Sales Specialist" 
-                                            defaultValue={agent.role}
-                                            style={{ padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.8rem' }}
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ fontSize: '0.6rem', fontWeight: '900', color: '#FF4B2B' }}>AI ASSISTANT NAME</label>
-                                        <input 
-                                            placeholder="e.g. Adam" 
-                                            defaultValue={agent.assistant_name || "Adam"}
-                                            onChange={(e) => {
-                                                const newAgent = { ...agent, assistant_name: e.target.value };
-                                                setAgent(newAgent);
-                                                localStorage.setItem('revhunter_agent', JSON.stringify(newAgent));
-                                            }}
-                                            style={{ padding: '12px', borderRadius: '10px', background: 'rgba(217,32,39,0.05)', border: '1px solid rgba(217,32,39,0.2)', color: 'white', fontSize: '0.8rem', fontWeight: 'bold' }}
-                                        />
-                                    </div>
-                                </div>
-                                
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ fontSize: '0.6rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)' }}>BOOKING URL (CALENDLY/ETC)</label>
-                                    <input 
-                                        placeholder="calendly.com/your-name" 
-                                        style={{ padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(0,184,148,0.2)', color: 'white', fontSize: '0.8rem' }}
-                                    />
-                                </div>
-
-                                <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255, 75, 43, 0.08)', borderRadius: '14px', border: '1px dashed #FF4B2B' }}>
-                                    <div style={{ fontSize: '0.6rem', fontWeight: '900', color: '#FF4B2B', marginBottom: '8px' }}>🤖 {agent.assistant_name?.toUpperCase() || 'ADAM'} READY TO SAY:</div>
-                                    <div style={{ fontSize: '0.75rem', color: 'white', fontStyle: 'italic', lineHeight: '1.4' }}>
-                                        "Hi, I'm {agent.assistant_name || 'Adam'}, the AI assistant for <b>{agent.name}</b>. I'm calling to help you with..."
-                                    </div>
-                                </div>
-                                
-                                <button style={{ width: '100%', padding: '14px', background: '#FF4B2B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.85rem' }}>
-                                    SAVE MY AI IDENTITY
-                                </button>
-                            </div>
+                {activeTab === 'roi' && (
+                    <div style={{ animation: 'fadeIn 0.3s ease', background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                         <div style={{ marginBottom: '25px' }}>
+                            <h2 style={{ fontWeight: '900', fontSize: '1.5rem', margin: 0 }}>Business Case 📈</h2>
+                            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>Live performance & ROI projection for FilCan</p>
                         </div>
-
-                        <div style={{ background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', borderRadius: '24px', padding: '30px', color: 'white', boxShadow: '0 10px 30px rgba(255, 75, 43, 0.3)' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
-                                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px' }}><Star size={24} fill="currentColor" /></div>
-                                <h2 style={{ margin: 0, fontWeight: '900', fontSize: '1.4rem' }}>Elliot AI Studio</h2>
-                            </div>
-                            <p style={{ opacity: 0.9, fontSize: '0.9rem', lineHeight: '1.5', margin: 0 }}>
-                                Customize Elliot's DNA. Switch between tactical sales, friendly outreach, or aggressive closing modes.
-                            </p>
+                        {/* Adapt ROIDashboard for Dark Theme */}
+                        <div style={{ filter: 'invert(1) hue-rotate(180deg)', opacity: 0.9 }}>
+                             <ROIDashboard />
                         </div>
-
-                        <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '25px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <h3 style={{ margin: '0 0 20px', fontSize: '1rem', color: 'white', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <Users size={18} color="#FF4B2B" /> ACTIVE PERSONA: ANDY COLE
-                            </h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                {['Andy Cole (Warm & Friendly)', 'Tactical Specialist', 'The Closer'].map(mode => (
-                                    <button 
-                                        key={mode}
-                                        style={{ width: '100%', padding: '16px', borderRadius: '14px', border: mode.includes('Andy') ? '1px solid #FF4B2B' : '1px solid rgba(255,255,255,0.1)', background: mode.includes('Andy') ? 'rgba(255, 75, 43, 0.1)' : 'transparent', color: mode.includes('Andy') ? '#FF4B2B' : 'rgba(255,255,255,0.4)', textAlign: 'left', fontWeight: '700', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                                    >
-                                        {mode}
-                                        {mode.includes('Andy') && <CheckCircle size={18} />}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '25px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                             <h3 style={{ margin: '0 0 10px', fontSize: '1rem', color: 'white', fontWeight: '800' }}>AI Photo Enhancement</h3>
-                             <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '20px' }}>Swap messy dealership backgrounds with professional showrooms automatically.</p>
-                             <div style={{ height: '180px', borderRadius: '18px', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                                 <button style={{ padding: '12px 20px', background: '#FF4B2B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold' }}>DRAG CAR PHOTO HERE</button>
-                             </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeView === 'marketing' && (
-                    <MarketingHub 
-                        agent={agent}
-                        inventory={inventory}
-                        fbSettings={fbSettings}
-                        onUpdateSettings={handleUpdateSettings}
-                        apiUrl={apiUrl}
-                        tenant={tenant}
-                    />
-                )}
-
-                {activeView === 'import' && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        {/* Upload Zone */}
-                        {importStatus !== 'done' && (
-                            <div
-                                onClick={() => fileInputRef.current?.click()}
-                                style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '40px 20px', border: '2px dashed rgba(255,255,255,0.1)', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
-                            >
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept=".csv,.xlsx,.xls"
-                                    style={{ display: 'none' }}
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (!file) return;
-                                        setImportFileName(file.name);
-                                        const reader = new FileReader();
-                                        reader.onload = (evt) => {
-                                            try {
-                                                const data = new Uint8Array(evt.target.result);
-                                                const workbook = XLSX.read(data, { type: 'array' });
-                                                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                                                const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-                                                const parsed = rows.map((row, i) => {
-                                                    const name = row['Name'] || row['name'] || row['Customer'] || row['customer'] || row['Contact'] || Object.values(row)[0] || `Lead ${i+1}`;
-                                                    const phone = row['Phone'] || row['phone'] || row['Mobile'] || row['mobile'] || row['Cell'] || Object.values(row)[1] || '';
-                                                    const email = row['Email'] || row['email'] || '';
-                                                    const notes = row['Notes'] || row['notes'] || row['Status'] || row['status'] || row['Category'] || '';
-                                                    const car = row['Vehicle'] || row['vehicle'] || row['Car'] || row['Interest'] || '';
-                                                    return { id: Date.now() + i, name: String(name).trim(), phone: String(phone).trim(), email: String(email).trim(), notes: String(notes).trim(), car: String(car).trim(), quality_score: 75, status: 'Discovery', source: 'CRM Import', assigned_agent: agent.name, follow_up_streak: 0, last_action_time: 'Just imported' };
-                                                }).filter(l => l.name && l.name !== 'Lead 1' && l.name.length > 1);
-                                                setImportedLeads(parsed);
-                                                setImportStatus('preview');
-                                            } catch {
-                                                alert('Could not parse file. Please use a .csv or .xlsx file.');
-                                            }
-                                        };
-                                        reader.readAsArrayBuffer(file);
-                                        e.target.value = '';
-                                    }}
-                                />
-                                <FileSpreadsheet size={40} style={{ color: 'rgba(217,32,39,0.5)', marginBottom: '15px' }} />
-                                <h3 style={{ margin: '0 0 8px', fontWeight: '800', color: 'white', fontSize: '1rem' }}>Tap to Upload Your Leads</h3>
-                                <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.8rem', margin: '0 0 15px' }}>Upload <strong>any</strong> Excel or CSV file — your own leads, CRM exports, or DealerSocket reports</p>
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(217,32,39,0.1)', padding: '10px 20px', borderRadius: '12px', color: '#D92027', fontWeight: 'bold', fontSize: '0.85rem' }}>
-                                    <Upload size={16} /> CHOOSE FILE
-                                </div>
-                                <div style={{ marginTop: '15px', fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)' }}>Supports: .xlsx, .xls, .csv • Columns auto-detected (Name, Phone, Email, Vehicle)</div>
-                            </div>
-                        )}
-
-                        {/* Preview Table */}
-                        {importStatus === 'preview' && importedLeads.length > 0 && (
-                            <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                                    <div>
-                                        <div style={{ fontWeight: '800', fontSize: '0.95rem', color: 'white' }}>📋 Preview: {importFileName}</div>
-                                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', marginTop: '3px' }}>{importedLeads.length} leads found</div>
-                                    </div>
-                                    <button onClick={() => { setImportedLeads([]); setImportStatus(null); }} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'rgba(255,255,255,0.4)', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.7rem' }}>✕ Clear</button>
-                                </div>
-                                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                                    {importedLeads.slice(0, 20).map((lead, i) => (
-                                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                            <div>
-                                                <div style={{ fontWeight: '600', fontSize: '0.85rem', color: 'white' }}>{lead.name}</div>
-                                                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>{lead.phone || 'No phone'}{lead.car ? ` • ${lead.car}` : ''}</div>
-                                            </div>
-                                            <div style={{ fontSize: '0.6rem', color: '#00b894', background: 'rgba(0,184,148,0.1)', padding: '3px 8px', borderRadius: '6px' }}>Ready</div>
-                                        </div>
-                                    ))}
-                                    {importedLeads.length > 20 && (
-                                        <div style={{ padding: '10px', textAlign: 'center', fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>...and {importedLeads.length - 20} more</div>
-                                    )}
-                                </div>
-                                <button
-                                    onClick={async () => {
-                                        setImportStatus('importing');
-                                        try {
-                                            const res = await fetch(`${apiUrl}/import/leads`, {
-                                                method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                    'x-tenant-id': tenant?.id || 'filcan'
-                                                },
-                                                body: JSON.stringify({ leads: importedLeads })
-                                            });
-                                            if (res.ok) {
-                                                setLeads(prev => [...importedLeads, ...prev]); // Optimistic load
-                                                setImportStatus('done');
-                                                sendPushNotification('📥 Import Complete!', `${importedLeads.length} leads loaded. Elliot is now working them.`);
-                                                if (typeof fetchLeads === 'function') {
-                                                    setTimeout(fetchLeads, 500); // Fully sync with database
-                                                }
-                                            } else {
-                                                alert("Backend error saving leads.");
-                                                setImportStatus('preview');
-                                            }
-                                        } catch (e) {
-                                            console.error("Import Error:", e);
-                                            alert("Network error while importing leads.");
-                                            setImportStatus('preview');
-                                        }
-                                    }}
-                                    style={{ width: '100%', marginTop: '15px', padding: '16px', background: 'linear-gradient(135deg, #D92027, #a01820)', color: 'white', border: 'none', borderRadius: '14px', fontWeight: '800', cursor: 'pointer', fontSize: '0.95rem', boxShadow: '0 8px 25px rgba(217,32,39,0.3)' }}
-                                >
-                                    ⚡ IMPORT {importedLeads.length} LEADS → LET ELLIOT WORK THEM
-                                </button>
-                            </div>
-                        )}
-
-                        {/* Importing Animation */}
-                        {importStatus === 'importing' && (
-                            <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '40px', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
-                                <div style={{ fontSize: '2rem', marginBottom: '15px', animation: 'pulse 1s infinite' }}>⚡</div>
-                                <div style={{ fontWeight: '800', color: 'white', marginBottom: '8px' }}>Importing {importedLeads.length} Leads...</div>
-                                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)' }}>Elliot is preparing to contact each lead</div>
-                            </div>
-                        )}
-
-                        {/* Import Complete */}
-                        {importStatus === 'done' && (
-                            <div style={{ background: 'rgba(0,184,148,0.05)', borderRadius: '20px', padding: '40px', border: '1px solid rgba(0,184,148,0.15)', textAlign: 'center' }}>
-                                <CheckCircle size={40} style={{ color: '#00b894', marginBottom: '15px' }} />
-                                <div style={{ fontWeight: '800', color: 'white', marginBottom: '8px', fontSize: '1.1rem' }}>Import Complete! 🎉</div>
-                                <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginBottom: '20px' }}>{importedLeads.length} leads are now in your pipeline. Elliot is contacting them.</div>
-                                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                                    <button onClick={() => { setActiveView('leads'); }} style={{ padding: '12px 25px', background: 'rgba(0,184,148,0.15)', color: '#00b894', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>VIEW MY LEADS</button>
-                                    <button onClick={() => { setImportStatus(null); setImportedLeads([]); }} style={{ padding: '12px 25px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>IMPORT MORE</button>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 )}
             </div>
 
             {/* Bottom Bar */}
-            <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 5%', display: 'flex', justifyContent: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>
-                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00b894' }} />
-                    Elliot is monitoring {leads.length} leads for {agent.name.split(' ')[0]} • Polling every 30s
-                </div>
-                {/* DNA Engagement Modal */}
-            <EngagementHistoryModal lead={selectedDNA} onClose={() => setSelectedDNA(null)} onDial={handleAutoDial} />
-        </div>
+            <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 1000 }}>
+                <button 
+                    onClick={() => setActiveTab('leads')}
+                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === 'leads' ? '#D92027' : 'rgba(255,255,255,0.3)' }}
+                >
+                    <LayoutDashboard size={20} />
+                    <span style={{ fontSize: '0.6rem', fontWeight: 'bold' }}>PIPELINE</span>
+                </button>
+                <button 
+                    onClick={() => setActiveTab('roi')}
+                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === 'roi' ? '#D92027' : 'rgba(255,255,255,0.3)' }}
+                >
+                    <TrendingUp size={20} />
+                    <span style={{ fontSize: '0.6rem', fontWeight: 'bold' }}>ROI</span>
+                </button>
+                <button 
+                    onClick={() => setActiveTab('marketing')}
+                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === 'marketing' ? '#D92027' : 'rgba(255,255,255,0.3)' }}
+                >
+                    <ImageIcon size={20} />
+                    <span style={{ fontSize: '0.6rem', fontWeight: 'bold' }}>STUDIO</span>
+                </button>
+                <button 
+                    onClick={() => setIsStrategistOpen(true)}
+                    style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'linear-gradient(135deg, #D92027, #a01820)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '-40px', boxShadow: '0 8px 25px rgba(217,32,39,0.4)', cursor: 'pointer' }}
+                >
+                    <Mic size={24} />
+                </button>
+            </div>
 
             <style>{`
                 @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }

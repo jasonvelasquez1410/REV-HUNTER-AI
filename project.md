@@ -34,19 +34,17 @@ The standalone "Plan B" mobile dashboard for independent sales agents (specifica
 - **Framework:** FastAPI (Python) + React (Vite/PWA).
 - **AI Logic:** `api/ai_logic.py` handles the strategist fallbacks and lead scoring.
 - **Vapi Integration:** `api/index.py` handles the specialized `engagement/outbound-call` route with Assistant Overrides (Adam voice + Custom prompts).
-- **Deployment:** Vercel (Production) - `rev-hunter-ai.vercel.app`.
+- **Deployment:** Vercel production (`rev-hunter-ai.vercel.app`).
+- **WEDNESDAY GOAL:** Live Google Meet Presentation for FilCan Cars management. Focus on "One-Thumb" ease and $20/lead ROI.
 
----
-
-## 🎯 Next Steps for Resumption
-1. **Live Field Testing:** Monitor Rjay's first batch of imports and triggered calls.
-2. **Vapi Credit Monitoring:** Ensure the account balance is healthy for outbound spikes.
-3. **Marketplace Integration:** Refine the "Sync Inventory" logic for Facebook Marketplace automation.
-4. **Agent Feedback:** Iterate based on Rjay's "one-thumb" experience in the dealership.
+#### **Wednesday Demo Features (NEW)**
+- **Demo Hydration:** A "Hydrate Pipeline" button to instantly populate the dashboard with high-quality demo leads.
+- **ROI Integration:** A dedicated view showing the business case and cost-per-lead breakdown.
+- **Assistant Personalization:** Live demonstration of naming the AI (e.g. "Jarvis") and triggering a call.
 
 ---
 **Last Updated:** 2026-04-13 08:10 AM
-**Status:** Ready for Tuesday Presentation (Onboarding Refinement Complete).
+**Status:** Ready for Wednesday Presentation (Onboarding Refinement Complete).
 
 ---
 

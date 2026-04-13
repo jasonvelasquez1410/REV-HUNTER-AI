@@ -33,8 +33,6 @@ export default function Admin() {
     const [activeTab, setActiveTab] = useState('inbox');
     const [vapiError, setVapiError] = useState(null);
     const [isCalling, setIsCalling] = useState(false);
-    const [presentationMode, setPresentationMode] = useState(false);
-    const [presentationStep, setPresentationStep] = useState(0);
     const [activeHuntLog, setActiveHuntLog] = useState([]);
     const [isHunting, setIsHunting] = useState(false);
     const [availableVoices, setAvailableVoices] = useState([]);
@@ -448,113 +446,86 @@ export default function Admin() {
     const visibleTabs = allTabs.filter(tab => tab !== 'billing' || isSuperAdmin);
 
     return (
-        <div className="admin-container" style={{ padding: '30px 5%', background: '#f4f7f6', minHeight: '100vh' }}>
-            <h1 style={{ marginBottom: '30px', color: '#003366', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ background: '#D92027', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '1.2rem' }}>REVHUNTER AI v26.2-ELITE [ENGLISH CONSOLIDATED]</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '900' }}>Marketing Command Center</div>
+    return (
+        <div className="admin-container" style={{ padding: '0', background: '#0a0a0f', minHeight: '100vh', color: '#e0e0e0', fontFamily: "'Inter', sans-serif" }}>
+            
+            {/* Enterprise Command Header */}
+            <header style={{ background: '#050508', borderBottom: '1px solid #1a1a2e', padding: '15px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1000 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#fff', letterSpacing: '1px' }}>
+                        REVHUNTER <span style={{ color: '#D92027' }}>HQ</span>
+                    </div>
+                    <div style={{ height: '20px', width: '1px', background: '#333' }} />
+                    <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#00b894', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00b894', boxShadow: '0 0 10px #00b894' }} />
+                        SYSTEM OPERATIONAL // FILCAN-WEST-01
+                    </div>
                 </div>
-                <div style={{ display: 'flex', gap: '15px' }}>
-                    <button onClick={() => alert("RELENTLESS STRATEGY GUIDE:\n\n1. Leads arrive automatically from FB, Google Ads, Website, or CRM.\n2. AI Elliot instantly text/chats to qualify them.\n3. USE ZAP: Force Elliot to send an unprompted follow-up text.\n4. USE TARGET: Manually tell Elliot what to pitch next.\n5. USE MIC: Trigger an instant outbound AI Voice Call to the lead.")} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', background: 'rgba(0,0,0,0.05)', color: '#003366', border: '1px solid #ddd', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}><HelpCircle size={18} /> STRATEGY GUIDE</button>
-                    <button onClick={() => setPresentationMode(true)} style={{ padding: '12px 25px', background: '#003366', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,51,102,0.3)' }}>🚀 DEMO PITCH MODE</button>
-                    {Notification.permission !== 'granted' && (
-                        <button onClick={() => Notification.requestPermission()} style={{ padding: '12px 25px', background: '#00b894', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}>🔔 ENABLE NOTIFICATIONS</button>
-                    )}
+                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                    <div style={{ textAlign: 'right', marginRight: '20px' }}>
+                        <div style={{ fontSize: '0.6rem', color: '#666', fontWeight: 'bold' }}>THROUGHPUT</div>
+                        <div style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '900' }}>{stats.leads24h} LEADS/24H</div>
+                    </div>
+                    <button onClick={() => alert("Opening Technical Manual v3.2")} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '8px 15px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>DOCS</button>
+                    <button onClick={() => window.location.reload()} style={{ background: '#D92027', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 5px 15px rgba(217,32,39,0.3)' }}>EMERGENCY RESET</button>
                 </div>
-            </h1>
+            </header>
 
-            {vapiError && (
-                <div style={{ background: '#fff0f0', border: '1px solid #ffcccc', padding: '15px', borderRadius: '10px', marginBottom: '20px', color: '#d63031', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>⚠️ {vapiError}</span>
-                    <button onClick={() => setVapiError(null)} style={{ background: 'none', border: 'none', color: '#d63031', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+            <div style={{ padding: '30px' }}>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', background: '#111118', padding: '6px', borderRadius: '12px', width: 'fit-content', border: '1px solid #1a1a2e' }}>
+                    {visibleTabs.map(tab => (
+                        <button 
+                            key={tab} 
+                            onClick={() => setActiveTab(tab)}
+                            style={{ 
+                                padding: '10px 25px', 
+                                background: activeTab === tab ? '#1a1a2e' : 'transparent', 
+                                color: activeTab === tab ? '#fff' : '#666',
+                                border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer',
+                                transition: '0.2s', fontSize: '0.75rem', textTransform: 'uppercase'
+                            }}
+                        >
+                            {tab}
+                        </button>
+                    ))}
                 </div>
-            )}
-
-            <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
-                {visibleTabs.map(tab => (
-                    <button 
-                        key={tab} 
-                        onClick={() => setActiveTab(tab)}
-                        style={{ 
-                            padding: '15px 30px', 
-                            background: activeTab === tab ? '#003366' : 'white', 
-                            color: activeTab === tab ? 'white' : '#666',
-                            border: 'none', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer',
-                            transition: '0.3s', boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-                            textTransform: 'uppercase', letterSpacing: '1px'
-                        }}
-                    >
-                        {tab} {tab === 'inbox' && leads.length > 0 && <span style={{ background: '#D92027', color: 'white', padding: '2px 8px', borderRadius: '50%', fontSize: '0.7rem', marginLeft: '8px' }}>{leads.length}</span>}
-                    </button>
-                ))}
-            </div>
 
 
             <div className="dashboard-content" style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '30px' }}>
                 <main>
                     {activeTab === 'inbox' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                <h3 style={{ color: '#003366' }}>ACTIVE RELENTLESS THREADS</h3>
+                                <div style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#444', letterSpacing: '1px' }}>COMMAND INBOX // ACTIVE ENCAPSULATIONS</div>
                                 <div style={{ display: 'flex', gap: '10px' }}>
-                                    <button onClick={handleInjectLead} style={{ fontSize: '0.75rem', padding: '6px 12px', background: '#eee', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>+ INJECT TEST LEAD</button>
-                                    <button onClick={fetchLeads} style={{ fontSize: '0.75rem', padding: '6px 12px', background: '#eee', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>🔄 REFRESH</button>
+                                    <button onClick={fetchLeads} style={{ background: 'transparent', border: '1px solid #1a1a2e', color: '#666', padding: '4px 12px', borderRadius: '4px', fontSize: '0.6rem', fontWeight: 'bold', cursor: 'pointer' }}>SYNC NODES</button>
                                 </div>
                             </div>
+                            
                             {leads.length === 0 ? (
-                                <div style={{ padding: '80px', textAlign: 'center', background: 'white', borderRadius: '20px', border: '2px dashed #ddd', color: '#888' }}>
-                                    🎯 Scanning Facebook & Website for leads... [ELIOT ACTIVE]
+                                <div style={{ padding: '60px', textAlign: 'center', background: '#050510', borderRadius: '8px', border: '1px dashed #1a1a2e', color: '#444' }}>
+                                    SCANNING GLOBAL WEB NODES... [SYSTEM READY]
                                 </div>
                             ) : leads.map(lead => (
-                                <div key={lead.id} style={{ background: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: '0.3s' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                        <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: '#003366', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{lead.name.charAt(0)}</div>
+                                <div key={lead.id} style={{ background: '#0a0a12', padding: '15px 20px', borderRadius: '10px', border: '1px solid #1a1a2e', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: '0.1s' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                        <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: '#11111a', color: '#D92027', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', border: '1px solid #1a1a2e' }}>{lead.name.charAt(0)}</div>
                                         <div>
-                                            <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{lead.name} {lead.status === 'Hot' && "🔥"} {lead.is_manual_assignment && "🔒"}</div>
-                                            <div style={{ fontSize: '0.8rem', color: '#666' }}>{lead.car || 'New Lead'} • {lead.source || 'Website'}</div>
-                                            <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
-                                                <span style={{ fontSize: '0.7rem', background: '#e0f2f1', color: '#00796b', padding: '3px 10px', borderRadius: '20px', fontWeight: 'bold' }}>
-                                                    DNA: STEP {parseState(lead.conversation_state).step || 1}
-                                                </span>
-                                                <span style={{ fontSize: '0.7rem', background: '#fff3e0', color: '#ef6c00', padding: '3px 10px', borderRadius: '20px', fontWeight: 'bold' }}>
-                                                    QUALITY: {lead.quality_score}%
-                                                </span>
+                                            <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#fff', letterSpacing: '0.5px' }}>{lead.name.toUpperCase()}</div>
+                                            <div style={{ fontSize: '0.6rem', color: '#444', marginTop: '1px' }}>SOURCE: {lead.source?.toUpperCase() || 'WEB'} // INTEREST: {lead.car?.toUpperCase() || 'GENERAL'}</div>
+                                            <div style={{ marginTop: '6px', display: 'flex', gap: '8px' }}>
+                                                <div style={{ fontSize: '0.55rem', background: '#00b89410', color: '#00b894', padding: '2px 6px', borderRadius: '3px', border: '1px solid #00b89430', fontWeight: '900' }}>DNA: S{parseState(lead.conversation_state).step || 1}</div>
+                                                <div style={{ fontSize: '0.55rem', background: '#D9202710', color: '#D92027', padding: '2px 6px', borderRadius: '3px', border: '1px solid #D9202730', fontWeight: '900' }}>QLT: {lead.quality_score}%</div>
                                             </div>
                                         </div>
-                                    <div style={{ display: 'flex', gap: '10px' }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                            <div style={{ display: 'flex', gap: '5px' }}>
-                                                {MOCK_AGENTS.map(agent => (
-                                                    <button 
-                                                        key={agent.id}
-                                                        onClick={() => {
-                                                            setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, assigned_to: agent.id, assigned_agent: agent.name } : l));
-                                                            setAuditLogs(prev => [{ id: `assign-${Date.now()}`, time: "Now", action: `System: Assigned lead ${lead.name} to ${agent.name}`, type: "System" }, ...prev]);
-                                                            fetch(`${apiUrl}/leads/assign`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead_id: lead.id, agent_name: agent.name }) }).catch(() => {});
-                                                        }}
-                                                        title={`Assign to ${agent.name}`}
-                                                        style={{ 
-                                                            width: '32px', height: '32px', borderRadius: '50%', background: agent.color, color: 'white', 
-                                                            border: lead.assigned_to === agent.id ? '3px solid #000' : 'none', cursor: 'pointer',
-                                                            fontSize: '0.7rem', fontWeight: 'bold'
-                                                        }}
-                                                    >
-                                                        {agent.avatar}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                            <div style={{ fontSize: '0.65rem', color: '#999', textAlign: 'center' }}>
-                                                {lead.assigned_to ? `Assigned: ${MOCK_AGENTS.find(a => a.id === lead.assigned_to)?.name}` : 'Unassigned'}
-                                            </div>
-                                        </div>
-                                        <button title="Lead DNA & Deep Insights" onClick={() => setSelectedDNAModal(lead)} style={{ padding: '10px 14px', background: 'rgba(108,92,231,0.2)', border: 'none', borderRadius: '12px', color: '#6c5ce7', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Dna size={18} /></button>
-                                        <button title="View SMS/Chat Logs" onClick={() => setSelectedLeadChat(lead)} style={{ padding: '10px 14px', background: '#f0f2f5', border: 'none', borderRadius: '12px', color: '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><MessageSquare size={18} /></button>
-                                        <button title="Zap (Relentless Nudge): Trigger AI to send a follow-up text instantly" onClick={() => handleAutoNudge(lead.id)} style={{ padding: '10px 14px', background: '#003366', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Zap size={18} /></button>
-                                        <button title="Target (Command Mode): Manually instruct the AI on the next move" onClick={() => setIsCommanding(lead)} style={{ padding: '10px 14px', background: '#D92027', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Target size={18} /></button>
-                                        <button title="Mic (Web Voice Agent): Have AI Elliot start a web call to this lead" onClick={() => handleVoiceCall(lead)} style={{ padding: '10px 14px', background: 'rgba(0,184,148,0.2)', color: '#00b894', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}><Mic size={18} /></button>
-                                        <button title="PSTN Dial (Outbound 2.0): Trigger AI server to literally dial the lead's real phone" onClick={() => handleServerVoiceCall(lead)} style={{ padding: '10px 14px', background: '#00b894', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', animation: 'pulse 2s infinite' }}><PhoneCall size={18} /></button>
                                     </div>
-                                  </div>
+                                    <div style={{ display: 'flex', gap: '6px' }}>
+                                        <button onClick={() => setSelectedDNAModal(lead)} style={{ background: '#11111a', border: '1px solid #1a1a2e', color: '#6c5ce7', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer' }}><Dna size={14} /></button>
+                                        <button onClick={() => setSelectedLeadChat(lead)} style={{ background: '#11111a', border: '1px solid #1a1a2e', color: '#fff', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer' }}><MessageSquare size={14} /></button>
+                                        <button onClick={() => handleAutoNudge(lead.id)} style={{ background: '#11111a', border: '1px solid #1a1a2e', color: '#D92027', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer' }}><Zap size={14} /></button>
+                                        <button onClick={() => setIsCommanding(lead)} style={{ background: '#11111a', border: '1px solid #1a1a2e', color: '#fdcb6e', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer' }}><Target size={14} /></button>
+                                        <button onClick={() => handleServerVoiceCall(lead)} style={{ background: '#00b894', color: '#fff', border: 'none', padding: '6px 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.6rem' }}>VOICE DIAL</button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -753,178 +724,22 @@ export default function Admin() {
                 </main>
 
                 <aside>
-                    <div style={{ background: 'white', padding: '25px', borderRadius: '25px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', position: 'sticky', top: '20px' }}>
-                        <h4 style={{ marginBottom: '20px', color: '#003366', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span>AUDIT LOG</span>
-                            <span style={{ fontSize: '0.6rem', background: '#eef', padding: '4px 8px', borderRadius: '5px' }}>LIVE</span>
-                        </h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '60vh', overflowY: 'auto', paddingRight: '5px' }} className="custom-scroll">
+                    <div style={{ background: '#0a0a12', padding: '25px', borderRadius: '12px', border: '1px solid #1a1a2e', position: 'sticky', top: '100px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <div style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#444', letterSpacing: '1px' }}>SYSTEM AUDIT NODES</div>
+                            <div style={{ fontSize: '0.5rem', background: '#00b89420', color: '#00b894', padding: '2px 6px', borderRadius: '3px', fontWeight: 'bold' }}>LIVE</div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '65vh', overflowY: 'auto' }} className="custom-scroll">
                             {auditLogs.map(log => (
-                                <div key={log.id} style={{ fontSize: '0.75rem', borderLeft: `3px solid ${log.type === 'AI' ? '#00b894' : log.type === 'Marketing' ? '#D92027' : '#003366'}`, paddingLeft: '12px' }}>
-                                    <div style={{ fontWeight: 'bold', color: '#333' }}>{log.action}</div>
-                                    <div style={{ color: '#999', fontSize: '0.65rem', marginTop: '2px' }}>{log.time} • {log.type}</div>
+                                <div key={log.id} style={{ fontSize: '0.65rem', borderLeft: `2px solid ${log.type === 'AI' ? '#00b894' : log.type === 'Marketing' ? '#D92027' : '#1a1a2e'}`, paddingLeft: '12px' }}>
+                                    <div style={{ fontWeight: 'bold', color: '#eee', lineHeight: '1.4' }}>[{log.type.toUpperCase()}] {log.action.toUpperCase()}</div>
+                                    <div style={{ color: '#444', fontSize: '0.55rem', marginTop: '2px' }}>{log.time} // NODE_ID: FW-01</div>
                                 </div>
                             ))}
                         </div>
-                        <button 
-                            onClick={() => window.open('/agent', '_blank')}
-                            style={{ width: '100%', marginTop: '20px', padding: '12px', background: '#eef', color: '#003366', border: '1px solid #ddd', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                        >
-                            📱 OPEN AGENT DASHBOARD
-                        </button>
                     </div>
                 </aside>
             </div>
-
-            {/* Presentation Overlay */}
-            {presentationMode && (
-                <div className="presentation-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.95)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', padding: '40px' }}>
-                    <div style={{ width: '100%', maxWidth: '1000px', textAlign: 'center', position: 'relative' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '50px' }}>
-                            <div style={{ textAlign: 'left' }}>
-                                <div style={{ color: '#D92027', fontWeight: 'bold', letterSpacing: '2px' }}>DEALER PITCH MODE</div>
-                                <h2 style={{ fontSize: '2.5rem', margin: '10px 0' }}>
-                                    {presentationStep === 0 && "The 10-Lead-A-Day Revenue Machine"}
-                                    {presentationStep === 1 && "Relentless AI in Action (Elliot DNA)"}
-                                    {presentationStep === 2 && "The RevHunter Premium Suite Investment"}
-                                </h2>
-                            </div>
-                            <button onClick={() => setPresentationMode(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '2rem', cursor: 'pointer' }}>×</button>
-                        </div>
-
-                        <div style={{ minHeight: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {presentationStep === 0 && (
-                                <div className="animate-in" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', textAlign: 'left', width: '100%' }}>
-                                    <div>
-                                        <h3 style={{ fontSize: '1.8rem', color: '#D92027', marginBottom: '20px' }}>HOW IT WORKS 🏹</h3>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-                                            {[
-                                                { t: "1. The AI Hunter Hub", d: "Aggressively scans Facebook, Google, and your CRM for local buyers." },
-                                                { t: "2. The AI Voice Specialist", d: "Elliot makes outbound calls and texts within 60 seconds of a lead arriving." },
-                                                { t: "3. The Lead DNA", d: "Automatically extracts trade-in details, budget, and credit pre-approval." },
-                                                { t: "4. The Agent App", d: "Your sales team gets push notifications to their phones for every hot lead." }
-                                            ].map((item, i) => (
-                                                <div key={i}>
-                                                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '5px' }}>{item.t}</div>
-                                                    <div style={{ color: '#aaa' }}>{item.d}</div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div style={{ display: 'flex', gap: '15px', marginTop: '40px' }}>
-                                            <button onClick={() => setPresentationStep(1)} style={{ padding: '20px 40px', background: '#D92027', color: 'white', border: 'none', borderRadius: '10px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer' }}>SEE LIVE ANALYSIS →</button>
-                                            <button onClick={() => window.open('/agent', '_blank')} style={{ padding: '20px 30px', background: 'white', color: '#D92027', border: '2px solid #D92027', borderRadius: '10px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer' }}>📱 DEMO AGENT VIEW</button>
-                                        </div>
-                                    </div>
-                                    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '30px', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                                        <div style={{ fontSize: '5rem', marginBottom: '20px' }}>💹</div>
-                                        <div style={{ fontSize: '3rem', fontWeight: '900' }}>400%</div>
-                                        <div style={{ fontSize: '1.2rem', color: '#00b894', fontWeight: 'bold' }}>CONVERSION LIFT</div>
-                                        <p style={{ marginTop: '20px', textAlign: 'center', opacity: 0.6 }}>Eliminating lead aging by responding in seconds, not hours.</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {presentationStep === 1 && (
-                                <div className="animate-in" style={{ width: '100%' }}>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '30px' }}>
-                                        {Object.entries(PRESENTATION_INSIGHTS).map(([name, data]) => (
-                                            <div key={name} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '25px', padding: '30px', textAlign: 'left', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                                                    <h4 style={{ fontSize: '1.4rem', margin: 0 }}>{name}</h4>
-                                                    <span style={{ color: '#00b894', fontWeight: 'bold' }}>QUALIFIED 🎯</span>
-                                                </div>
-                                                <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '15px', padding: '15px', marginBottom: '20px', fontSize: '0.85rem', height: '140px', overflowY: 'auto' }}>
-                                                    {data.transcript.map((t, j) => (
-                                                        <div key={j} style={{ marginBottom: '8px', color: t.sender === 'ai' ? '#00b894' : 'white' }}>
-                                                            <b>{t.sender === 'ai' ? "ELLIOT:" : "LEAD:"}</b> {t.text}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <div className="nine-step-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                                    {Object.entries(data.dna).map(([k, v]) => (
-                                                        <div key={k} style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '10px', fontSize: '0.75rem' }}>
-                                                            <span style={{ opacity: 0.6 }}>{k}:</span> <b>{v}</b>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div style={{ marginTop: '50px', display: 'flex', gap: '20px', justifyContent: 'center' }}>
-                                        <button onClick={() => setPresentationStep(0)} style={{ padding: '15px 30px', background: 'transparent', border: '1px solid white', color: 'white', borderRadius: '10px', cursor: 'pointer' }}>← BACK</button>
-                                        <button onClick={() => setPresentationStep(2)} style={{ padding: '15px 50px', background: '#D92027', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>VIEW INVESTMENT PLAN →</button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {presentationStep === 2 && (
-                                <div className="animate-in" style={{ textAlign: 'left', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '50px', alignItems: 'center', width: '100%' }}>
-                                    <div>
-                                        <h3 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#D92027', marginBottom: '10px' }}>PREMIUM SUITE</h3>
-                                        <div style={{ fontSize: '1.2rem', opacity: 0.7, marginBottom: '30px' }}>FILCAN CARS OFFICIAL DEPLOYMENT</div>
-                                        
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px' }}>
-                                            {[
-                                                "Target Goal: 10+ Qualified Leads / Day",
-                                                "Unlimited Agent Sub-Accounts Included",
-                                                "Elliot: Omni-Bot (Receptionist & Admin)",
-                                                "Elliot: Lead Hunter & Marketing Manager",
-                                                "25-50% Projected Closing Range Increase",
-                                                "99.9% Automation & Performance Guarantee"
-                                            ].map((item, i) => (
-                                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                                    <div style={{ color: '#00b894', fontSize: '1.5rem' }}>✓</div>
-                                                    <div style={{ fontSize: '1.1rem' }}>{item}</div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <button onClick={() => setPresentationStep(1)} style={{ padding: '15px 30px', background: 'transparent', border: '1px solid white', color: 'white', borderRadius: '10px', cursor: 'pointer' }}>← BACK</button>
-                                    </div>
-                                    
-                                    <div style={{ background: 'linear-gradient(135deg, #222 0%, #111 100%)', padding: '40px', borderRadius: '40px', border: '1px solid #D92027', boxShadow: '0 20px 50px rgba(217,32,39,0.2)' }}>
-                                        <h4 style={{ color: '#D92027', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            🛡️ THE PERFORMANCE GUARANTEE
-                                        </h4>
-                                        <p style={{ fontSize: '1.1rem', lineHeight: '1.6', color: '#ccc' }}>
-                                            We offer a **Full Performance Warranty**. If specific volume milestones aren't reached within the roadmap period, our technical team provides dedicated optimization at zero cost until targets are met.
-                                        </p>
-                                        <hr style={{ border: 'none', borderTop: '1px solid #333', margin: '25px 0' }} />
-                                        <div style={{ marginBottom: '25px' }}>
-                                            <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold', marginBottom: '5px' }}>STRATEGIC PARTNERSHIP</div>
-                                            <div style={{ fontSize: '0.95rem' }}>The Premium Suite includes continuous AI training, cloud hosting, and weekly performance audits.</div>
-                                        </div>
-                                        <button onClick={() => setPresentationMode(false)} style={{ width: '100%', padding: '20px', background: '#00b894', color: 'white', border: 'none', borderRadius: '15px', fontWeight: 'bold', fontSize: '1.2rem', cursor: 'pointer' }}>INITIATE GROWTH PARTNERSHIP</button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        <div style={{ marginTop: '60px', display: 'flex', justifyContent: 'center', gap: '15px' }}>
-                            {[0, 1, 2].map(step => (
-                                <div key={step} onClick={() => setPresentationStep(step)} style={{ width: '12px', height: '12px', borderRadius: '50%', background: presentationStep === step ? '#D92027' : '#444', cursor: 'pointer', transition: '0.3s' }} />
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Side Navigation Arrows */}
-                    {presentationStep > 0 && (
-                        <button 
-                            onClick={() => setPresentationStep(prev => prev - 1)}
-                            style={{ position: 'fixed', left: '40px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', width: '60px', height: '60px', borderRadius: '50%', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.3s', zIndex: 10001 }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                        >←</button>
-                    )}
-                    {presentationStep < 2 && (
-                        <button 
-                            onClick={() => setPresentationStep(prev => prev + 1)}
-                            style={{ position: 'fixed', right: '40px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', width: '60px', height: '60px', borderRadius: '50%', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.3s', zIndex: 10001 }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(217,32,39,0.3)'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                        >→</button>
-                    )}
-                </div>
-            )}
 
             {/* Modals */}
             {selectedLeadChat && (
