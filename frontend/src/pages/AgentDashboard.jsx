@@ -1031,7 +1031,7 @@ export default function AgentDashboard() {
     };
 
     if (!agent) {
-        return <LoginSection />;
+        return <AgentLogin onLogin={handleLogin} />;
     }
 
     if (agent.subscription_status === 'expired') {
