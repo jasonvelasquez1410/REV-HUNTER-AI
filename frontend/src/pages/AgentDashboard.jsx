@@ -878,6 +878,8 @@ export default function AgentDashboard() {
     const [selectedDNA, setSelectedDNA] = useState(null);
     const [isStrategistOpen, setIsStrategistOpen] = useState(false);
     const [leadFilter, setLeadFilter] = useState('all'); // 'all' | 'ai' | 'imported'
+    const [showManualModal, setShowManualModal] = useState(false);
+    const [welcomeTriggered, setWelcomeTriggered] = useState(false);
     const fileInputRef = useRef(null);
 
     const handleLogin = (agentData) => {
@@ -954,11 +956,32 @@ export default function AgentDashboard() {
             fetchLeads();
             fetchMarketingData();
             requestNotificationPermission();
+            
+            // Proactive Welcome Greeting for Empty Pipeline
+            if (leads.length === 0 && !welcomeTriggered && !loading) {
+                const speak = (text) => {
+                    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+                    window.speechSynthesis.cancel();
+                    const msg = new SpeechSynthesisUtterance(text);
+                    const voices = window.speechSynthesis.getVoices();
+                    const adam = voices.find(v => v.lang.includes('en-US') && v.name.includes('Male')) || voices[0];
+                    if (adam) msg.voice = adam;
+                    msg.pitch = 0.9;
+                    msg.rate = 1.0;
+                    window.speechSynthesis.speak(msg);
+                };
+                
+                setTimeout(() => {
+                    speak(`Welcome, boss. I'm Adam, your digital assistant. Our pipeline is currently empty. To get started, you can import your leads or sync your Facebook marketplace inventory in Step One.`);
+                    setWelcomeTriggered(true);
+                }, 1500);
+            }
+
             // Poll for new leads every 30 seconds
             const interval = setInterval(fetchLeads, 30000);
             return () => clearInterval(interval);
         }
-    }, [agent, fetchLeads, fetchMarketingData]);
+    }, [agent, fetchLeads, fetchMarketingData, leads.length, welcomeTriggered, loading]);
 
     const handleUpdateSettings = async (newSettings) => {
         setFbSettings(newSettings);
@@ -1164,26 +1187,51 @@ export default function AgentDashboard() {
                         </div>
 
                         {leads.length === 0 && (
-                            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.02)', borderRadius: '30px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                                <Bell size={40} style={{ marginBottom: '15px', opacity: 0.3 }} />
-                                <div style={{ fontWeight: '700', marginBottom: '8px', color: 'white', fontSize: '1.2rem' }}>Ready to Hunt? 🏹</div>
-                                <div style={{ fontSize: '0.8rem', marginBottom: '25px', lineHeight: '1.5' }}>You haven't assigned any leads to Elliot yet. Let's get your pipeline moving!</div>
-                                
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                    <button 
-                                        onClick={() => setActiveView('import')}
-                                        style={{ width: '100%', padding: '16px', background: '#FF4B2B', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
-                                    >
-                                        <span>📥 IMPORT LEADS</span>
-                                        <span style={{ fontSize: '0.55rem', opacity: 0.8, fontWeight: '700' }}>Upload CSV/Excel or Manual Entry</span>
-                                    </button>
-                                    <button 
-                                        onClick={() => { setActiveView('marketing'); }}
-                                        style={{ width: '100%', padding: '16px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
-                                    >
-                                        <span>🚀 LINK FACEBOOK</span>
-                                        <span style={{ fontSize: '0.55rem', opacity: 0.5, fontWeight: '700' }}>Sync Marketplace Inventory</span>
-                                    </button>
+                            <div style={{ padding: '20px 0', animation: 'fadeIn 0.5s ease' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
+                                    <div style={{ background: 'linear-gradient(135deg, #FF4B2B 0%, #FF416C 100%)', padding: '30px 25px', textAlign: 'center' }}>
+                                        <div style={{ fontSize: '3rem', marginBottom: '15px' }}>🚀</div>
+                                        <h2 style={{ margin: 0, fontWeight: '900', fontSize: '1.4rem', color: 'white' }}>MISSION: THE 10-CAR CHALLENGE</h2>
+                                        <p style={{ margin: '10px 0 0', opacity: 0.9, fontSize: '0.85rem', fontWeight: 'bold' }}>Follow these 3 steps to activate your AI Revenue Machine.</p>
+                                    </div>
+
+                                    <div style={{ padding: '25px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                        {/* STEP 1 */}
+                                        <div style={{ display: 'flex', gap: '15px' }}>
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#FF4B2B', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', flexShrink: 0 }}>1</div>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: '900', color: 'white', fontSize: '1rem', marginBottom: '4px' }}>FEED THE MACHINE</div>
+                                                <p style={{ margin: '0 0 15px', color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', lineHeight: '1.4' }}>Upload your current leads or enter them manually. Adam needs names and numbers to start hunting.</p>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                                    <button onClick={() => setActiveView('import')} style={{ padding: '12px', background: 'white', color: 'black', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '0.75rem' }}>BULK IMPORT</button>
+                                                    <button onClick={() => setShowManualModal(true)} style={{ padding: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontWeight: '900', fontSize: '0.75rem' }}>+ DIRECT ADD</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+
+                                        {/* STEP 2 */}
+                                        <div style={{ display: 'flex', gap: '15px', opacity: 0.8 }}>
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', flexShrink: 0 }}>2</div>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: '900', color: 'rgba(255,255,255,0.6)', fontSize: '1rem', marginBottom: '4px' }}>ACTIVATE MARKETPLACE</div>
+                                                <p style={{ margin: '0 0 12px', color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>Sync your inventory to Facebook to let Adam catch incoming inquiries 24/7.</p>
+                                                <button onClick={() => setActiveView('marketing')} style={{ padding: '10px 20px', background: 'rgba(24,119,242,0.15)', color: '#1877f2', border: 'none', borderRadius: '10px', fontWeight: '900', fontSize: '0.7rem' }}>LINK FACEBOOK ACCOUNT</button>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+
+                                        {/* STEP 3 */}
+                                        <div style={{ display: 'flex', gap: '15px', opacity: 0.5 }}>
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', flexShrink: 0 }}>3</div>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: '900', color: 'rgba(255,255,255,0.6)', fontSize: '1rem', marginBottom: '4px' }}>TRIGGER REVENUE DIALING</div>
+                                                <p style={{ margin: 0, color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>Once leads are in, hit 'AI Call' and let Adam qualify, handle objections, and book appointments inside your calendar.</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -1543,6 +1591,39 @@ export default function AgentDashboard() {
                 leads={leads}
                 hotLeads={hotLeads}
             />
+
+            {/* MANUAL LEAD ENTRY MODAL */}
+            {showManualModal && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 50000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+                    <div style={{ width: '100%', maxWidth: '400px', background: '#111', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', animation: 'slideUp 0.4s ease' }}>
+                        <div style={{ padding: '25px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontWeight: '900', fontSize: '1rem' }}>+ DIRECT LEAD ENTRY</div>
+                            <button onClick={() => setShowManualModal(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '1.2rem' }}>✕</button>
+                        </div>
+                        <div style={{ padding: '25px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            <input id="m-name" placeholder="Full Name" style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', boxSizing: 'border-box' }} />
+                            <input id="m-phone" placeholder="Phone Number" style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', boxSizing: 'border-box' }} />
+                            <input id="m-car" placeholder="Vehicle Interest (Optional)" style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', boxSizing: 'border-box' }} />
+                            
+                            <button 
+                                onClick={() => {
+                                    const n = document.getElementById('m-name').value;
+                                    const p = document.getElementById('m-phone').value;
+                                    const c = document.getElementById('m-car').value;
+                                    if(!n || !p) return alert('Name and Phone required.');
+                                    const newLead = { id: Date.now(), name: n, phone: p, car: c || 'General Interest', quality_score: 85, status: 'Hot', source: 'Manual', last_action_time: 'Just Added', assigned_agent: agent.name };
+                                    setLeads([newLead, ...leads]);
+                                    setShowManualModal(false);
+                                    alert(`Elite Move! ${n} added to pipeline. Trigger an AI call to start qualification.`);
+                                }}
+                                style={{ width: '100%', padding: '16px', background: '#FF4B2B', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', fontSize: '1rem', marginTop: '10px' }}
+                            >
+                                START HUNTING 🏹
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

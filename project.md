@@ -21,8 +21,10 @@ The standalone "Plan B" mobile dashboard for independent sales agents (specifica
 - **DNA Profile:** Detailed lead view showing Vehicle Interest, Trade-In specs, Credit Score, and Budget at a glance.
 - **Full Call History:** Integrated recording player and transcript logs.
 
-### **3. Operational Control**
-- **Manual Import:** Tap 'Import' to load lead lists from CSV/Excel or manual entry for standalone field usage.
+### **3. Operational Control & Onboarding**
+- **Mission Control UI:** Replaced empty states with a guided 3-step "Rocket Launch" checklist (Import -> Sync -> Dial).
+- **Proactive Briefing:** Adam now greets empty pipelines with a voice instruction: *"Welcome, boss. I'm Adam..."*
+- **Manual Lead Entry:** Added a "+ DIRECT ADD" modal for quick, one-off lead entry without CSVs.
 - **Hygiene Controls:** Added individual 'Delete Lead' and 'Clear All' (Global Wipe) buttons for testing and pipeline management.
 - **Empty State Awareness:** Elliot now guides the user to import leads if the list is empty, rather than showing technical errors.
 
@@ -43,8 +45,8 @@ The standalone "Plan B" mobile dashboard for independent sales agents (specifica
 4. **Agent Feedback:** Iterate based on Rjay's "one-thumb" experience in the dealership.
 
 ---
-**Last Updated:** 2026-04-12 11:00 PM
-**Status:** Ready for Tuesday Presentation.
+**Last Updated:** 2026-04-13 08:10 AM
+**Status:** Ready for Tuesday Presentation (Onboarding Refinement Complete).
 
 ---
 
