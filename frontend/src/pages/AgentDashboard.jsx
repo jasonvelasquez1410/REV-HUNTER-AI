@@ -1008,10 +1008,14 @@ export default function AgentDashboard() {
     const handleAutoDial = async (leadId) => {
         setDialing(leadId);
         try {
-            const res = await fetch(`${apiUrl}/vapi/outbound-call`, {
+            const res = await fetch(`${apiUrl}/engagement/outbound-call`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-tenant-id': tenant?.id || 'filcan' },
-                body: JSON.stringify({ lead_id: leadId })
+                body: JSON.stringify({ 
+                    lead_id: leadId, 
+                    agent_id: agent.id, 
+                    assistant_name: agent.assistant_name || "Adam" 
+                })
             });
             const data = await res.json();
             if (res.ok) {

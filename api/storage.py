@@ -112,6 +112,7 @@ class AgentTable(Base):
     fb_access_token = Column(Text, nullable=True)
     fb_page_id = Column(String, nullable=True)
     fb_settings_json = Column(Text, default='{}')
+    assistant_name = Column(String, default="Adam")
     # Billing & 14-Day Trial Fields
     trial_ends_at = Column(DateTime, nullable=True)
     subscription_status = Column(String, default="trialing") # 'trialing', 'active', 'expired', 'canceled'

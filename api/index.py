@@ -554,6 +554,7 @@ async def get_marketplace_helper(car_id: int, tenant_id: str = Depends(get_tenan
 class OutboundEngagementRequest(BaseModel):
     lead_id: int
     agent_id: Optional[str] = None
+    assistant_name: Optional[str] = None
     tenant_id: str = "filcan"
     objective: str = "discover"
 
@@ -576,12 +577,14 @@ async def trigger_engagement_call(req: OutboundEngagementRequest):
         
         agent_name = agent.name if agent else "the team"
         
-        # 2. Define Objectives
+        # 2. Define Objectives with Custom Identity
+        assistant_name = req.assistant_name or (agent.assistant_name if agent else "Adam")
+        
         objectives = {
-            "discover": "Introduce yourself as the assistant for {agent_name}. Qualify their interest in the {car} and try to book a test drive.",
-            "budget": "Focus on finding their preferred monthly payment and down payment for the {car}.",
-            "trade": "Focus on getting the Year/Make/Model and condition of their current car for a trade-in appraisal.",
-            "followup": "Just checking in to see if they have any more questions about the inventory at FilCan Cars."
+            "discover": f"Introduce yourself as {assistant_name}, the assistant for {{agent_name}}. Qualify their interest in the {{car}} and try to book a test drive.",
+            "budget": f"My name is {assistant_name}. Focus on finding their preferred monthly payment and down payment for the {{car}}.",
+            "trade": f"My name is {assistant_name}. Focus on getting the Year/Make/Model and condition of their current car for a trade-in appraisal.",
+            "followup": f"This is {assistant_name}. Just checking in to see if they have any more questions about the inventory at FilCan Cars."
         }
         mission = objectives.get(req.objective, objectives['discover']).format(agent_name=agent_name, car=lead.car or "vehicle")
 
@@ -611,14 +614,14 @@ async def trigger_engagement_call(req: OutboundEngagementRequest):
                         "provider": "playht",
                         "voiceId": "adam" # Adam Voice - High Quality American Male
                     },
-                    "firstMessage": f"Hello! This is Elliot, the digital assistant for {agent_name} at FilCan Cars.",
+                    "firstMessage": f"Hello! This is {assistant_name}, the digital assistant for {agent_name} at FilCan Cars.",
                     "model": {
                         "provider": "openai",
                         "model": "gpt-4o",
                         "messages": [
                             {
                                 "role": "system",
-                                "content": f"You are Elliot, a professional American sales assistant for {agent_name}. {mission} Keep all responses brief and natural."
+                                "content": f"You are {assistant_name}, a professional American sales assistant for {agent_name}. {mission} Keep all responses brief and natural."
                             }
                         ]
                     }
