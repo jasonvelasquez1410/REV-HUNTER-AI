@@ -446,7 +446,6 @@ export default function Admin() {
     const visibleTabs = allTabs.filter(tab => tab !== 'billing' || isSuperAdmin);
 
     return (
-    return (
         <div className="admin-container" style={{ padding: '0', background: '#0a0a0f', minHeight: '100vh', color: '#e0e0e0', fontFamily: "'Inter', sans-serif" }}>
             
             {/* Enterprise Command Header */}
