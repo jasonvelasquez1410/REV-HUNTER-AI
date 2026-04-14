@@ -4,9 +4,9 @@
 The standalone "Plan B" mobile dashboard for independent sales agents (specifically Rjay) is feature-complete and deployed to Vercel production.
 
 ### **🔑 Access Credentials**
-- **Deployment URL:** [https://rev-hunter-ai.vercel.app/agent](https://rev-hunter-ai.vercel.app/agent)
-- **Access PIN:** `2026`
-- **Login Requirements:** Agent Name + PIN (New feature: name is saved to personalize the dashboard and AI calls).
+- **Admin HQ URL:** [https://rev-hunter-ai.vercel.app/](https://rev-hunter-ai.vercel.app/) (PIN: `1410`)
+- **Agent Dashboard:** [https://rev-hunter-ai.vercel.app/agent](https://rev-hunter-ai.vercel.app/agent) (PIN: `2024` for Demo / `2026` for R-Jay)
+- **Login Requirements:** Admin requires PIN only. Agent requires Name + PIN.
 
 ---
 
@@ -43,10 +43,10 @@ The standalone "Plan B" mobile dashboard for independent sales agents (specifica
 - **Assistant Personalization:** Live demonstration of naming the AI (e.g. "Jarvis") and triggering a call.
 
 ---
-**Last Updated:** 2026-04-13 08:10 AM
-- **Status**: LAUNCH READY / Presentation Stable 🚀
-- **Target**: FilCan Cars (Wednesday Demo)
-- **Recently Completed**: AI Studio (Personalization), ROI Bridge, Manual Lead Entry, State Stabilization.
+**Last Updated:** 2026-04-14 09:30 AM
+- **Status**: **STABLE & STEALTH** (FilCan Presentation Ready) 🚀
+- **Target**: FilCan Cars (Tomorrow's Demo)
+- **Recently Completed**: Build Crash Fix (Brackets/Redeclarations), ELLIOT AI Header Label, Admin PIN 1410 update, Repository Sanitization.
 
 ---
 
