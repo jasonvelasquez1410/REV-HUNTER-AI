@@ -44,7 +44,6 @@ export default function Admin() {
             setAuditLogs(prev => [{ id: `assign-${Date.now()}`, time: "Now", action: `ADMIN: Reassigned lead to ${agentName.toUpperCase()}`, type: "Admin" }, ...prev]);
         } catch (err) { console.error(err); }
     };
-    const [showDemoModal, setShowDemoModal] = useState(false);
     const [stats, setStats] = useState({ leads24h: 12, impressions: '1,420', reach: '8,402' });
     const [isCalling, setIsCalling] = useState(false);
     const [activeHuntLog, setActiveHuntLog] = useState([]);
@@ -164,7 +163,7 @@ export default function Admin() {
             } else if (e.key === 'Backspace') {
                 setPin(prev => prev.slice(0, -1));
             } else if (e.key === 'Enter') {
-                if (pin === '1234') setIsAuthenticated(true);
+                if (pin === '1410') setIsAuthenticated(true);
                 else {
                     setLoginError('Invalid Authorization');
                     setPin('');
@@ -212,7 +211,7 @@ export default function Admin() {
                                     onClick={() => {
                                         if (num === 'C') setPin('');
                                         else if (num === '✓') {
-                                            if (pin === '1234') setIsAuthenticated(true);
+                                            if (pin === '1410') setIsAuthenticated(true);
                                             else {
                                                 setLoginError('Invalid Authorization');
                                                 setPin('');
@@ -451,7 +450,7 @@ export default function Admin() {
     }
 
     const dailyLeads = leads.filter(l => l.is_reported);
-    const stats = { published: 12, pending: 4, impressions: "15.4K", reach: "9.2K", leads24h: leads.length, qualityReported: dailyLeads.length };
+    const engagementStats = { published: 12, pending: 4, impressions: "15.4K", reach: "9.2K", leads24h: leads.length, qualityReported: dailyLeads.length };
 
     const queryParams = new URLSearchParams(window.location.search);
     const isSuperAdmin = queryParams.get('sa') === 'true';

@@ -1323,20 +1323,19 @@ export default function AgentDashboard() {
                                             <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#FF4B2B', marginBottom: '12px', letterSpacing: '2px' }}>🔥 HOT LEADS ({hLimit.length})</div>
                                             {hLimit.map(lead => (
                                                 <div key={lead.id} style={{ background: 'rgba(255, 75, 43, 0.05)', borderRadius: '24px', padding: '25px', marginBottom: '15px', border: '1px solid rgba(255, 75, 43, 0.2)' }}>
-                                                    <div style={{ display: 'flex', flexDirection: window.innerWidth < 600 ? 'column' : 'row', gap: '20px' }}>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                                                <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(255, 75, 43, 0.15)', color: '#FF4B2B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>{lead.name.charAt(0)}</div>
-                                                                <div>
-                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                                        <div style={{ fontWeight: '800', fontSize: '1.1rem', color: 'white' }}>{lead.name}</div>
-                                                                        <span style={{ fontSize: '0.55rem', padding: '2px 6px', borderRadius: '4px', background: (lead.source === 'Imported' || lead.source === 'File') ? '#6c5ce7' : '#00b894', color: 'white', fontWeight: '900' }}>
-                                                                            {(lead.source === 'Imported' || lead.source === 'File') ? '📥 IMPORT' : '✨ ELLIOT'}
-                                                                        </span>
-                                                                    </div>
-                                                                    <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{lead.car || 'Interested Purchaser'}</div>
+                                                    <div style={{ display: 'flex', flexDirection: window.innerWidth < 600 ? 'column' : 'row', justifyContent: 'space-between', alignItems: window.innerWidth < 600 ? 'flex-start' : 'center', gap: '20px' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                                            <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(255, 75, 43, 0.15)', color: '#FF4B2B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>{lead.name.charAt(0)}</div>
+                                                            <div>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                    <div style={{ fontWeight: '800', fontSize: '1.1rem', color: 'white' }}>{lead.name}</div>
+                                                                    <span style={{ fontSize: '0.55rem', padding: '2px 6px', borderRadius: '4px', background: (lead.source === 'Imported' || lead.source === 'File') ? '#6c5ce7' : '#00b894', color: 'white', fontWeight: '900' }}>
+                                                                        {(lead.source === 'Imported' || lead.source === 'File') ? '📥 IMPORT' : '✨ ELLIOT'}
+                                                                    </span>
                                                                 </div>
+                                                                <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{lead.car || 'Interested Purchaser'}</div>
                                                             </div>
+                                                        </div>
                                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
                                                             <button onClick={() => setSelectedDNA(lead)} style={{ background: 'white', color: '#000', border: 'none', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
                                                                 <MessageSquare size={20} />
