@@ -880,7 +880,7 @@ export default function AgentDashboard() {
     const [selectedLead, setSelectedLead] = useState(null);
     const [isStrategistOpen, setIsStrategistOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('leads'); // 'leads' | 'marketing' | 'roi'
-    const [welcomeTriggered, setWelcomeTriggered] = useState(false);
+    const [hasGreeted, setHasGreeted] = useState(false);
     const [leadFilter, setLeadFilter] = useState('all');
     const [showManualModal, setShowManualModal] = useState(false);
     const fileInputRef = useRef(null);
@@ -934,7 +934,7 @@ export default function AgentDashboard() {
             }
         ];
         setLeads(demoLeads);
-        setWelcomeTriggered(true);
+        setHasGreeted(true);
         alert("🚀 PIPELINE HYDRATED! You now have 3 high-intent demo leads ready for the presentation.");
     };
 
@@ -1014,7 +1014,7 @@ export default function AgentDashboard() {
             requestNotificationPermission();
             
             // Proactive Welcome Greeting for Empty Pipeline
-            if (leads.length === 0 && !welcomeTriggered && !loading) {
+            if (leads.length === 0 && !hasGreeted && !loading) {
                 const speak = (text) => {
                     if (typeof window === 'undefined' || !window.speechSynthesis) return;
                     window.speechSynthesis.cancel();
@@ -1030,7 +1030,7 @@ export default function AgentDashboard() {
                 const assistantName = agent.assistant_name || "Adam";
                 setTimeout(() => {
                     speak(`Welcome, boss. I'm ${assistantName}, your digital assistant. Our pipeline is currently empty. To get started, you can import your leads or sync your Facebook marketplace inventory in Step One.`);
-                    setWelcomeTriggered(true);
+                    setHasGreeted(true);
                 }, 1500);
             }
 
@@ -1038,7 +1038,7 @@ export default function AgentDashboard() {
             const interval = setInterval(fetchLeads, 30000);
             return () => clearInterval(interval);
         }
-    }, [agent, fetchLeads, fetchMarketingData, leads.length, welcomeTriggered, loading]);
+    }, [agent, fetchLeads, fetchMarketingData, leads.length, hasGreeted, loading]);
 
     const handleUpdateSettings = async (newSettings) => {
         setFbSettings(newSettings);
@@ -1490,11 +1490,6 @@ export default function AgentDashboard() {
                                     PICK UP THE PHONE & CLOSE 📞
                                 </button>
                             </div>
-                        </div>
-                    </div>
-                )}
-                        <div style={{ filter: 'invert(1) hue-rotate(180deg)', opacity: 0.9 }}>
-                             <ROIDashboard tenant={tenant} />
                         </div>
                     </div>
                 )}
