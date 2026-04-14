@@ -1323,8 +1323,8 @@ export default function AgentDashboard() {
                                             <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#FF4B2B', marginBottom: '12px', letterSpacing: '2px' }}>🔥 HOT LEADS ({hLimit.length})</div>
                                             {hLimit.map(lead => (
                                                 <div key={lead.id} style={{ background: 'rgba(255, 75, 43, 0.05)', borderRadius: '24px', padding: '25px', marginBottom: '15px', border: '1px solid rgba(255, 75, 43, 0.2)' }}>
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <div style={{ display: 'flex', flexDirection: window.innerWidth < 600 ? 'column' : 'row', gap: '20px' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                                                 <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(255, 75, 43, 0.15)', color: '#FF4B2B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>{lead.name.charAt(0)}</div>
                                                                 <div>
@@ -1572,4 +1572,22 @@ export default function AgentDashboard() {
             )}
         </div>
     );
+}
+
+const styles = `
+    @media (max-width: 600px) {
+        .metric-grid {
+            grid-template-columns: 1fr 1fr !important;
+        }
+        .lead-detail-row {
+            flex-direction: column !important;
+            gap: 15px !important;
+        }
+    }
+`;
+
+if (typeof document !== 'undefined') {
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = styles;
+    document.head.appendChild(styleSheet);
 }

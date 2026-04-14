@@ -505,7 +505,7 @@ export default function Admin() {
                 </div>
             </div>
 
-            <div className="dashboard-content" style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '30px' }}>
+            <div className="dashboard-content">
                 <main>
                     {activeTab === 'inbox' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1073,5 +1073,24 @@ const LiveDemoModal = ({ onClose, apiUrl }) => {
             </div>
         </div>
     );
-};
+}
+
+const styles = `
+    .dashboard-content {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 30px;
+    }
+    @media (max-width: 1024px) {
+        .dashboard-content {
+            grid-template-columns: 1fr;
+        }
+    }
+`;
+
+if (typeof document !== 'undefined') {
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = styles;
+    document.head.appendChild(styleSheet);
+}
 
