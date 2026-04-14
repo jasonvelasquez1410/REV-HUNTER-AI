@@ -1163,9 +1163,10 @@ export default function AgentDashboard() {
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <button 
                             onClick={() => setIsStrategistOpen(true)}
-                            style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '14px', width: '45px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fdcb6e', cursor: 'pointer' }}
+                            style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '14px', padding: '0 15px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fdcb6e', cursor: 'pointer', gap: '8px' }}
                         >
-                            <Zap size={22} fill="currentColor" />
+                            <Zap size={20} fill="currentColor" />
+                            <span style={{ fontSize: '0.65rem', fontWeight: '900', color: 'rgba(255,255,255,0.8)' }}>ELLIOT AI</span>
                         </button>
                         <button 
                             onClick={handleLogout}
