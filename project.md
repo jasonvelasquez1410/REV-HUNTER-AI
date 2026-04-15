@@ -1,7 +1,7 @@
 # RevHunter AI - Project State (Rjay's Mobile Dashboard)
 
-## 📌 Project Status: **LAUNCH READY**
-The standalone "Plan B" mobile dashboard for independent sales agents (specifically Rjay) is feature-complete and deployed to Vercel production.
+## 📌 Project Status: **LAUNCH READY (v2.1)**
+The standalone "Solo Hunter" mobile dashboard is now fully formalized and separated from the Dealership Edition. Ready for Rjay's presentation.
 
 ### **🔑 Access Credentials**
 - **Admin HQ URL:** [https://rev-hunter-ai.vercel.app/](https://rev-hunter-ai.vercel.app/) (PIN: `1410`)
@@ -43,10 +43,34 @@ The standalone "Plan B" mobile dashboard for independent sales agents (specifica
 - **Assistant Personalization:** Live demonstration of naming the AI (e.g. "Jarvis") and triggering a call.
 
 ---
-**Last Updated:** 2026-04-14 09:30 AM
-- **Status**: **STABLE & STEALTH** (FilCan Presentation Ready) 🚀
-- **Target**: FilCan Cars (Tomorrow's Demo)
-- **Recently Completed**: Build Crash Fix (Brackets/Redeclarations), ELLIOT AI Header Label, Admin PIN 1410 update, Repository Sanitization.
+**Last Updated:** 2026-04-16 01:00 AM
+- **Status**: **STABLE & STEALTH** (FilCan Presentation Ready V2) 🚀
+- **Target**: FilCan Cars (Presentation Day)
+- **Recently Completed**: Formal Edition System (Solo vs Dealership), Mission Control Fixes (Smooth Scroll + Highlights), FB Sync Onboarding UX, Full XLSX Lead/Inventory Import Logic.
+
+---
+
+# 📅 APRIL 16 UPDATE: THE SOLO HUNTER EDITION
+
+### **1. Formal Edition System (Architecture)**
+- Replaced hardcoded "Rjay" logic with a professional `agent.edition` property.
+- **Solo Hunter Edition (`standalone`)**: Red Branding. Dedicated to independent agents managing their own local data.
+- **Dealership Edition (`enterprise`)**: Purple Branding. Integrated with Dealership CRM and shared inventory.
+- **Dynamic Check**: `const isStandalone = agent?.edition === 'standalone';`
+
+### **2. Functional UI Fixes**
+- **Launch Readiness Bar**: The "FIX NOW" button is now fully functional. It scrolls smoothly to Mission Control and adds a visual shadow "glow" to highlight the checklist.
+- **FB Marketplace Sync UX**: Clicking Step 2 in Mission Control now correctly auto-navigates to the **Marketing Tab** AND automatically opens the **FB Settings (AccessToken/PageID)** sub-view for zero friction onboarding.
+
+### **3. Local Data Sovereignty (Standalone Power)**
+- **Lead Import Pro**: Full `xlsx` parsing implementation for the "Step 1" button. Includes a **Pre-Import Confirmation Modal** to preview data before it hits the pipeline.
+- **Local Inventory Import**: Standalone users now have a dedicated **"📥 IMPORT LOCAL INVENTORY"** button in the Marketing Hub to upload their own vehicle spreadsheets.
+- **Source Filtering**: New **"📥 MY IMPORTS"** filter on the Leads tab for solo hunters.
+
+### **4. AI Behavior & Sourcing**
+- **AI Persona**: Adam (American Professional Male) is the designated hunter voice.
+- **Lead Sourcing**: For Solo Hunters, the AI qualifies leads from three personal sources: Local XLSX Imports, Personal FB Marketplace Sync, and the Manual Hydrate demo tool.
+- **Presentation Mode**: The **⚡ HYDRATE DEMO PIPELINE** button is strategically placed in Mission Control as a "safety net" for the presentation.
 
 ---
 
