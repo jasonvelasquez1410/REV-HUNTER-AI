@@ -313,8 +313,8 @@ function AgentLogin({ onLogin }) {
 
 // ── MARKETING HUB VIEW ────────────────────────────
 // ── MARKETING HUB VIEW ────────────────────────────
-function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, tenant }) {
-    const [subView, setSubView] = useState('inventory'); // 'inventory' | 'settings'
+function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, tenant, subView, setSubView, onImportInventory }) {
+    const isStandalone = agent?.name?.toLowerCase() === 'rjay' && agent?.pin === '2026';
     const [postingCar, setPostingCar] = useState(null);
     const [organizedListing, setOrganizedListing] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -477,11 +477,23 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                             <Camera size={16} />
                             <span style={{ fontSize: '0.5rem', fontWeight: '900' }}>POCKET LISTING</span>
                         </button>
-                        <div style={{ background: 'rgba(0,184,148,0.1)', border: '1px solid #00b894', borderRadius: '12px', padding: '12px 5px', color: '#00b894', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', opacity: 1 }}>
+                        <div style={{ background: isStandalone ? 'rgba(217,32,39,0.1)' : 'rgba(0,184,148,0.1)', border: `1px solid ${isStandalone ? '#D92027' : '#00b894'}`, borderRadius: '12px', padding: '12px 5px', color: isStandalone ? '#D92027' : '#00b894', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', opacity: 1 }}>
                             <Building2 size={16} />
-                            <span style={{ fontSize: '0.5rem', fontWeight: '900' }}>FILCAN SYNC (ACTIVE)</span>
+                            <span style={{ fontSize: '0.5rem', fontWeight: '900' }}>{isStandalone ? 'LOCAL DATA SYNC' : 'FILCAN SYNC (ACTIVE)'}</span>
                         </div>
                     </div>
+
+                    {isStandalone && inventory.length === 0 && (
+                        <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center' }}>
+                            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '15px' }}>Standalone Edition: Import your local inventory to start.</p>
+                            <button 
+                                onClick={onImportInventory}
+                                style={{ padding: '12px 20px', background: '#D92027', color: 'white', border: 'none', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '900', cursor: 'pointer' }}
+                            >
+                                📥 IMPORT LOCAL INVENTORY (.XLSX)
+                            </button>
+                        </div>
+                    )}
 
                     {/* Freelance Sync Area */}
                     {activeSourceModal === 'freelance' && (
@@ -883,7 +895,88 @@ export default function AgentDashboard() {
     const [hasGreeted, setHasGreeted] = useState(false);
     const [leadFilter, setLeadFilter] = useState('all');
     const [showManualModal, setShowManualModal] = useState(false);
+    const [marketingSubView, setMarketingSubView] = useState('inventory');
+    const [showImportPreview, setShowImportPreview] = useState(false);
     const fileInputRef = useRef(null);
+    const inventoryInputRef = useRef(null);
+    const missionControlRef = useRef(null);
+
+    const isStandalone = agent?.name?.toLowerCase() === 'rjay' && agent?.pin === '2026';
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setImportFileName(file.name);
+        
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const bstr = evt.target.result;
+                const wb = XLSX.read(bstr, { type: 'binary' });
+                const wsname = wb.SheetNames[0];
+                const ws = wb.Sheets[wsname];
+                const data = XLSX.utils.sheet_to_json(ws);
+                
+                const mappedLeads = data.map((item, index) => ({
+                    id: `imported-${Date.now()}-${index}`,
+                    name: item.Name || item.name || item['Full Name'] || 'New Lead',
+                    phone: String(item.Phone || item.phone || item['Phone Number'] || ''),
+                    car: item.Car || item.car || item['Vehicle Interest'] || 'Discovery',
+                    quality_score: 85,
+                    status: 'Hot',
+                    source: 'Imported',
+                    last_action_time: 'Ready to Hunt',
+                    assigned_agent: agent.name
+                }));
+                
+                setImportedLeads(mappedLeads);
+                setShowImportPreview(true);
+            } catch (err) {
+                alert("Error parsing file. Please use a valid Excel or CSV file.");
+                console.error(err);
+            }
+        };
+        reader.readAsBinaryString(file);
+    };
+
+    const handleInventoryFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const bstr = evt.target.result;
+                const wb = XLSX.read(bstr, { type: 'binary' });
+                const wsname = wb.SheetNames[0];
+                const ws = wb.Sheets[wsname];
+                const data = XLSX.utils.sheet_to_json(ws);
+                
+                const mappedInv = data.map((item, index) => ({
+                    id: index + 1,
+                    year: item.Year || item.year || 2024,
+                    make: item.Make || item.make || 'Vehicle',
+                    model: item.Model || item.model || '',
+                    price: Number(item.Price || item.price || 0),
+                    image: item.Image || item.image || ''
+                }));
+                
+                setInventory(mappedInv);
+                alert(`Successfully imported ${mappedInv.length} vehicles to your local inventory!`);
+            } catch (err) {
+                alert("Error parsing inventory file.");
+            }
+        };
+        reader.readAsBinaryString(file);
+    };
+
+    const finalizeImport = () => {
+        setLeads([...importedLeads, ...leads]);
+        setShowImportPreview(false);
+        setImportedLeads([]);
+        alert(`🎯 SUCCESS: ${importedLeads.length} leads added to your active pipeline!`);
+        missionControlRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
 
     const hydrateDemo = () => {
         const demoLeads = [
@@ -1152,14 +1245,53 @@ export default function AgentDashboard() {
                 </div>
             )}
 
+            {/* Hidden Inputs for File Import */}
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} accept=".xlsx, .xls, .csv" />
+            <input type="file" ref={inventoryInputRef} onChange={handleInventoryFileChange} style={{ display: 'none' }} accept=".xlsx, .xls, .csv" />
+
             {/* Launch Readiness Bar */}
             {(!fbSettings.fb_access_token || leads.length === 0) && (
-                <div style={{ background: '#D92027', color: 'white', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: '900', fontSize: '0.7rem', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.1)', animation: 'pulse 2s infinite' }}>
+                <div style={{ background: '#D92027', color: 'white', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: '900', fontSize: '0.7rem', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.1)', animation: 'pulse 2s infinite', cursor: 'pointer' }} onClick={() => {
+                    setActiveTab('leads');
+                    setTimeout(() => {
+                        missionControlRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        // Add a subtle flash effect to mission control
+                        if (missionControlRef.current) {
+                            missionControlRef.current.style.boxShadow = "0 0 30px #D92027";
+                            setTimeout(() => { missionControlRef.current.style.boxShadow = "0 20px 50px rgba(0,0,0,0.3)"; }, 1000);
+                        }
+                    }, 100);
+                }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <AlertCircle size={14} />
                         LAUNCH READINESS: {fbSettings.fb_access_token ? "50%" : "0%"} COMPLETE
                     </div>
-                    <button onClick={() => setActiveTab('leads')} style={{ background: 'white', color: '#D92027', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.6rem', fontWeight: 'bold' }}>FIX NOW</button>
+                    <div style={{ background: 'white', color: '#D92027', borderRadius: '5px', padding: '4px 10px', fontSize: '0.6rem', fontWeight: 'bold' }}>FIX NOW</div>
+                </div>
+            )}
+
+            {/* Import Preview Modal */}
+            {showImportPreview && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 60000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(10px)' }}>
+                    <div style={{ width: '100%', maxWidth: '400px', background: '#111', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+                        <div style={{ padding: '25px', background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', color: 'white' }}>
+                            <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900' }}>Confirm Lead Import</h2>
+                            <p style={{ margin: '5px 0 0', opacity: 0.8, fontSize: '0.8rem' }}>Found {importedLeads.length} leads in {importFileName}</p>
+                        </div>
+                        <div style={{ padding: '25px', maxHeight: '50vh', overflowY: 'auto', background: 'rgba(255,255,255,0.02)' }}>
+                            {importedLeads.slice(0, 5).map((l, i) => (
+                                <div key={i} style={{ padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem' }}>
+                                    <div style={{ fontWeight: 'bold' }}>{l.name}</div>
+                                    <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>{l.phone} • {l.car}</div>
+                                </div>
+                            ))}
+                            {importedLeads.length > 5 && <div style={{ textAlign: 'center', padding: '10px', color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>+ {importedLeads.length - 5} more leads...</div>}
+                        </div>
+                        <div style={{ padding: '25px', display: 'flex', gap: '10px' }}>
+                            <button onClick={() => setShowImportPreview(false)} style={{ flex: 1, padding: '15px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '14px', color: 'white', fontWeight: 'bold' }}>Cancel</button>
+                            <button onClick={finalizeImport} style={{ flex: 1, padding: '15px', background: '#FF4B2B', border: 'none', borderRadius: '14px', color: 'white', fontWeight: '900' }}>Finalize Import</button>
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -1170,8 +1302,9 @@ export default function AgentDashboard() {
                         <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem', boxShadow: '0 8px 20px rgba(255, 75, 43, 0.3)' }}>{agent.avatar || agent.name.charAt(0)}</div>
                         <div>
                             <div style={{ fontWeight: '900', fontSize: '1.5rem', color: 'white', letterSpacing: '-0.5px' }}>Welcome back, {agent.name}</div>
-                            <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 {agent.role}
+                                {isStandalone && <span style={{ background: '#D92027', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.6rem', fontWeight: '900' }}>STANDALONE EDITION</span>}
                             </div>
                         </div>
                     </div>
@@ -1266,11 +1399,11 @@ export default function AgentDashboard() {
 
                         {/* MISSION CONTROL: Always visible until FB and Leads are ready */}
                         {(leads.length === 0 || !fbSettings.fb_access_token) && (
-                            <div style={{ padding: '20px 0', animation: 'fadeIn 0.5s ease' }}>
+                            <div ref={missionControlRef} style={{ padding: '20px 0', animation: 'fadeIn 0.5s ease', transition: 'all 0.5s ease', borderRadius: '32px' }}>
                                 <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
                                     <div style={{ background: 'linear-gradient(135deg, #FF4B2B 0%, #FF416C 100%)', padding: '30px 25px', textAlign: 'center' }}>
                                         <div style={{ fontSize: '3rem', marginBottom: '15px' }}>🚀</div>
-                                        <h2 style={{ margin: 0, fontWeight: '900', fontSize: '1.4rem', color: 'white' }}>MISSION: THE 10-CAR CHALLENGE</h2>
+                                        <h2 style={{ margin: 0, fontWeight: '900', fontSize: '1.4rem', color: 'white' }}>{isStandalone ? 'THE 10-LEAD-A-DAY MACHINE' : 'MISSION: THE 10-CAR CHALLENGE'}</h2>
                                         <p style={{ margin: '10px 0 0', opacity: 0.9, fontSize: '0.85rem', fontWeight: 'bold' }}>Follow these 3 steps to activate your AI Revenue Machine.</p>
                                     </div>
 
@@ -1287,7 +1420,7 @@ export default function AgentDashboard() {
                                         </button>
 
                                         <button
-                                            onClick={() => setActiveTab('marketing')}
+                                            onClick={() => { setActiveTab('marketing'); setMarketingSubView('settings'); }}
                                             style={{ padding: '20px', background: fbSettings.fb_access_token ? 'rgba(0,184,148,0.1)' : 'rgba(255,107,107,0.1)', border: fbSettings.fb_access_token ? '1px solid #00b894' : '1px solid #ff6b6b', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', textAlign: 'left' }}
                                         >
                                             <div style={{ width: '40px', height: '40px', background: fbSettings.fb_access_token ? '#00b894' : '#ff6b6b', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{fbSettings.fb_access_token ? <CheckCircle size={20} /> : <TrendingUp size={20} />}</div>
@@ -1423,7 +1556,17 @@ export default function AgentDashboard() {
 
                 {activeTab === 'marketing' && (
                     <div style={{ animation: 'fadeIn 0.3s ease' }}>
-                        <MarketingHub agent={agent} inventory={inventory} fbSettings={fbSettings} />
+                        <MarketingHub 
+                            agent={agent} 
+                            inventory={inventory} 
+                            fbSettings={fbSettings} 
+                            onUpdateSettings={handleUpdateSettings}
+                            apiUrl={apiUrl}
+                            tenant={tenant}
+                            subView={marketingSubView}
+                            setSubView={setMarketingSubView}
+                            onImportInventory={() => inventoryInputRef.current?.click()}
+                        />
                     </div>
                 )}
 
