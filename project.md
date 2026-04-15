@@ -124,4 +124,47 @@ Before we ever charge you $20, Elliot the AI must extract and verify a 3-Step Pr
 2. **Activate Campaigns:** We route our Google Ads/SEO traffic directly into the RevHunter engine.
 3. **Onboard the Team:** We give your agents access to their Mobile OS so they can start catching the pitches Elliot throws them.
 
-*💬 **Speaking Note:** "To make this a no-brainer for you, what exactly do your sales guys need to know about a customer before they run to the lot? Tell us, and we will program Elliot to demand that exact information before creating a billable lead."*
+| **Question / Objection** | **Convincing Response** |
+| :--- | :--- |
+| **"What if the lead's phone number is dead?"** | "You don't pay. Our AI verifies the number during the initial transcript. If the number doesn't connect or is fake, it never hits your bill. You only pay for verified, reachable humans." |
+| **"What exactly are we paying for?"** | "You are paying for a 'Showroom-Ready Appointment.' By the time your agent sees the lead in their app, Elliot has already confirmed their budget, credit tier, and trade-in info. You're buying the 'DNA,' not just a name." |
+| **"Why is this better than our current CRM?"** | "CRMs are passive—they store data. RevHunter is active—it hunts data. We don't wait for agents to log in; we push pre-vetted deals to their thumbs within 30 seconds of an ad click." |
+| **"Do we have to pay for the AI software?"** | "No. We believe in our tech so much that we give you the platform for free. We only succeed when you get a qualified buyer. We are partners, not vendors." |
+| **"How fast can we see results?"** | "Immediately. With the 'Hydrate Pipeline' feature, we can populate Rjay's dashboard with demo leads today, and go live with real traffic in under 24 hours." |
+
+---
+
+# 🚀 PRE-PRESENTATION CHEAT SHEET (APRIL 15)
+
+## 🛠️ Setup & Timeline
+- **Setup Speed:** Under 30 minutes. The system is already live on Vercel.
+- **Hydration:** Instantly import leads from existing CRM spreadsheets (Excel/CSV).
+- **Go-Live:** AI outbound calls can begin within minutes of the lead import.
+
+## 🎓 Training & Onboarding
+- **The "One-Thumb" Rule:** UI is built for mobile agents on the move. Zero traditional software training required.
+- **3-Step Rocket:** Import -> Sync -> Dial. Simple guided checklist.
+- **AI Mentorship:** Adam (AI voice) gives spoken instructions to agents if the pipeline is empty.
+
+## 🔐 Credentials & Permissions
+- **Admin HQ (PIN 1410):** Master ROI view, billing control, and manual lead locking.
+- **Agent Dashboard (PIN 2026/Unique):** Personal lead pool access + AI dialing tools.
+- **Auto-Assignment:** Round-robin logic ensures fair lead distribution and instant follow-up.
+- **Subscription:** Built-in 14-day trial management for scaling the team.
+
+## 🪄 ULTRA-CONVINCING Gamma AI Prompt (V2)
+**Instructions for Gamma.app:**
+*Topic: The RevHunter AI Evolution - A Performance-Based Sales Partnership for FilCan Cars.*
+*Visual Style: "Cyber-Automotive Premium." Dark slate, neon red accents.*
+
+1. **THE HOOK:** "RevHunter AI: The Relentless Revenue Engine." ($20/Qualified Lead).
+2. **THE PROBLEM:** "The $50,000 Monthly Leak." (Old Way vs. RevHunter Way).
+3. **MEET ELLIOT & ADAM:** "Your Digital Frontline." (24/7 coverage, Professional Voice).
+4. **LEAD DNA:** "Deep Intelligence, Not Just Names." (Verified Contact, Confirmed Intent, Financial Data).
+5. **ONE-THUMB AGENT OS:** "The Pocket CRM for Hustlers." (Checklists, Direct Entry, Transcripts).
+6. **MISSION CONTROL:** "Total Transparency for Management." (ROI Dashboard, Manage Spend).
+7. **THE GUARANTEE:** "The $20 Qualified Lead Model." (Pay only for DNA-verified results).
+8. **ROI PROJECTION:** "The 15x Return Reality." ($2k spend -> 10 sales -> $30k Gross).
+9. **NEXT STEPS:** "Activating the Machine." (Finalize criteria, Hydrate pipeline, Turn on leads).
+10. **CLOSING:** "Let's Own the Market." (Start the Pilot today).
+

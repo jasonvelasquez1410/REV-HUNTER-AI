@@ -1028,8 +1028,20 @@ export default function AgentDashboard() {
                 };
                 
                 const assistantName = agent.assistant_name || "Adam";
+                const isFbConnected = !!fbSettings.fb_access_token;
+
                 setTimeout(() => {
-                    speak(`Welcome, boss. I'm ${assistantName}, your digital assistant. Our pipeline is currently empty. To get started, you can import your leads or sync your Facebook marketplace inventory in Step One.`);
+                    let text = `Welcome back, boss. I'm ${assistantName}. `;
+                    if (leads.length === 0) {
+                        text += "Our pipeline is empty. First, import your leads so I can start hunting. ";
+                    }
+                    if (!isFbConnected) {
+                        text += "Also, your Facebook account isn't synced yet. Head over to the Marketing tab at the bottom to connect your marketplace so I can start monitoring your inquiries.";
+                    } else if (leads.length > 0) {
+                        text += "We're synced and the pipeline is active. Let's get to work.";
+                    }
+                    
+                    speak(text);
                     setHasGreeted(true);
                 }, 1500);
             }
@@ -1140,10 +1152,14 @@ export default function AgentDashboard() {
                 </div>
             )}
 
-            {/* Trial Banner */}
-            {agent.subscription_status === 'trialing' && agent.trial_ends && (
-                <div style={{ background: '#fdcb6e', color: '#000', padding: '8px 15px', textAlign: 'center', fontWeight: '800', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
-                    ⚡ 14-DAY TRIAL ACTIVE — Expires {new Date(agent.trial_ends).toLocaleDateString()}
+            {/* Launch Readiness Bar */}
+            {(!fbSettings.fb_access_token || leads.length === 0) && (
+                <div style={{ background: '#D92027', color: 'white', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: '900', fontSize: '0.7rem', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.1)', animation: 'pulse 2s infinite' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <AlertCircle size={14} />
+                        LAUNCH READINESS: {fbSettings.fb_access_token ? "50%" : "0%"} COMPLETE
+                    </div>
+                    <button onClick={() => setActiveTab('leads')} style={{ background: 'white', color: '#D92027', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.6rem', fontWeight: 'bold' }}>FIX NOW</button>
                 </div>
             )}
 
@@ -1248,7 +1264,8 @@ export default function AgentDashboard() {
                             </button>
                         </div>
 
-                        {leads.length === 0 && (
+                        {/* MISSION CONTROL: Always visible until FB and Leads are ready */}
+                        {(leads.length === 0 || !fbSettings.fb_access_token) && (
                             <div style={{ padding: '20px 0', animation: 'fadeIn 0.5s ease' }}>
                                 <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
                                     <div style={{ background: 'linear-gradient(135deg, #FF4B2B 0%, #FF416C 100%)', padding: '30px 25px', textAlign: 'center' }}>
@@ -1260,31 +1277,31 @@ export default function AgentDashboard() {
                                     <div style={{ padding: '25px', display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
                                         <button
                                             onClick={() => fileInputRef.current?.click()}
-                                            style={{ padding: '20px', background: 'rgba(99,102,241,0.1)', border: '1px solid #6366f1', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' }}
+                                            style={{ padding: '20px', background: leads.length > 0 ? 'rgba(0,184,148,0.1)' : 'rgba(99,102,241,0.1)', border: leads.length > 0 ? '1px solid #00b894' : '1px solid #6366f1', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' }}
                                         >
-                                            <div style={{ width: '40px', height: '40px', background: '#6366f1', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Upload size={20} /></div>
+                                            <div style={{ width: '40px', height: '40px', background: leads.length > 0 ? '#00b894' : '#6366f1', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{leads.length > 0 ? <CheckCircle size={20} /> : <Upload size={20} />}</div>
                                             <div>
-                                                <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>Step 1: Import Lead List</div>
-                                                <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>Upload Excel or CSV from dealer CRM</div>
+                                                <div style={{ fontWeight: '800', fontSize: '0.9rem', color: leads.length > 0 ? '#00b894' : 'white' }}>Step 1: Import Lead List {leads.length > 0 && "✅"}</div>
+                                                <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>{leads.length > 0 ? "Leads are hunting." : "Upload Excel or CSV from dealer CRM"}</div>
                                             </div>
                                         </button>
 
                                         <button
                                             onClick={() => setActiveTab('marketing')}
-                                            style={{ padding: '20px', background: 'rgba(255,107,107,0.1)', border: '1px solid #ff6b6b', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', textAlign: 'left' }}
+                                            style={{ padding: '20px', background: fbSettings.fb_access_token ? 'rgba(0,184,148,0.1)' : 'rgba(255,107,107,0.1)', border: fbSettings.fb_access_token ? '1px solid #00b894' : '1px solid #ff6b6b', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', textAlign: 'left' }}
                                         >
-                                            <div style={{ width: '40px', height: '40px', background: '#ff6b6b', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><TrendingUp size={20} /></div>
+                                            <div style={{ width: '40px', height: '40px', background: fbSettings.fb_access_token ? '#00b894' : '#ff6b6b', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{fbSettings.fb_access_token ? <CheckCircle size={20} /> : <TrendingUp size={20} />}</div>
                                             <div>
-                                                <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>Step 2: Start FB Marketplace Sync</div>
-                                                <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>Allow AI to hunt inquiries on Facebook</div>
+                                                <div style={{ fontWeight: '800', fontSize: '0.9rem', color: fbSettings.fb_access_token ? '#00b894' : 'white' }}>Step 2: Start FB Marketplace Sync {fbSettings.fb_access_token && "✅"}</div>
+                                                <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>{fbSettings.fb_access_token ? "Facebook is synced." : "Allow AI to hunt inquiries on Facebook"}</div>
                                             </div>
                                         </button>
 
                                         <button
                                             onClick={() => setIsStrategistOpen(true)}
-                                            style={{ padding: '20px', background: 'rgba(0,184,148,0.1)', border: '1px solid #00b894', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', textAlign: 'left' }}
+                                            style={{ padding: '20px', background: (leads.length > 0 && fbSettings.fb_access_token) ? 'rgba(0,184,148,0.1)' : 'rgba(255,255,255,0.03)', border: (leads.length > 0 && fbSettings.fb_access_token) ? '1px solid #00b894' : '1px solid rgba(255,255,255,0.1)', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', textAlign: 'left', opacity: (leads.length > 0 && fbSettings.fb_access_token) ? 1 : 0.5 }}
                                         >
-                                            <div style={{ width: '40px', height: '40px', background: '#00b894', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Phone size={20} /></div>
+                                            <div style={{ width: '40px', height: '40px', background: (leads.length > 0 && fbSettings.fb_access_token) ? '#00b894' : '#333', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Phone size={20} /></div>
                                             <div>
                                                 <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>Step 3: Trigger Rapid Dialing</div>
                                                 <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>Command Elliot to start qualifying leads</div>
