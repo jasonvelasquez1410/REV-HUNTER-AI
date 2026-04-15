@@ -256,11 +256,11 @@ function AgentLogin({ onLogin }) {
         } catch {
             // Demo fallback login
             const demoAgents = [
-                { id: 1, name: 'Juan Dela Cruz', pin: '1234', avatar: 'JD', role: 'Senior Sales Consultant' },
-                { id: 2, name: 'Mark Santos', pin: '5678', avatar: 'MS', role: 'Sales Consultant' },
-                { id: 3, name: 'Jessica Cruz', pin: '9012', avatar: 'JC', role: 'Junior Sales Consultant' },
-                { id: 4, name: 'R-Jay', pin: '1410', avatar: 'RJ', role: 'Sales Manager' },
-                { id: 5, name: 'Rjay', pin: '2026', avatar: 'RJ', role: 'Sales Associate' }
+                { id: 1, name: 'Juan Dela Cruz', pin: '1234', avatar: 'JD', role: 'Dealership Consultant', edition: 'enterprise' },
+                { id: 2, name: 'Mark Santos', pin: '5678', avatar: 'MS', role: 'Dealership Consultant', edition: 'enterprise' },
+                { id: 3, name: 'Jessica Cruz', pin: '9012', avatar: 'JC', role: 'Dealership Consultant', edition: 'enterprise' },
+                { id: 4, name: 'R-Jay', pin: '1410', avatar: 'RJ', role: 'Sales Manager', edition: 'enterprise' },
+                { id: 5, name: 'Rjay', pin: '2026', avatar: 'RJ', role: 'Solo Hunter Specialist', edition: 'standalone' }
             ];
             const match = demoAgents.find(a => a.name.toLowerCase() === name.toLowerCase() && a.pin === pin);
             if (match) { onLogin(match); }
@@ -314,7 +314,7 @@ function AgentLogin({ onLogin }) {
 // ── MARKETING HUB VIEW ────────────────────────────
 // ── MARKETING HUB VIEW ────────────────────────────
 function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, tenant, subView, setSubView, onImportInventory }) {
-    const isStandalone = agent?.name?.toLowerCase() === 'rjay' && agent?.pin === '2026';
+    const isStandalone = agent?.edition === 'standalone';
     const [postingCar, setPostingCar] = useState(null);
     const [organizedListing, setOrganizedListing] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -901,7 +901,7 @@ export default function AgentDashboard() {
     const inventoryInputRef = useRef(null);
     const missionControlRef = useRef(null);
 
-    const isStandalone = agent?.name?.toLowerCase() === 'rjay' && agent?.pin === '2026';
+    const isStandalone = agent?.edition === 'standalone';
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -1304,7 +1304,11 @@ export default function AgentDashboard() {
                             <div style={{ fontWeight: '900', fontSize: '1.5rem', color: 'white', letterSpacing: '-0.5px' }}>Welcome back, {agent.name}</div>
                             <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 {agent.role}
-                                {isStandalone && <span style={{ background: '#D92027', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.6rem', fontWeight: '900' }}>STANDALONE EDITION</span>}
+                                {isStandalone ? (
+                                    <span style={{ background: '#D92027', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.6rem', fontWeight: '900' }}>SOLO HUNTER EDITION</span>
+                                ) : (
+                                    <span style={{ background: '#6366f1', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.6rem', fontWeight: '900' }}>DEALERSHIP EDITION</span>
+                                )}
                             </div>
                         </div>
                     </div>
