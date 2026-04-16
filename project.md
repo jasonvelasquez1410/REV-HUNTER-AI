@@ -192,3 +192,29 @@ Before we ever charge you $20, Elliot the AI must extract and verify a 3-Step Pr
 9. **NEXT STEPS:** "Activating the Machine." (Finalize criteria, Hydrate pipeline, Turn on leads).
 10. **CLOSING:** "Let's Own the Market." (Start the Pilot today).
 
+# 📅 APRIL 17 UPDATE: STABILITY & LISTER SPEED
+
+### **1. Production Lead Persistence**
+- **The "Disappearing Lead" Fix**: Resolved the issue where imported leads were only in-memory. They are now officially synced to the REST API (`/api/import/leads`) and saved in the database.
+- **Background Integrity**: The auto-refresh cycle (every 30s) now correctly pulls the newly imported leads from the database, ensuring they never vanish from the "My Leads" view.
+
+### **2. Mobile Lister Assistant (Shiftly-Style)**
+- **Low-Friction Listing**: Developed a specialized mobile modal that mimics the speed of the "Shiftly Auto Lister" extension.
+- **One-Tap Data Porting**: 
+    - AI analyzes the inventory and provides an **Optimized Title**, **Price**, and **Sales Description**.
+    - Each field has a **"COPY"** button for instant clipboard access.
+- **Direct Deep-Link**: A new **"OPEN FACEBOOK LISTER"** button opens the Facebook app's Marketplace creation screen directly (bypassing the need for manual navigation).
+- **Hybrid Sync**: Agents can now copy the data, tap the button, and paste directly into Marketplace in under 10 seconds.
+
+### **3. Marketing & Onboarding Improvements**
+- **Marketing Playbook**: Added an interactive guide in the Marketing Hub to train agents on the "Connect -> Copy -> Paste" workflow.
+- **Status Indicators**: New visual feedback for clipboard actions (✅ labels) and improved "Connecting" states for the FB App integration.
+
+### **4. Deployment & Sync**
+- **Version Control**: All changes successfully pushed to the main branch. 
+- **DB Schema**: Verified that the standalone lead import correctly maps `assigned_agent` and `source` fields for ROI tracking.
+
+---
+**Current Status**: **BATTLE-TESTED & READY.** 🚀
+- **Focus**: Mobile productivity and data persistence.
+- **Presentation Status**: Fully updated for the next demo.
