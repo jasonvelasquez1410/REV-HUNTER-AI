@@ -29,6 +29,8 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
     const [isThinking, setIsThinking] = useState(false);
     const [isListening, setIsListening] = useState(false);
     const [isSynced, setIsSynced] = useState(false);
+    const [voicesLoaded, setVoicesLoaded] = useState(false);
+    const [isMessenger, setIsMessenger] = useState(false);
     const recognitionRef = useRef(null);
     const transcriptRef = useRef('');
     const silenceTimerRef = useRef(null);
@@ -37,15 +39,16 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
         if (typeof window === 'undefined' || !window.speechSynthesis) return;
         console.log("Elliot Attempting to speak:", text);
         
+        // Force un-mute logic for mobile
+        window.speechSynthesis.cancel();
+        
         const performSpeak = () => {
-            window.speechSynthesis.cancel();
             const msg = new SpeechSynthesisUtterance(text);
             const voices = window.speechSynthesis.getVoices();
-            console.log("Available voices:", voices.length);
             
+            // Priority: Natural -> Google -> Male -> English
             let elliot = voices.find(v => v.lang.includes('en-US') && (v.name.includes('Natural') || v.name.includes('Neural')) && v.name.includes('Male'))
-                || voices.find(v => v.lang.includes('en-US') && v.name.includes('Google') && v.name.includes('Male'))
-                || voices.find(v => v.lang.includes('en-US') && v.name.includes('Male'))
+                || voices.find(v => (v.lang.includes('en-US') || v.lang.includes('en-GB')) && v.name.includes('Google') && v.name.includes('Male'))
                 || voices.find(v => v.lang.includes('en') && v.name.includes('Male'))
                 || voices.find(v => v.lang.includes('en-US'))
                 || voices[0];
@@ -54,8 +57,9 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
                 console.log("Selected voice:", elliot.name);
                 msg.voice = elliot;
             }
-            msg.pitch = 0.8;
+            msg.pitch = 0.85;
             msg.rate = 1.0;
+            msg.volume = 1.0;
             
             msg.onstart = () => console.log("Speech started");
             msg.onerror = (e) => console.error("Speech error:", e);
@@ -63,10 +67,15 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
             window.speechSynthesis.speak(msg);
         };
 
-        if (window.speechSynthesis.getVoices().length > 0) {
+        // Android fix: Voices load asynchronously
+        if (voicesLoaded || window.speechSynthesis.getVoices().length > 0) {
             performSpeak();
         } else {
-            window.speechSynthesis.onvoiceschanged = performSpeak;
+            const timer = setTimeout(performSpeak, 100); // Fallback
+            window.speechSynthesis.onvoiceschanged = () => {
+                clearTimeout(timer);
+                performSpeak();
+            };
         }
     };
 
@@ -120,6 +129,21 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
     };
 
     useEffect(() => {
+        // Detect Messenger in-app browser
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        if ((ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Messenger") > -1)) {
+            setIsMessenger(true);
+        }
+
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            const loadVoices = () => {
+                const v = window.speechSynthesis.getVoices();
+                if (v.length > 0) setVoicesLoaded(true);
+            };
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+            loadVoices();
+        }
+
         if (!isOpen) {
             if (recognitionRef.current) recognitionRef.current.stop();
             if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
@@ -178,9 +202,24 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
     return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.98)', backdropFilter: 'blur(35px)', zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <div style={{ width: '100%', maxWidth: '420px', textAlign: 'center', animation: 'fadeIn 0.4s ease' }}>
-                <h2 style={{ color: 'white', fontSize: '1.2rem', fontWeight: '900', marginBottom: '20px', letterSpacing: '2px' }}>ELLIOT STRATEGIST</h2>
+                <h2 style={{ color: 'white', fontSize: '1.2rem', fontWeight: '900', marginBottom: '10px', letterSpacing: '2px' }}>ELLIOT STRATEGIST</h2>
                 
-                <div style={{ marginBottom: '20px' }}>
+                {isMessenger && (
+                    <div style={{ background: 'rgba(255,234,0,0.1)', padding: '10px', borderRadius: '12px', color: '#FFEA00', fontSize: '0.65rem', fontWeight: 'bold', marginBottom: '15px', border: '1px solid rgba(255,234,0,0.3)' }}>
+                        ⚠️ MESSENGER DETECTED: Tap three dots (...) and "Open in Chrome" for Voice/Mic to work!
+                    </div>
+                )}
+
+                <div style={{ marginBottom: '20px', position: 'relative' }}>
+                    <div style={{ position: 'absolute', right: '10px', top: '10px' }}>
+                         <button 
+                            onClick={() => speak("Voice test complete. Volume is optimal.")}
+                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', borderRadius: '10px', padding: '5px 10px', fontSize: '0.55rem', fontWeight: '900' }}
+                         >
+                            TEST VOICE 🔊
+                         </button>
+                    </div>
+
                     <button 
                         onClick={toggleListening}
                         style={{ width: '100px', height: '100px', borderRadius: '50%', background: isListening ? 'rgba(0,184,148,0.1)' : 'rgba(217,32,39,0.1)', border: `3px solid ${isListening ? '#00b894' : '#D92027'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', boxShadow: isListening ? '0 0 50px rgba(0,184,148,0.4)' : isThinking ? '0 0 60px #D92027' : '0 0 30px rgba(217,32,39,0.3)', transition: 'all 0.4s ease', cursor: 'pointer' }}
