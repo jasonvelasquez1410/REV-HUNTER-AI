@@ -1337,34 +1337,26 @@ export default function AgentDashboard() {
             {/* Header */}
             <div style={{ padding: '30px 5%', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(0,0,0,0.2)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem', boxShadow: '0 8px 20px rgba(255, 75, 43, 0.3)' }}>{agent.avatar || agent.name.charAt(0)}</div>
-                        <div>
-                            <div style={{ fontWeight: '900', fontSize: '1.5rem', color: 'white', letterSpacing: '-0.5px' }}>Welcome back, {agent.name}</div>
-                            <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                {agent.role}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
+                        <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem', boxShadow: '0 8px 20px rgba(255, 75, 43, 0.3)', flexShrink: 0 }}>{agent.avatar || agent.name.charAt(0)}</div>
+                        <div style={{ minWidth: 0 }}>
+                            <div style={{ fontWeight: '900', fontSize: '1.1rem', color: 'white', letterSpacing: '-0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Hi, {agent.name}</div>
+                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                 {isStandalone ? (
-                                    <span style={{ background: '#00b894', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '0.65rem', fontWeight: '900', boxShadow: '0 4px 10px rgba(0,184,148,0.3)' }}>SOLO HUNTER EDITION v2.1</span>
+                                    <span style={{ color: '#00b894' }}>SOLO OS</span>
                                 ) : (
-                                    <span style={{ background: '#6366f1', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '0.65rem', fontWeight: '900' }}>DEALERSHIP EDITION</span>
+                                    <span style={{ color: '#6366f1' }}>DEALER OS</span>
                                 )}
                             </div>
                         </div>
                     </div>
                     
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <button 
-                            onClick={() => setIsStrategistOpen(true)}
-                            style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '14px', padding: '0 15px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fdcb6e', cursor: 'pointer', gap: '8px' }}
-                        >
-                            <Zap size={20} fill="currentColor" />
-                            <span style={{ fontSize: '0.65rem', fontWeight: '900', color: 'rgba(255,255,255,0.8)' }}>ELLIOT AI</span>
-                        </button>
+                    <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                         <button 
                             onClick={handleLogout}
-                            style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '14px', width: '45px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}
+                            style={{ background: 'rgba(217,32,39,0.1)', border: '1px solid rgba(217,32,39,0.2)', borderRadius: '12px', width: '40px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D92027', cursor: 'pointer' }}
                         >
-                            <LogOut size={22} />
+                            <LogOut size={18} />
                         </button>
                     </div>
                 </div>
@@ -1702,6 +1694,16 @@ export default function AgentDashboard() {
                             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>Live performance & ROI projection for FilCan</p>
                         </div>
                         <ROIDashboard tenant={tenant} />
+                        <div style={{ marginTop: '40px', padding: '20px', background: 'rgba(217,32,39,0.05)', borderRadius: '24px', border: '1px dashed rgba(217,32,39,0.3)', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#D92027', fontWeight: '900', marginBottom: '10px' }}>⚠️ NEED TO SWITCH ACCOUNTS?</div>
+                            <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', marginBottom: '20px' }}>If you are stuck in the wrong edition (e.g. Dealership instead of Solo), use the button below to force a reset.</p>
+                            <button 
+                                onClick={handleLogout}
+                                style={{ width: '100%', padding: '18px', background: '#D92027', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', cursor: 'pointer', boxShadow: '0 8px 20px rgba(217,32,39,0.3)' }}
+                            >
+                                EXIT & RESET SESSION 🏹
+                            </button>
+                        </div>
                     </div>
                 )}
 
