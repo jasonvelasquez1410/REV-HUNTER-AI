@@ -1739,8 +1739,19 @@ export default function AgentDashboard() {
             {/* Bottom Bar */}
             <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 1000 }}>
                 <button 
-                    onClick={() => setActiveTab('leads')}
-                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === 'leads' ? '#D92027' : 'rgba(255,255,255,0.3)' }}
+                    onClick={() => {
+                        setActiveTab('leads');
+                        setLeadFilter('all');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        // Trigger a slight "pulse" for feedback
+                        const btn = document.getElementById('pipeline-btn');
+                        if (btn) {
+                            btn.style.transform = 'scale(0.9)';
+                            setTimeout(() => { btn.style.transform = 'scale(1)'; }, 100);
+                        }
+                    }}
+                    id="pipeline-btn"
+                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === 'leads' ? '#D92027' : 'rgba(255,255,255,0.3)', transition: 'all 0.1s ease' }}
                 >
                     <LayoutDashboard size={20} />
                     <span style={{ fontSize: '0.6rem', fontWeight: 'bold' }}>PIPELINE</span>
