@@ -170,50 +170,43 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.98)', backdropFilter: 'blur(35px)', zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <div style={{ width: '100%', maxWidth: '420px', textAlign: 'center', animation: 'fadeIn 0.4s ease' }}>
                 
-                <h2 style={{ color: 'white', fontSize: '1.6rem', fontWeight: '900', marginBottom: '5px', letterSpacing: '2px' }}>ELLIOT STRATEGIST</h2>
+                <h2 style={{ color: 'white', fontSize: '1.2rem', fontWeight: '900', marginBottom: '5px', letterSpacing: '2px' }}>ELLIOT STRATEGIST</h2>
                 
-                <div style={{ marginBottom: '40px', position: 'relative' }}>
-                    <div style={{ height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px', marginBottom: '15px' }}>
-                        {[...Array(12)].map((_, i) => (
-                            <div key={i} style={{ width: '3px', height: isListening ? '100%' : '15%', background: isListening ? '#00b894' : 'rgba(217,32,39,0.3)', borderRadius: '10px', animation: isListening ? `wave 1s ease-in-out ${i * 0.1}s infinite` : 'none', transition: 'all 0.3s ease' }} />
-                        ))}
-                    </div>
-
                     <button 
                         onClick={toggleListening}
-                        style={{ width: '130px', height: '130px', borderRadius: '50%', background: isListening ? 'rgba(0,184,148,0.1)' : 'rgba(217,32,39,0.1)', border: `3px solid ${isListening ? '#00b894' : '#D92027'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', boxShadow: isListening ? '0 0 50px rgba(0,184,148,0.4)' : isThinking ? '0 0 60px #D92027' : '0 0 30px rgba(217,32,39,0.3)', transition: 'all 0.4s ease', cursor: 'pointer' }}
+                        style={{ width: '100px', height: '100px', borderRadius: '50%', background: isListening ? 'rgba(0,184,148,0.1)' : 'rgba(217,32,39,0.1)', border: `3px solid ${isListening ? '#00b894' : '#D92027'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', boxShadow: isListening ? '0 0 50px rgba(0,184,148,0.4)' : isThinking ? '0 0 60px #D92027' : '0 0 30px rgba(217,32,39,0.3)', transition: 'all 0.4s ease', cursor: 'pointer' }}
                     >
-                        {!isSynced ? <Zap size={50} color="#D92027" /> : <Mic size={50} color={isListening ? '#00b894' : '#D92027'} />}
+                        {!isSynced ? <Zap size={40} color="#D92027" /> : <Mic size={40} color={isListening ? '#00b894' : '#D92027'} />}
                     </button>
                     
-                    {!isSynced && <div style={{ marginTop: '20px', color: '#D92027', fontWeight: '900', fontSize: '0.8rem', letterSpacing: '2px', animation: 'pulse 1s infinite' }}>TAP TO SYNC WITH ELLIOT</div>}
-                    {isSynced && !isListening && !isThinking && <div style={{ marginTop: '20px', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold', fontSize: '0.7rem' }}>MIC READY • SPEAK NOW</div>}
+                    {!isSynced && <div style={{ marginTop: '10px', color: '#D92027', fontWeight: '900', fontSize: '0.7rem', letterSpacing: '2px', animation: 'pulse 1s infinite' }}>TAP TO SYNC</div>}
+                    {isSynced && !isListening && !isThinking && <div style={{ marginTop: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold', fontSize: '0.6rem' }}>MIC READY</div>}
                 </div>
 
-                <div style={{ minHeight: '130px' }}>
-                    {transcript && !aiResponse && <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '15px', padding: '15px', color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', textAlign: 'center' }}>"{transcript}"</div>}
-                    {isThinking && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>Elliot is calculating...</div>}
-                    {aiResponse && <div style={{ background: 'rgba(217,32,39,0.15)', borderRadius: '15px', padding: '20px', border: '1px solid rgba(217,32,39,0.3)', color: 'white', fontSize: '1rem', fontWeight: '600', animation: 'slideUp 0.3s ease' }}>{aiResponse}</div>}
+                <div style={{ minHeight: '100px', marginBottom: '15px' }}>
+                    {transcript && !aiResponse && <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '15px', padding: '10px', color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', textAlign: 'center' }}>"{transcript}"</div>}
+                    {isThinking && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>Thinking...</div>}
+                    {aiResponse && <div style={{ background: 'rgba(217,32,39,0.15)', borderRadius: '15px', padding: '15px', border: '1px solid rgba(217,32,39,0.3)', color: 'white', fontSize: '0.85rem', fontWeight: '600', animation: 'slideUp 0.3s ease' }}>{aiResponse}</div>}
                 </div>
 
                 {/* Quick Actions (The Bulletproof Mode) */}
                 {isSynced && !isThinking && (
-                    <div style={{ marginTop: '20px' }}>
-                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
-                            <button onClick={() => processInstruction('status')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>📊 STATUS UPDATE</button>
-                            <button onClick={() => processInstruction('hot leads')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>🔥 ANY HOT LEADS?</button>
+                    <div style={{ marginTop: '10px' }}>
+                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+                            <button onClick={() => processInstruction('status')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '10px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 'bold' }}>📊 STATUS</button>
+                            <button onClick={() => processInstruction('hot leads')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '10px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 'bold' }}>🔥 HOT LEADS</button>
                         </div>
                         <button 
                             onClick={() => processInstruction('call')}
-                            style={{ width: '100%', background: 'rgba(0,184,148,0.1)', border: '1px solid #00b894', color: '#00b894', padding: '15px', borderRadius: '14px', fontSize: '0.9rem', fontWeight: '900', boxShadow: '0 4px 15px rgba(0,184,148,0.2)' }}
+                            style={{ width: '100%', background: 'rgba(0,184,148,0.1)', border: '1px solid #00b894', color: '#00b894', padding: '12px', borderRadius: '14px', fontSize: '0.8rem', fontWeight: '900' }}
                         >
-                            📞 TRIGGER OUTBOUND CALLS
+                            📞 TRIGGER OUTBOUND CALLs
                         </button>
                     </div>
                 )}
 
-                <div style={{ marginTop: '40px' }}>
-                    <button onClick={onClose} style={{ background: '#D92027', color: 'white', border: 'none', borderRadius: '16px', padding: '16px 40px', fontWeight: '900', cursor: 'pointer', fontSize: '1rem', width: '100%' }}>EXIT COMMAND MODE</button>
+                <div style={{ marginTop: '15px' }}>
+                    <button onClick={onClose} style={{ background: '#D92027', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', fontWeight: '900', cursor: 'pointer', fontSize: '0.9rem', width: '100%' }}>EXIT COMMAND MODE</button>
                 </div>
             </div>
             
