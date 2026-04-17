@@ -426,9 +426,15 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                             </div>
                         </div>
                         <div style={{ paddingLeft: '12px', borderLeft: '3px solid #00b894' }}>
-                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#00b894' }}>Step 5: Launch a Campaign (Test Sync)</div>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#00b894' }}>Step 5: Pick a "Daily Hit" or Unit</div>
                             <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginTop: '4px', lineHeight: '1.4' }}>
-                                Go back to the <b>INVENTORY</b> tab at the top.<br/>Pick any high-demand vehicle and tap <b>"🚀 SYNC TO MARKETPLACE"</b>.<br/>You'll notice the <b>"🔄 SYNC INVENTORY DATA"</b> button is now unlocked. Hit that button, and Elliot will push the data directly using your authorized account!
+                                Use the <b>🔥 AI DAILY HITS</b> at the top for suggestions, or pick any car and tap <b>"🚀 POST TO MARKETPLACE"</b>.
+                            </div>
+                        </div>
+                        <div style={{ paddingLeft: '12px', borderLeft: '3px solid #FF4B2B' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#FF4B2B' }}>Step 6: One-Tap Copy & Post</div>
+                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginTop: '4px', lineHeight: '1.4' }}>
+                                The <b>Mobile Lister Assistant</b> will pop up. Tap <b>"CLICK TO COPY EVERYTHING"</b> (or copy field-by-field), then hit the <b>"GO POST ON FACEBOOK"</b> button to finish the job manually and safely!
                             </div>
                         </div>
                     </div>
