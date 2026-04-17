@@ -904,6 +904,9 @@ export default function AgentDashboard() {
     const [showManualModal, setShowManualModal] = useState(false);
     const [marketingSubView, setMarketingSubView] = useState('inventory');
     const [showImportPreview, setShowImportPreview] = useState(false);
+    const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(() => {
+        return localStorage.getItem('revhunter_onboarding_done') === 'true';
+    });
     const fileInputRef = useRef(null);
     const inventoryInputRef = useRef(null);
     const missionControlRef = useRef(null);
@@ -1014,58 +1017,7 @@ export default function AgentDashboard() {
         }
     };
 
-    const hydrateDemo = () => {
-        const demoLeads = [
-            { 
-                id: 'demo-1', 
-                name: 'Marvin Raymundo', 
-                phone: '+15875551234', 
-                car: '2024 VW Atlas', 
-                quality_score: 98, 
-                status: 'Hot', 
-                source: 'AI Hunter', 
-                last_action_time: 'Just Now', 
-                assigned_agent: agent.name,
-                trade_in_details: '2019 Honda Civic (Paid off)',
-                credit_score: 750,
-                monthly_budget: 850,
-                conversation_summary: 'Highly interested in the Atlas. Ready for test drive. Trade-in appraised at $18,500.'
-            },
-            { 
-                id: 'demo-2', 
-                name: 'Jessica Chen', 
-                phone: '+15875559000', 
-                car: '2023 Honda CR-V', 
-                quality_score: 85, 
-                status: 'Hot', 
-                source: 'Facebook Marketplace', 
-                last_action_time: '2 mins ago', 
-                assigned_agent: agent.name,
-                trade_in_details: 'None',
-                credit_score: 680,
-                monthly_budget: 600,
-                conversation_summary: 'Looking for a reliable SUV. Pre-qualified via AI for $600/mo.'
-            },
-            { 
-                id: 'demo-3', 
-                name: 'Leo Valdez', 
-                phone: '+14035550199', 
-                car: '2021 Ford F-150', 
-                quality_score: 92, 
-                status: 'Hot', 
-                source: 'Manual Add', 
-                last_action_time: '5 mins ago', 
-                assigned_agent: agent.name,
-                trade_in_details: '2015 RAM 1500',
-                credit_score: 820,
-                monthly_budget: 1200,
-                conversation_summary: 'Experienced buyer. Needs V8. Ready to sign if trade value is right.'
-            }
-        ];
-        setLeads(demoLeads);
-        setHasGreeted(true);
-        alert("🚀 PIPELINE HYDRATED! You now have 3 high-intent demo leads ready for the presentation.");
-    };
+
 
     const handleLogin = (agentData) => {
         setAgent(agentData);
@@ -1437,8 +1389,8 @@ export default function AgentDashboard() {
                             </button>
                         </div>
 
-                        {/* MISSION CONTROL: Always visible until FB and Leads are ready */}
-                        {(leads.length === 0 || !fbSettings.fb_access_token) && (
+                        {/* MISSION CONTROL: Always visible until FB and Leads are ready or user finishes onboarding */}
+                        {!hasCompletedOnboarding && (
                             <div ref={missionControlRef} style={{ padding: '20px 0', animation: 'fadeIn 0.5s ease', transition: 'all 0.5s ease', borderRadius: '32px' }}>
                                 <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
                                     <div style={{ background: 'linear-gradient(135deg, #FF4B2B 0%, #FF416C 100%)', padding: '30px 25px', textAlign: 'center' }}>
@@ -1471,25 +1423,34 @@ export default function AgentDashboard() {
                                         </button>
 
                                         <button
-                                            onClick={() => setIsStrategistOpen(true)}
-                                            style={{ padding: '20px', background: (leads.length > 0 && fbSettings.fb_access_token) ? 'rgba(0,184,148,0.1)' : 'rgba(255,255,255,0.03)', border: (leads.length > 0 && fbSettings.fb_access_token) ? '1px solid #00b894' : '1px solid rgba(255,255,255,0.1)', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', textAlign: 'left', opacity: (leads.length > 0 && fbSettings.fb_access_token) ? 1 : 0.5 }}
+                                            onClick={() => {
+                                                if (leads.length > 0 && fbSettings.fb_access_token) {
+                                                    setHasCompletedOnboarding(true);
+                                                    localStorage.setItem('revhunter_onboarding_done', 'true');
+                                                    alert("✨ CONGRATULATIONS: Your AI Revenue Machine is now active! Happy Hunting.");
+                                                } else {
+                                                    setIsStrategistOpen(true);
+                                                }
+                                            }}
+                                            style={{ 
+                                                padding: '20px', 
+                                                background: (leads.length > 0 && fbSettings.fb_access_token) ? 'rgba(0,184,148,0.2)' : 'rgba(255,255,255,0.03)', 
+                                                border: (leads.length > 0 && fbSettings.fb_access_token) ? '2px solid #00b894' : '1px solid rgba(255,255,255,0.1)', 
+                                                borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.3s' 
+                                            }}
                                         >
-                                            <div style={{ width: '40px', height: '40px', background: (leads.length > 0 && fbSettings.fb_access_token) ? '#00b894' : '#333', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Phone size={20} /></div>
+                                            <div style={{ width: '40px', height: '40px', background: (leads.length > 0 && fbSettings.fb_access_token) ? '#00b894' : '#333', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                                                {(leads.length > 0 && fbSettings.fb_access_token) ? <Zap size={20} fill="white" /> : <Phone size={20} />}
+                                            </div>
                                             <div>
-                                                <div style={{ fontWeight: '800', fontSize: '0.9rem' }}>Step 3: Trigger Rapid Dialing</div>
-                                                <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>Command Elliot to start qualifying leads</div>
+                                                <div style={{ fontWeight: '800', fontSize: '0.9rem', color: (leads.length > 0 && fbSettings.fb_access_token) ? '#00b894' : 'white' }}>
+                                                    Step 3: {(leads.length > 0 && fbSettings.fb_access_token) ? 'Launch & Open My Pipeline' : 'Access Active Pipeline'}
+                                                </div>
+                                                <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>
+                                                    {(leads.length > 0 && fbSettings.fb_access_token) ? "All systems green. Tap to start catching leads." : "Complete steps 1 & 2 to activate your dashboard"}
+                                                </div>
                                             </div>
                                         </button>
-                                        
-                                        <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(253,203,110,0.1)', border: '1px solid #fdcb6e', borderRadius: '24px', textAlign: 'center' }}>
-                                            <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#fdcb6e', marginBottom: '10px' }}>PRESENTATION MODE</div>
-                                            <button 
-                                                onClick={hydrateDemo}
-                                                style={{ width: '100%', padding: '15px', background: '#fdcb6e', color: '#000', border: 'none', borderRadius: '14px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer' }}
-                                            >
-                                                ⚡ HYDRATE DEMO PIPELINE
-                                            </button>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
