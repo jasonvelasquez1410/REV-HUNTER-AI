@@ -95,6 +95,31 @@ async def chat_endpoint(user_msg: UserMessage, tenant_id: str = Depends(get_tena
         print(f"Chat Endpoint Error: {e}")
         return {"response": f"I'm sorry, I'm having a technical hiccup. (Error: {str(e)})", "context": user_msg.context}
 
+@api_router.post("/admin/ops")
+async def admin_ops_endpoint(user_msg: UserMessage, tenant_id: str = Depends(get_tenant_id)):
+    """The Command Mode strategic gateway."""
+    try:
+        from .ai_logic import manage_system_ops
+        
+        leads = db.get_leads(tenant_id)
+        inventory = db.get_inventory(tenant_id)
+        tenant = db.get_tenant_config(tenant_id)
+        
+        # If no leads, give a guided "Admin Mission" response
+        if not leads:
+            return {
+                "response": "I'm your AI Sales Admin. I'm connected and ready, but your pipeline is currently dry. Tap 'MISSION STEP 1' at the top of your screen to import your first customer list—as your admin, I'll then take it from there and start qualifying them!",
+                "summary": "AI Admin Awaiting Leads"
+            }
+            
+        return manage_system_ops(user_msg.message, leads, inventory, tenant)
+    except Exception as e:
+        print(f"Admin Ops Endpoint Error: {e}")
+        return {
+            "response": "My strategic link is being optimized. You have full manual access to the pipeline below. How should we proceed?",
+            "summary": "AI Strategic Sync Active"
+        }
+
 @api_router.get("/leads", response_model=List[Lead])
 async def get_leads(tenant_id: str = Depends(get_tenant_id)):
     return db.get_leads(tenant_id)
