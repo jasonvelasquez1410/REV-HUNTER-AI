@@ -1344,9 +1344,9 @@ export default function AgentDashboard() {
                             <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 {agent.role}
                                 {isStandalone ? (
-                                    <span style={{ background: '#D92027', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.6rem', fontWeight: '900' }}>SOLO HUNTER EDITION</span>
+                                    <span style={{ background: '#00b894', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '0.65rem', fontWeight: '900', boxShadow: '0 4px 10px rgba(0,184,148,0.3)' }}>SOLO HUNTER EDITION v2.1</span>
                                 ) : (
-                                    <span style={{ background: '#6366f1', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.6rem', fontWeight: '900' }}>DEALERSHIP EDITION</span>
+                                    <span style={{ background: '#6366f1', color: 'white', padding: '4px 10px', borderRadius: '8px', fontSize: '0.65rem', fontWeight: '900' }}>DEALERSHIP EDITION</span>
                                 )}
                             </div>
                         </div>
@@ -1413,6 +1413,40 @@ export default function AgentDashboard() {
             <div style={{ padding: '0 5% 120px 5%' }}>
                 {activeTab === 'leads' && (
                     <>
+                        {/* AI QUICK POST (NEW FOR MOBILE DASHBOARD) */}
+                        {isStandalone && (
+                            <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '20px', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '20px', animation: 'slideUp 0.3s ease' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <Zap size={18} color="#FFAB00" fill="#FFAB00" />
+                                        <span style={{ fontWeight: '900', fontSize: '0.85rem' }}>AI POSTING SUGGESTION</span>
+                                    </div>
+                                    <span style={{ fontSize: '0.6rem', color: '#00b894', fontWeight: 'bold' }}>LIVE DATA</span>
+                                </div>
+                                
+                                {inventory.length > 0 ? (
+                                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                        <div style={{ width: '60px', height: '60px', borderRadius: '12px', background: '#000', overflow: 'hidden' }}>
+                                            <img src={inventory[0].image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontSize: '0.85rem', fontWeight: '800' }}>Post {inventory[0].year} {inventory[0].make}</div>
+                                            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>High interest detected for this model.</div>
+                                        </div>
+                                        <button 
+                                            onClick={() => { setActiveTab('marketing'); handleOrganize(inventory[0]); }}
+                                            style={{ padding: '10px 15px', background: '#FF4B2B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '0.7rem', cursor: 'pointer' }}
+                                        >
+                                            POST NOW 🚀
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
+                                        Import inventory to see AI daily suggestions.
+                                    </div>
+                                )}
+                            </div>
+                        )}
                         {/* Search & Filters */}
                         <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                             {[
