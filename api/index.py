@@ -24,7 +24,10 @@ app.add_middleware(
 )
 
 from .storage import db
-from fastapi import Depends
+from fastapi import Depends, Header
+from typing import Annotated, Optional
+from .ai_logic import qualify_lead, generate_ad_copy, generate_ad_image_prompt, generate_seo_content, manage_system_ops
+from .facebook_marketing import post_to_facebook_marketplace, generate_marketplace_payload
 
 async def get_tenant_id(x_tenant_id: Annotated[Optional[str], Header()] = None) -> str:
     """Dependency to resolve tenant_id from headers/domain."""
@@ -99,8 +102,6 @@ async def chat_endpoint(user_msg: UserMessage, tenant_id: str = Depends(get_tena
 async def admin_ops_endpoint(user_msg: UserMessage, tenant_id: str = Depends(get_tenant_id)):
     """The Command Mode strategic gateway."""
     try:
-        from .ai_logic import manage_system_ops
-        
         leads = db.get_leads(tenant_id)
         inventory = db.get_inventory(tenant_id)
         tenant = db.get_tenant_config(tenant_id)
@@ -109,21 +110,28 @@ async def admin_ops_endpoint(user_msg: UserMessage, tenant_id: str = Depends(get
         leads_data = [l.dict() if hasattr(l, 'dict') else l for l in leads]
         inv_data = [i.dict() if hasattr(i, 'dict') else i for i in inventory]
         
-        # If no leads, give a guided "Admin Mission" response
-        if not leads:
-            return {
-                "response": "I'm your AI Sales Admin. I'm connected and ready, but your pipeline is currently dry. Tap 'MISSION STEP 1' at the top of your screen to import your first customer list—as your admin, I'll then take it from there and start qualifying them!",
-                "summary": "AI Admin Awaiting Leads"
-            }
+        # Always try Gemini first
+        result = manage_system_ops(user_msg.message, leads_data, inv_data, tenant)
+        if result and result.get('response'):
+            return result
             
-        return manage_system_ops(user_msg.message, leads_data, inv_data, tenant)
+        # If Gemini fails but we have leads, give a real local report
+        if leads:
+            hot_count = sum(1 for l in leads_data if l.get('status') == 'Hot')
+            return {
+                "response": f"Strategic AI is sync'ing, but my local scan is complete. I've found {len(leads)} leads in your {tenant['name']} pipeline, with {hot_count} marked as HOT. You should check the Lead DNA for these prospects immediately.",
+                "summary": "Local Strategic Scan Active"
+            }
+        
+        return {
+            "response": "I'm your AI Admin. I'm ready, but the pipeline is dry. Tap 'MISSION STEP 1' at the top of your dashboard to import your customers so I can start qualifying them!",
+            "summary": "AI Admin Awaiting Leads"
+        }
     except Exception as e:
         print(f"Admin Ops Endpoint Error: {e}")
-        # ELITE FALLBACK: If AI is offline, provide a high-value manual insight
-        hot_count = sum(1 for l in leads if (l.get('status') if isinstance(l, dict) else getattr(l, 'status', '')) == 'Hot')
         return {
-            "response": f"I'm currently performing a deep-scan of your {len(leads)} leads. You have {hot_count} HOT prospects that need a nudge. My synchronization is completing... what else can I help you manage?",
-            "summary": "AI Sync Delayed - Manual Lead Scan Active"
+            "response": "I'm optimizing your sales engine. Your manual dashboard is still 100% active below. How else can I assist your strategy?",
+            "summary": "AI Strategic Sync Active"
         }
 
 @api_router.get("/leads", response_model=List[Lead])
