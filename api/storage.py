@@ -193,58 +193,8 @@ class Storage:
                 session.add_all(inventory)
                 session.commit()
 
-            # Seed Leads (Impressive Pitch Edition)
-            if session.query(LeadTable).count() == 0:
-                leads = [
-                    LeadTable(
-                        tenant_id="filcan", 
-                        name="Marvin Raymundo", 
-                        email="marvin@example.com", 
-                        phone="+17805550123", 
-                        credit_score=750, 
-                        monthly_budget=800, 
-                        trade_in_details="2018 Honda Civic (Paid off)", 
-                        status="Hot", 
-                        is_reported=True, 
-                        is_billed=True, 
-                        quality_score=98, 
-                        follow_up_streak=4, 
-                        last_action_time="Today 10:45 AM", 
-                        conversation_summary="Highly interested in VW Atlas EXECLINE. Ready for test drive Monday 2PM.",
-                        interaction_history=json.dumps([
-                            {"role": "customer", "text": "Hi, is the 2024 VW Atlas still available?", "timestamp": (datetime.now() - timedelta(hours=2)).isoformat()},
-                            {"role": "AI (Elliot)", "text": "Hi Marvin! Yes, we have two EXECLINE trims on the lot. Are you looking for the family-sized 3rd row or a specific feature?", "timestamp": (datetime.now() - timedelta(hours=1, minutes=58)).isoformat()},
-                            {"role": "customer", "text": "Need the 3rd row for the kids. Do you take trade-ins?", "timestamp": (datetime.now() - timedelta(hours=1, minutes=45)).isoformat()},
-                            {"role": "AI (Elliot)", "text": "Absolutely! We're offering a $1,500 bonus for trades this week. Can I get our AI Specialist Elliot to give you a quick 1-minute call to value your Civic?", "timestamp": (datetime.now() - timedelta(hours=1, minutes=40)).isoformat()},
-                            {"role": "customer", "text": "Sure, call me.", "timestamp": (datetime.now() - timedelta(hours=1, minutes=35)).isoformat()},
-                            {"role": "AI (Elliot Voice)", "text": "[PHONE CALL COMPLETED]\nSummary: Elliot confirmed Marvin has a 2018 Civic Type R. Appt set for Monday 2PM.", "timestamp": (datetime.now() - timedelta(minutes=10)).isoformat()}
-                        ]),
-                        vapi_recording_url="https://www.soundjay.com/buttons/beep-01a.mp3", # Real audio placeholder
-                        assigned_agent="Juan Dela Cruz"
-                    ),
-                    LeadTable(
-                        tenant_id="filcan", 
-                        name="Jessica Chen", 
-                        email="jess@outlook.com", 
-                        phone="587-555-9000", 
-                        credit_score=680, 
-                        monthly_budget=550, 
-                        car="VW Jetta GLI",
-                        trade_in_details="2019 Toyota Corolla SE",
-                        status="Qualified", 
-                        is_reported=True, 
-                        quality_score=85, 
-                        last_action_time="Today 9:15 AM", 
-                        conversation_summary="Considering the Jetta GLI. Trading in her Corolla. Pre-approved for $550/mo.",
-                        interaction_history=json.dumps([
-                            {"role": "customer", "text": "Do you have any Jetta GLIs in manual?", "timestamp": (datetime.now() - timedelta(hours=5)).isoformat()},
-                            {"role": "AI (Elliot)", "text": "Hi Jessica! We actually have a Pure White GLI with the 6-speed manual arriving tomorrow. Would you like me to hold it for a viewing?", "timestamp": (datetime.now() - timedelta(hours=4, minutes=50)).isoformat()}
-                        ]),
-                        assigned_agent="Jessica Cruz"
-                    )
-                ]
-                session.add_all(leads)
-                session.commit()
+            # Lead seeding removed for live trial (RevHunter Standalone)
+            pass
             
             # Seed Agents (The Premium Team)
             if session.query(AgentTable).count() == 0:

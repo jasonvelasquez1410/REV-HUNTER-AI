@@ -46,8 +46,9 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
             const msg = new SpeechSynthesisUtterance(text);
             const voices = window.speechSynthesis.getVoices();
             
-            // Priority: Natural -> Google -> Male -> English
-            let elliot = voices.find(v => v.lang.includes('en-US') && (v.name.includes('Natural') || v.name.includes('Neural')) && v.name.includes('Male'))
+            // Priority: Assistant Name Match -> Natural -> Google -> Male -> English
+            let elliot = voices.find(v => v.name.toLowerCase().includes(agent.assistant_name.toLowerCase()) && v.name.includes('Male'))
+                || voices.find(v => v.lang.includes('en-US') && (v.name.includes('Natural') || v.name.includes('Neural')) && v.name.includes('Male'))
                 || voices.find(v => (v.lang.includes('en-US') || v.lang.includes('en-GB')) && v.name.includes('Google') && v.name.includes('Male'))
                 || voices.find(v => v.lang.includes('en') && v.name.includes('Male'))
                 || voices.find(v => v.lang.includes('en-US'))
@@ -202,7 +203,7 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
     return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.98)', backdropFilter: 'blur(35px)', zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <div style={{ width: '100%', maxWidth: '420px', textAlign: 'center', animation: 'fadeIn 0.4s ease' }}>
-                <h2 style={{ color: 'white', fontSize: '1.2rem', fontWeight: '900', marginBottom: '10px', letterSpacing: '2px' }}>ELLIOT STRATEGIST</h2>
+                <h2 style={{ color: 'white', fontSize: '1.2rem', fontWeight: '900', marginBottom: '10px', uppercase: 'true', letterSpacing: '2px' }}>{agent.assistant_name.toUpperCase()} STRATEGIST</h2>
                 
                 {isMessenger && (
                     <div style={{ background: 'rgba(255,234,0,0.1)', padding: '10px', borderRadius: '12px', color: '#FFEA00', fontSize: '0.65rem', fontWeight: 'bold', marginBottom: '15px', border: '1px solid rgba(255,234,0,0.3)' }}>
