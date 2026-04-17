@@ -449,51 +449,49 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
 
                         <div style={{ padding: '25px', maxHeight: '70vh', overflowY: 'auto' }}>
                             <div style={{ background: 'rgba(24, 119, 242, 0.1)', borderRadius: '15px', padding: '15px', color: '#1877F2', fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '20px', border: '1px solid rgba(24, 119, 242, 0.2)' }}>
-                                💡 Elliot generates the perfect listing. Copy each part and paste it into Facebook!
+                                💡 Elliot generates the perfect listing. Copy everything or use one-tap fields!
                             </div>
 
                             {isGenerating ? (
                                 <div style={{ textAlign: 'center', padding: '40px' }}>
                                     <div style={{ fontSize: '2rem', animation: 'spin 2s linear infinite' }}>🔄</div>
-                                    <div style={{ marginTop: '10px', color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>AI is crafting your high-converting listing...</div>
+                                    <div style={{ marginTop: '10px', color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>Elliot is crafting your high-converting listing...</div>
                                 </div>
                             ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                    {/* Title Section */}
-                                    <div>
-                                        <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', marginBottom: '5px', fontWeight: '900' }}>LISTING TITLE</div>
-                                        <div style={{ display: 'flex', gap: '10px' }}>
-                                            <div style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', fontSize: '0.85rem', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                                {organizedListing?.title || `${postingCar.year} ${postingCar.make} ${postingCar.model}`}
-                                            </div>
-                                            <button onClick={() => copyToClipboard(organizedListing?.title || `${postingCar.year} ${postingCar.make} ${postingCar.model}`, 'Title')} style={{ padding: '0 15px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold' }}>
-                                                {copyStatus === 'Title' ? '✅' : 'COPY'}
-                                            </button>
-                                        </div>
-                                    </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                    
+                                    <button 
+                                        onClick={() => {
+                                            const allText = `TITLE: ${organizedListing?.title}\nPRICE: ${postingCar.price}\n\nDESCRIPTION:\n${organizedListing?.description}`;
+                                            copyToClipboard(allText, 'All');
+                                        }}
+                                        style={{ width: '100%', padding: '18px', background: 'rgba(0,184,148,0.1)', color: '#00b894', border: '1px solid #00b894', borderRadius: '16px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                    >
+                                        <CheckCircle size={18} /> {copyStatus === 'All' ? 'ALL DETAILS COPIED!' : 'CLICK TO COPY EVERYTHING'}
+                                    </button>
 
-                                    {/* Price Section */}
-                                    <div>
-                                        <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', marginBottom: '5px', fontWeight: '900' }}>PRICE</div>
-                                        <div style={{ display: 'flex', gap: '10px' }}>
-                                            <div style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', fontSize: '0.85rem', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                                ${postingCar.price.toLocaleString()}
+                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '10px' }}>
+                                        <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', marginBottom: '15px', textAlign: 'center', fontWeight: 'bold' }}>OR USE ONE-TAP COPY FIELD BY FIELD:</div>
+                                        
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                            {/* Title Section */}
+                                            <div onClick={() => copyToClipboard(organizedListing?.title || `${postingCar.year} ${postingCar.make} ${postingCar.model}`, 'Title')} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '14px', padding: '15px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', position: 'relative' }}>
+                                                <div style={{ fontSize: '0.55rem', color: '#1877F2', fontWeight: '900', marginBottom: '5px' }}>MARKETPLACE TITLE {copyStatus === 'Title' && '✅ COPIED'}</div>
+                                                <div style={{ fontSize: '0.85rem', color: 'white', fontWeight: 'bold' }}>{organizedListing?.title || `${postingCar.year} ${postingCar.make} ${postingCar.model}`}</div>
                                             </div>
-                                            <button onClick={() => copyToClipboard(postingCar.price.toString(), 'Price')} style={{ padding: '0 15px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold' }}>
-                                                {copyStatus === 'Price' ? '✅' : 'COPY'}
-                                            </button>
-                                        </div>
-                                    </div>
 
-                                    {/* Description Section */}
-                                    <div>
-                                        <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', marginBottom: '5px', fontWeight: '900' }}>DESCRIPTION</div>
-                                        <div style={{ padding: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', fontSize: '0.75rem', color: 'white', border: '1px solid rgba(255,255,255,0.1)', maxHeight: '150px', overflowY: 'auto', marginBottom: '8px' }}>
-                                            {organizedListing?.description || "High demand vehicle. Excellent condition. Guaranteed finance approvals."}
+                                            {/* Price Section */}
+                                            <div onClick={() => copyToClipboard(postingCar.price.toString(), 'Price')} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '14px', padding: '15px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer' }}>
+                                                <div style={{ fontSize: '0.55rem', color: '#1877F2', fontWeight: '900', marginBottom: '5px' }}>PRICE {copyStatus === 'Price' && '✅ COPIED'}</div>
+                                                <div style={{ fontSize: '1.2rem', color: '#00b894', fontWeight: '900' }}>${postingCar.price.toLocaleString()}</div>
+                                            </div>
+
+                                            {/* Description Section */}
+                                            <div onClick={() => copyToClipboard(organizedListing?.description || "Inquiry today!", 'Description')} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '14px', padding: '15px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer' }}>
+                                                <div style={{ fontSize: '0.55rem', color: '#1877F2', fontWeight: '900', marginBottom: '5px' }}>AI CRAFTED DESCRIPTION {copyStatus === 'Description' && '✅ COPIED'}</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', maxHeight: '80px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{organizedListing?.description?.substring(0, 150)}...</div>
+                                            </div>
                                         </div>
-                                        <button onClick={() => copyToClipboard(organizedListing?.description || "High demand vehicle.", 'Description')} style={{ width: '100%', padding: '12px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold' }}>
-                                            {copyStatus === 'Description' ? '✅ DESCRIPTION COPIED' : 'COPY FULL DESCRIPTION'}
-                                        </button>
                                     </div>
 
                                     <div style={{ marginTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px' }}>
@@ -501,17 +499,18 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                                             href="https://www.facebook.com/marketplace/create/item" 
                                             target="_blank" 
                                             rel="noopener noreferrer"
-                                            style={{ width: '100%', padding: '18px', background: 'white', color: '#1877F2', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', textDecoration: 'none' }}
+                                            style={{ width: '100%', padding: '20px', background: 'white', color: '#1877F2', border: 'none', borderRadius: '20px', fontWeight: '900', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', textDecoration: 'none', boxShadow: '0 10px 25px rgba(255,255,255,0.2)' }}
                                         >
                                             <LayoutDashboard size={20} />
-                                            OPEN FACEBOOK LISTER
+                                            GO POST ON FACEBOOK
                                         </a>
-                                        <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', marginTop: '10px' }}>
-                                            Note: Facebook app will open. Use the copied data to fill in the fields.
+                                        <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', marginTop: '12px', fontStyle: 'italic' }}>
+                                            App will open. Paste fields into Marketplace to avoid bot detection.
                                         </p>
                                     </div>
                                 </div>
                             )}
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -548,6 +547,31 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
 
             {subView === 'inventory' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {/* AI Suggestions Section (NEW) */}
+                    <div style={{ background: 'linear-gradient(135deg, rgba(255, 75, 43, 0.15), rgba(255, 65, 108, 0.15))', borderRadius: '24px', padding: '20px', border: '1px solid rgba(255, 75, 43, 0.3)', marginBottom: '5px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                            <Zap size={18} color="#FF4B2B" fill="#FF4B2B" />
+                            <span style={{ fontWeight: '900', fontSize: '0.9rem', color: 'white', letterSpacing: '1px' }}>AI DAILY HITS</span>
+                        </div>
+                        <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: '15px', lineHeight: '1.4' }}>
+                           Elliot analyzed {inventory.length} vehicles. These 2 units have the highest buyer interest today:
+                        </p>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            {inventory.slice(0, 2).map((car, idx) => (
+                                <button 
+                                    key={car.id} 
+                                    onClick={() => handleOrganize(car)}
+                                    style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '15px', padding: '12px', textAlign: 'left', cursor: 'pointer' }}
+                                >
+                                    <div style={{ fontSize: '0.65rem', color: '#00b894', fontWeight: '900', marginBottom: '4px' }}>🔥 {idx === 0 ? 'TOP PICK' : 'HIGH DEMAND'}</div>
+                                    <div style={{ fontSize: '0.8rem', fontWeight: '900', color: 'white' }}>{car.year} {car.make}</div>
+                                    <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>${car.price.toLocaleString()}</div>
+                                    <div style={{ marginTop: '8px', fontSize: '0.6rem', color: '#FF4B2B', fontWeight: '900' }}>CLICK TO POST 🚀</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* Inventory Sources Hub (Option A, B, C) */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                         <button 
@@ -555,18 +579,18 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                             style={{ background: activeSourceModal === 'freelance' ? 'rgba(255, 75, 43, 0.15)' : 'rgba(255,255,255,0.03)', border: activeSourceModal === 'freelance' ? '1px solid #FF4B2B' : '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '12px 5px', color: activeSourceModal === 'freelance' ? '#FF4B2B' : 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}
                         >
                             <Link size={16} />
-                            <span style={{ fontSize: '0.5rem', fontWeight: '900' }}>FREELANCE SYNC</span>
+                            <span style={{ fontSize: '0.55rem', fontWeight: '900' }}>WEB SYNC</span>
                         </button>
                         <button 
                             onClick={() => setActiveSourceModal('pocket')}
                             style={{ background: activeSourceModal === 'pocket' ? 'rgba(255, 75, 43, 0.15)' : 'rgba(255,255,255,0.03)', border: activeSourceModal === 'pocket' ? '1px solid #FF4B2B' : '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '12px 5px', color: activeSourceModal === 'pocket' ? '#FF4B2B' : 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}
                         >
                             <Camera size={16} />
-                            <span style={{ fontSize: '0.5rem', fontWeight: '900' }}>POCKET LISTING</span>
+                            <span style={{ fontSize: '0.55rem', fontWeight: '900' }}>PHOTO AD</span>
                         </button>
                         <div style={{ background: isStandalone ? 'rgba(217,32,39,0.1)' : 'rgba(0,184,148,0.1)', border: `1px solid ${isStandalone ? '#D92027' : '#00b894'}`, borderRadius: '12px', padding: '12px 5px', color: isStandalone ? '#D92027' : '#00b894', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', opacity: 1 }}>
                             <Building2 size={16} />
-                            <span style={{ fontSize: '0.5rem', fontWeight: '900' }}>{isStandalone ? 'LOCAL DATA SYNC' : 'FILCAN SYNC (ACTIVE)'}</span>
+                            <span style={{ fontSize: '0.55rem', fontWeight: '900' }}>{isStandalone ? 'MY LOT' : 'FILCAN'}</span>
                         </div>
                     </div>
 
@@ -575,9 +599,9 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                             <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '15px' }}>Standalone Edition: Import your local inventory to start.</p>
                             <button 
                                 onClick={onImportInventory}
-                                style={{ padding: '12px 20px', background: '#D92027', color: 'white', border: 'none', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '900', cursor: 'pointer' }}
+                                style={{ padding: '15px 25px', background: '#D92027', color: 'white', border: 'none', borderRadius: '16px', fontSize: '0.85rem', fontWeight: '900', cursor: 'pointer', boxShadow: '0 8px 15px rgba(217,32,39,0.3)' }}
                             >
-                                📥 IMPORT LOCAL INVENTORY (.XLSX)
+                                📥 IMPORT INVENTORY (.XLSX)
                             </button>
                         </div>
                     )}
@@ -591,13 +615,13 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                             </div>
                             <input 
                                 type="text"
-                                placeholder="Paste Dealer URL (e.g. dealership.com/inventory)"
+                                placeholder="Paste Dealer URL"
                                 value={scrapingUrl}
                                 onChange={(e) => setScrapingUrl(e.target.value)}
                                 style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '0.9rem', marginBottom: '10px', boxSizing: 'border-box' }}
                             />
                             <button 
-                                onClick={() => { setSourceStatus("Elliot is analyzing the dealership's HTML patterns..."); setTimeout(() => setSourceStatus("Successfully synced 12 vehicles to your Freelance Lot!"), 2000); }}
+                                onClick={() => { setSourceStatus("Elliot is analyzing HTML..."); setTimeout(() => setSourceStatus("Successfully synced!"), 2000); }}
                                 style={{ width: '100%', padding: '14px', background: '#FF4B2B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.85rem' }}
                             >
                                 START AI SYNC
@@ -648,9 +672,9 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                                         <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{car.model} • ${car.price.toLocaleString()}</div>
                                         <button 
                                             onClick={() => handleOrganize(car)}
-                                            style={{ marginTop: '15px', width: '100%', padding: '10px', background: 'rgba(255, 75, 43, 0.1)', color: '#FF4B2B', border: '1px solid rgba(255, 75, 43, 0.2)', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                            style={{ marginTop: '15px', width: '100%', padding: '14px', background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', color: 'white', border: 'none', borderRadius: '16px', fontSize: '0.8rem', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 5px 15px rgba(255, 75, 43, 0.3)' }}
                                         >
-                                            🚀 SYNC TO MARKETPLACE
+                                            🚀 POST TO MARKETPLACE
                                         </button>
                                     </div>
                                 </div>
@@ -779,6 +803,28 @@ function EngagementHistoryModal({ lead, onClose, onDial }) {
                         <div style={{ background: 'rgba(0,184,148,0.1)', padding: '12px', borderRadius: '12px', border: '1px solid #00b894', marginBottom: '5px' }}>
                             <div style={{ fontSize: '0.6rem', color: '#00b894', fontWeight: '900', letterSpacing: '1px' }}>📅 APPOINTMENT SCHEDULED</div>
                             <div style={{ fontSize: '0.9rem', fontWeight: 'bold', marginTop: '2px' }}>{new Date(lead.appointment_date).toLocaleString()}</div>
+                        </div>
+                    )}
+
+                    {/* AI Contextual Marketing (NEW) */}
+                    {lead.car && lead.car !== 'Discovery' && (
+                        <div style={{ background: 'linear-gradient(135deg, rgba(255, 171, 0, 0.1), rgba(255, 107, 0, 0.1))', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255, 171, 0, 0.3)' }}>
+                            <div style={{ fontSize: '0.6rem', color: '#FFAB00', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                                <Zap size={10} fill="#FFAB00" /> ELLIOT MARKETING TIP
+                            </div>
+                            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', margin: '0 0 10px 0', lineHeight: '1.4' }}>
+                                Since this lead is interested in a <b>{lead.car}</b>, posting one to Marketplace now will attract similar high-intent buyers.
+                            </p>
+                            <button 
+                                onClick={() => {
+                                    const match = inventory.find(c => lead.car.toLowerCase().includes(c.model.toLowerCase()));
+                                    if(match) handleOrganize(match);
+                                    else alert("No exact match in current inventory, but you can post a regular listing!");
+                                }}
+                                style={{ width: '100%', padding: '12px', background: '#FFAB00', color: 'black', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '0.75rem', cursor: 'pointer' }}
+                            >
+                                🚀 POST {lead.car.toUpperCase()} NOW
+                            </button>
                         </div>
                     )}
 
