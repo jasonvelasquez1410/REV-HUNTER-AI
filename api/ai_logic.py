@@ -485,7 +485,7 @@ def manage_system_ops(message, tenant_id="filcan"):
         print(f"Elliot Ops Error: {e}")
 
     # ELITE FALLBACK: If AI is offline, provide a high-value manual insight
-    hot_count = sum(1 for l in leads if l.get('status') == 'Hot')
+    hot_count = sum(1 for l in leads if (l.get('status') if isinstance(l, dict) else getattr(l, 'status', '')) == 'Hot')
     return {
         "response": f"I'm currently performing a deep-scan of your {len(leads)} leads. You have {hot_count} HOT prospects that need a nudge. My synchronization is completing... what else can I help you manage?",
         "summary": "AI Sync Delayed - Manual Lead Scan Active"
