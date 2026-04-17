@@ -178,27 +178,25 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
     return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.98)', backdropFilter: 'blur(35px)', zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <div style={{ width: '100%', maxWidth: '420px', textAlign: 'center', animation: 'fadeIn 0.4s ease' }}>
+                <h2 style={{ color: 'white', fontSize: '1.2rem', fontWeight: '900', marginBottom: '20px', letterSpacing: '2px' }}>ELLIOT STRATEGIST</h2>
                 
-                <h2 style={{ color: 'white', fontSize: '1.2rem', fontWeight: '900', marginBottom: '5px', letterSpacing: '2px' }}>ELLIOT STRATEGIST</h2>
-                
+                <div style={{ marginBottom: '20px' }}>
                     <button 
                         onClick={toggleListening}
                         style={{ width: '100px', height: '100px', borderRadius: '50%', background: isListening ? 'rgba(0,184,148,0.1)' : 'rgba(217,32,39,0.1)', border: `3px solid ${isListening ? '#00b894' : '#D92027'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', boxShadow: isListening ? '0 0 50px rgba(0,184,148,0.4)' : isThinking ? '0 0 60px #D92027' : '0 0 30px rgba(217,32,39,0.3)', transition: 'all 0.4s ease', cursor: 'pointer' }}
                     >
                         {!isSynced ? <Zap size={40} color="#D92027" /> : <Mic size={40} color={isListening ? '#00b894' : '#D92027'} />}
                     </button>
-                    
                     {!isSynced && <div style={{ marginTop: '10px', color: '#D92027', fontWeight: '900', fontSize: '0.7rem', letterSpacing: '2px', animation: 'pulse 1s infinite' }}>TAP TO SYNC</div>}
                     {isSynced && !isListening && !isThinking && <div style={{ marginTop: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold', fontSize: '0.6rem' }}>MIC READY</div>}
                 </div>
 
-                <div style={{ minHeight: '100px', marginBottom: '15px' }}>
+                <div style={{ minHeight: '80px', marginBottom: '15px' }}>
                     {transcript && !aiResponse && <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '15px', padding: '10px', color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', textAlign: 'center' }}>"{transcript}"</div>}
                     {isThinking && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>Thinking...</div>}
                     {aiResponse && <div style={{ background: 'rgba(217,32,39,0.15)', borderRadius: '15px', padding: '15px', border: '1px solid rgba(217,32,39,0.3)', color: 'white', fontSize: '0.85rem', fontWeight: '600', animation: 'slideUp 0.3s ease' }}>{aiResponse}</div>}
                 </div>
 
-                {/* Quick Actions (The Bulletproof Mode) */}
                 {isSynced && !isThinking && (
                     <div style={{ marginTop: '10px' }}>
                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
@@ -209,7 +207,7 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
                             onClick={() => processInstruction('call')}
                             style={{ width: '100%', background: 'rgba(0,184,148,0.1)', border: '1px solid #00b894', color: '#00b894', padding: '12px', borderRadius: '14px', fontSize: '0.8rem', fontWeight: '900' }}
                         >
-                            📞 TRIGGER OUTBOUND CALLs
+                            📞 TRIGGER OUTBOUND CALLS
                         </button>
                     </div>
                 )}
