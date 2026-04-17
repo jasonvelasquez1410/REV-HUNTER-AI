@@ -517,7 +517,6 @@ function MarketingHub({ agent, inventory, fbSettings, onUpdateSettings, apiUrl, 
                                 </div>
                             )}
                         </div>
-                        </div>
                     </div>
                 </div>
             )}
