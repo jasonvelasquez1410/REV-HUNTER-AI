@@ -35,11 +35,13 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
 
     const speak = (text) => {
         if (typeof window === 'undefined' || !window.speechSynthesis) return;
+        console.log("Elliot Attempting to speak:", text);
         
         const performSpeak = () => {
             window.speechSynthesis.cancel();
             const msg = new SpeechSynthesisUtterance(text);
             const voices = window.speechSynthesis.getVoices();
+            console.log("Available voices:", voices.length);
             
             let elliot = voices.find(v => v.lang.includes('en-US') && (v.name.includes('Natural') || v.name.includes('Neural')) && v.name.includes('Male'))
                 || voices.find(v => v.lang.includes('en-US') && v.name.includes('Google') && v.name.includes('Male'))
@@ -48,9 +50,16 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
                 || voices.find(v => v.lang.includes('en-US'))
                 || voices[0];
 
-            if (elliot) msg.voice = elliot;
+            if (elliot) {
+                console.log("Selected voice:", elliot.name);
+                msg.voice = elliot;
+            }
             msg.pitch = 0.8;
             msg.rate = 1.0;
+            
+            msg.onstart = () => console.log("Speech started");
+            msg.onerror = (e) => console.error("Speech error:", e);
+            
             window.speechSynthesis.speak(msg);
         };
 
@@ -209,12 +218,6 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads }) {
                     <button onClick={onClose} style={{ background: '#D92027', color: 'white', border: 'none', borderRadius: '12px', padding: '12px', fontWeight: '900', cursor: 'pointer', fontSize: '0.9rem', width: '100%' }}>EXIT COMMAND MODE</button>
                 </div>
             </div>
-            
-            <style>{`
-                @keyframes wave { 0%, 100% { height: 15%; } 50% { height: 100%; } }
-                @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-                @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-            `}</style>
         </div>
     );
 }
@@ -1836,6 +1839,9 @@ const styles = `
             gap: 15px !important;
         }
     }
+    @keyframes wave { 0%, 100% { height: 15%; } 50% { height: 100%; } }
+    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+    @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 `;
 
 if (typeof document !== 'undefined') {
