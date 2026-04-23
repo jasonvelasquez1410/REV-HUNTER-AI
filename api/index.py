@@ -511,9 +511,23 @@ class AgentLoginRequest(BaseModel):
 
 @api_router.post("/agents/login")
 async def agent_login(req: AgentLoginRequest):
-    """Simple PIN-based agent login with 14-day trial enforcement."""
+    """Simple PIN-based agent login with Master Key for Rjay."""
     from datetime import datetime
-    # Try DB first
+    
+    clean_name = req.name.strip().lower()
+    clean_pin = req.pin.strip()
+
+    # 0. MASTER KEY BYPASS (For Rjay's stability)
+    if clean_name.replace("-", "") == "rjay" and clean_pin in ["2026", "1410", "20267"]:
+        return {
+            "status": "success", 
+            "agent": {
+                "id": 5, "name": "Rjay", "avatar": "RJ", "role": "Solo Hunter Specialist", 
+                "subscription_status": "active"
+            }
+        }
+
+    # 1. Try DB check
     try:
         from .storage import AgentTable
         with db.session() as session:
