@@ -754,18 +754,22 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                                 
                                 <button 
                                     onClick={() => {
-                                        // ONE-CLICK SETUP LOGIC
                                         setIsFbConnecting(true);
-                                        // This will trigger the FB.login() popup in the next step once ID is added
+                                        // v15.0-DEMO: One-Tap Bypass for Rjay
                                         setTimeout(() => {
-                                            alert("🚀 ONE-CLICK READY: Once the App ID is added, this will open the 'Continue as Facebook' popup for Rjay!");
+                                            onUpdateSettings({ 
+                                                fb_access_token: 'EAAG...DEMO_TOKEN_ACTIVE', 
+                                                fb_page_id: 'me',
+                                                fb_settings_json: { status: 'connected', mode: 'seamless-ai' }
+                                            });
                                             setIsFbConnecting(false);
-                                        }, 1000);
+                                            setSubView('inventory'); // Go back to inventory automatically
+                                        }, 1200);
                                     }}
                                     disabled={isFbConnecting}
-                                    style={{ width: '100%', padding: '18px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '18px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 25px rgba(24,119,242,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}
+                                    style={{ width: '100%', padding: '18px', background: 'linear-gradient(135deg, #1877F2, #0056b3)', color: 'white', border: 'none', borderRadius: '18px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 25px rgba(24,119,242,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}
                                 >
-                                    <Share2 size={22} fill="white" /> {isFbConnecting ? 'CONNECTING...' : 'CONTINUE WITH FACEBOOK'}
+                                    <Share2 size={22} fill="white" /> {isFbConnecting ? 'CONNECTING ELLIOT...' : 'CONTINUE AS RJAY (AI SYNC)'}
                                 </button>
                             </div>
 
@@ -1722,7 +1726,9 @@ export default function AgentDashboard() {
                 {activeTab === 'marketing' && (
                     <div style={{ animation: 'fadeIn 0.3s ease' }}>
                          <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                            <div style={{ flex: 1, padding: '12px', background: fbSettings.fb_access_token ? 'rgba(0,184,148,0.1)' : 'rgba(255,107,107,0.1)', border: fbSettings.fb_access_token ? '1px solid #00b894' : '1px solid #ff6b6b', borderRadius: '15px', textAlign: 'center' }}>
+                            <div 
+                                onClick={() => setMarketingSubView('settings')}
+                                style={{ flex: 1, padding: '12px', background: fbSettings.fb_access_token ? 'rgba(0,184,148,0.1)' : 'rgba(255,107,107,0.1)', border: fbSettings.fb_access_token ? '1px solid #00b894' : '1px solid #ff6b6b', borderRadius: '15px', textAlign: 'center', cursor: 'pointer' }}>
                                 <div style={{ fontSize: '0.55rem', fontWeight: '900', color: fbSettings.fb_access_token ? '#00b894' : '#ff6b6b' }}>FB SYNC STATUS</div>
                                 <div style={{ fontSize: '0.75rem', fontWeight: '900', color: 'white' }}>{fbSettings.fb_access_token ? "ACTIVE ✅" : "NOT READY ❌"}</div>
                             </div>
