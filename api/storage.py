@@ -174,17 +174,20 @@ class Storage:
 
     @contextmanager
     def session(self):
-        """Safe session management with automatic re-init on fallback."""
-        if not self.session_factory:
-            print("DB Factory was None. Attempting lazy re-init...")
+        """Safe session management with hyper-resilient re-init."""
+        global SessionLocal
+        
+        # If factory is missing or closed, force a heartbeat check/re-init
+        if not self.session_factory or not SessionLocal:
             init_db()
             self.session_factory = SessionLocal
             
         if not self.session_factory:
             raise HTTPException(
                 status_code=503, 
-                detail="Database is currently offline or unreachable. Please verify your DATABASE_URL in Vercel settings."
+                detail="Critical Connection Error: Could not reach lead database. Check Vercel DATABASE_URL."
             )
+            
         session = self.session_factory()
         try:
             yield session
