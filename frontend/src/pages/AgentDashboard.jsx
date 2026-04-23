@@ -512,14 +512,6 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                                     </div>
                                 </div>
                             ))}
-                        </div>
-                                    <div style={{ fontSize: '0.65rem', color: '#00b894', fontWeight: '900', marginBottom: '4px' }}>🔥 {idx === 0 ? 'TOP PICK' : 'HIGH DEMAND'}</div>
-                                    <div style={{ fontSize: '0.8rem', fontWeight: '900', color: 'white' }}>{car.year} {car.make}</div>
-                                    <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>${car.price.toLocaleString()}</div>
-                                    <div style={{ marginTop: '8px', fontSize: '0.6rem', color: '#FF4B2B', fontWeight: '900' }}>CLICK TO POST 🚀</div>
-                                </button>
-                            ))}
-                        </div>
                     </div>
 
                     {/* Inventory Sources Hub (Option A, B, C) */}
