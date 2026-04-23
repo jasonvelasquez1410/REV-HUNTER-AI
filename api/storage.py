@@ -214,7 +214,15 @@ class Storage:
             if session.query(CarTable).count() == 0:
                 pass
 
-            # Lead seeding removed for live trial (RevHunter Standalone)
+            # Lead seeding for Solo Hunter Pitch (High-Intent Demo Prospects)
+            if session.query(LeadTable).count() == 0:
+                demo_leads = [
+                    LeadTable(tenant_id="filcan", name="Dave (Family)", email="dave@example.com", phone="1234567890", car="2023 Ford F-150", status="Hot", monthly_budget=800, credit_score=720, interaction_history=json.dumps([{"role": "customer", "text": "Is the F-150 still available?", "timestamp": (datetime.now() - timedelta(hours=2)).isoformat()}])),
+                    LeadTable(tenant_id="filcan", name="Sarah Thompson", email="sarah.t@example.com", phone="9876543210", car="2024 Mazda CX-90", status="AI Nudge", monthly_budget=600, credit_score=680, interaction_history=json.dumps([{"role": "customer", "text": "What is the finance rate on the CX-90?", "timestamp": (datetime.now() - timedelta(hours=5)).isoformat()}])),
+                    LeadTable(tenant_id="filcan", name="Local Prospect", email="prospect@example.com", phone="5551234567", car="SUV Discovery", status="New", monthly_budget=500, credit_score=650)
+                ]
+                session.add_all(demo_leads)
+                session.commit()
             
             # Seed Agents (The Premium Team)
             if session.query(AgentTable).count() == 0:
@@ -270,11 +278,11 @@ class Storage:
         # v14.0-ELITE: Forced Heartbeat Sync for Pitch Perfection
         fallback_config = {
             "id": tenant_id,
-            "name": "FilCan Cars" if tenant_id == "filcan" else "Demo Motors",
-            "location": "Sherwood Park" if tenant_id == "filcan" else "Digital",
-            "address": "983 Fir Street" if tenant_id == "filcan" else "123 AI Avenue",
-            "welcome_message": "Welcome to FilCan Cars! I'm Elliot, your digital specialist. What brings you in today?",
-            "theme_color": "#003366"
+            "name": "RevHunter AI" if tenant_id == "filcan" else "Demo Motors",
+            "location": "Global" if tenant_id == "filcan" else "Digital",
+            "address": "Elite Sales OS" if tenant_id == "filcan" else "123 AI Avenue",
+            "welcome_message": "Welcome! I'm Elliot, your digital specialist. How can I help you scale your sales today?",
+            "theme_color": "#D92027"
         }
         
         if not self.session_factory:

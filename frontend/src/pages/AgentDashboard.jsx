@@ -1781,12 +1781,12 @@ export default function AgentDashboard() {
                     <div style={{ animation: 'fadeIn 0.3s ease', background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.05)' }}>
                          <div style={{ marginBottom: '25px' }}>
                             <h2 style={{ fontWeight: '900', fontSize: '1.5rem', margin: 0 }}>Business Case 📈</h2>
-                            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>Live performance & ROI projection for FilCan</p>
+                            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>Live performance & ROI projection for your mission</p>
                         </div>
                         <ROIDashboard tenant={tenant} />
                         <div style={{ marginTop: '40px', padding: '20px', background: 'rgba(217,32,39,0.05)', borderRadius: '24px', border: '1px dashed rgba(217,32,39,0.3)', textAlign: 'center' }}>
                             <div style={{ fontSize: '0.7rem', color: '#D92027', fontWeight: '900', marginBottom: '10px' }}>⚠️ NEED TO SWITCH ACCOUNTS?</div>
-                            <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', marginBottom: '20px' }}>If you are stuck in the wrong edition (e.g. Dealership instead of Solo), use the button below to force a reset.</p>
+                            <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', marginBottom: '20px' }}>If you need to switch between Enterprise and Solo editions, use the button below to force a reset.</p>
                             <button 
                                 onClick={handleLogout}
                                 style={{ width: '100%', padding: '18px', background: '#D92027', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', cursor: 'pointer', boxShadow: '0 8px 20px rgba(217,32,39,0.3)' }}

@@ -497,12 +497,12 @@ async def admin_ops(req: JarvisRequest, tenant_id: str = Depends(get_tenant_id))
 # ── AGENT MANAGEMENT ──────────────────────────────
 
 DEMO_AGENTS = [
-    {"id": 1, "name": "Juan Dela Cruz", "pin": "1234", "avatar": "JD", "role": "Senior Sales Consultant", "is_active": True},
-    {"id": 2, "name": "Mark Santos", "pin": "5678", "avatar": "MS", "role": "Sales Consultant", "is_active": True},
-    {"id": 3, "name": "Jessica Cruz", "pin": "9012", "avatar": "JC", "role": "Junior Sales Consultant", "is_active": True},
-    {"id": 4, "name": "R-Jay", "pin": "1410", "avatar": "RJ", "role": "Sales Manager", "is_active": True},
-    {"id": 5, "name": "Rjay", "pin": "2026", "avatar": "RJ", "role": "Sales Associate", "is_active": True},
-    {"id": 6, "name": "FilCanDemo", "pin": "2024", "avatar": "FD", "role": "Demo Specialist", "is_active": True}
+    {"id": 1, "name": "Juan Dela Cruz", "pin": "1234", "avatar": "JD", "role": "RevHunter Specialist", "is_active": True},
+    {"id": 2, "name": "Mark Santos", "pin": "5678", "avatar": "MS", "role": "RevHunter Consultant", "is_active": True},
+    {"id": 3, "name": "Jessica Cruz", "pin": "9012", "avatar": "JC", "role": "RevHunter Consultant", "is_active": True},
+    {"id": 4, "name": "R-Jay", "pin": "1410", "avatar": "RJ", "role": "Elite Sales Manager", "is_active": True},
+    {"id": 5, "name": "Rjay", "pin": "2026", "avatar": "RJ", "role": "Solo Hunter Specialist", "is_active": True},
+    {"id": 6, "name": "RevHunterDemo", "pin": "2024", "avatar": "RD", "role": "Demo Specialist", "is_active": True}
 ]
 
 class AgentLoginRequest(BaseModel):
@@ -719,7 +719,7 @@ async def trigger_engagement_call(req: OutboundEngagementRequest):
             "discover": f"Introduce yourself as {assistant_name}, the assistant for {{agent_name}}. Qualify their interest in the {{car}} and try to book a test drive.",
             "budget": f"My name is {assistant_name}. Focus on finding their preferred monthly payment and down payment for the {{car}}.",
             "trade": f"My name is {assistant_name}. Focus on getting the Year/Make/Model and condition of their current car for a trade-in appraisal.",
-            "followup": f"This is {assistant_name}. Just checking in to see if they have any more questions about the inventory at FilCan Cars."
+            "followup": f"This is {assistant_name}. Just checking in to see if they have any more questions about the inventory."
         }
         mission = objectives.get(req.objective, objectives['discover']).format(agent_name=agent_name, car=(lead.car if lead else "vehicle") or "vehicle")
 
@@ -736,12 +736,13 @@ async def trigger_engagement_call(req: OutboundEngagementRequest):
             
         # 3. Create a Dynamic Context-Aware Greeting
         car_interest = (lead.car if lead else req.car or "one of our vehicles") if lead or (hasattr(req, 'car') and req.car) else "one of our vehicles"
+        brand_name = "RevHunter AI"
         
         greetings = {
-            "discover": f"Hello {customer_name}! This is {assistant_name}, the digital assistant for {agent_name} at FilCan Cars. I saw you were looking at our {car_interest} and wanted to see if I could help you get a test drive booked?",
-            "budget": f"Hi {customer_name}, {assistant_name} here from FilCan Cars. I'm currently helping {agent_name} with some financing specs for that {car_interest} you liked. Do you have a quick second to chat about your monthly goal?",
-            "trade": f"Hey {customer_name}, this is {assistant_name} over at FilCan Cars. {agent_name} asked me to reach out because we're looking for trade-ins like yours and I wanted to see if I could get you a quick value on your current ride?",
-            "followup": f"Hello {customer_name}, it's {assistant_name} again from FilCan Cars. Just checking in for {agent_name} to see if you had any more questions about the {car_interest}?"
+            "discover": f"Hello {customer_name}! This is {assistant_name}, the digital assistant for {agent_name} at {brand_name}. I saw you were looking at our {car_interest} and wanted to see if I could help you get a test drive booked?",
+            "budget": f"Hi {customer_name}, {assistant_name} here from {brand_name}. I'm currently helping {agent_name} with some financing specs for that {car_interest} you liked. Do you have a quick second to chat about your monthly goal?",
+            "trade": f"Hey {customer_name}, this is {assistant_name} over at {brand_name}. {agent_name} asked me to reach out because we're looking for trade-ins like yours and I wanted to see if I could get you a quick value on your current ride?",
+            "followup": f"Hello {customer_name}, it's {assistant_name} again from {brand_name}. Just checking in for {agent_name} to see if you had any more questions about the {car_interest}?"
         }
         first_message = greetings.get(req.objective, greetings['discover'])
 
