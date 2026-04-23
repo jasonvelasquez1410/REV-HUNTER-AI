@@ -648,7 +648,6 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                             >
                                 START LIVE SYNC 🚀
                             </button>
-                            </button>
                             {sourceStatus && <div style={{ marginTop: '10px', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>{sourceStatus}</div>}
                         </div>
                     )}
