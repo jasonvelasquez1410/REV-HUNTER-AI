@@ -275,14 +275,16 @@ function AgentLogin({ onLogin }) {
     const apiUrl = import.meta.env.VITE_API_URL || '/api';
 
     const handleLogin = async () => {
-        if (!name || !pin) return setError('Enter your name and PIN');
+        const cleanName = name.trim();
+        const cleanPin = pin.trim();
+        if (!cleanName || !cleanPin) return setError('Enter your name and PIN');
         setLoading(true);
         setError('');
         try {
             const res = await fetch(`${apiUrl}/agents/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, pin })
+                body: JSON.stringify({ name: cleanName, pin: cleanPin })
             });
             if (res.ok) {
                 const data = await res.json();
