@@ -9,6 +9,9 @@ from typing import List, Optional, Annotated
 import os
 import json
 import time
+import requests
+from bs4 import BeautifulSoup
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -665,6 +668,51 @@ async def post_to_fb_marketplace(req: MarketplacePostRequest, tenant_id: str = D
         raise HTTPException(status_code=500, detail=result["message"])
         
     return result
+
+class InventorySyncRequest(BaseModel):
+    url: str
+
+@api_router.post("/inventory/sync")
+async def sync_inventory_live(req: InventorySyncRequest, tenant_id: str = Depends(get_tenant_id)):
+    """Live web scraper to pull inventory from any dealer URL."""
+    from .storage import CarTable, db
+    
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    }
+    
+    try:
+        response = requests.get(req.url, headers=headers, timeout=15)
+        response.raise_for_status()
+        html = response.text
+    except Exception as e:
+        print(f"Scrape Error: {e}")
+        raise HTTPException(status_code=403, detail="Site blocked our scraper. Check URL or Bot Shield.")
+
+    soup = BeautifulSoup(html, 'html.parser')
+    cars_found = []
+    
+    # Generic Pattern Matcher
+    for item in soup.select('.inventory-item, .vehicle-card, .vdp-link, [data-make]')[:15]:
+        try:
+            text = item.get_text(' ', strip=True)
+            match = re.search(r'(20\d{2})\s+([A-Za-z]+)\s+([A-Za-z0-9\- ]+)', text)
+            if match:
+                price_m = re.search(r'\$(\d{1,3}(?:,\d{3})*)', text)
+                cars_found.append({
+                    "year": int(match.group(1)), "make": match.group(2), "model": match.group(3).strip(),
+                    "price": int(price_m.group(1).replace(',', '')) if price_m else 0,
+                    "image": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&q=80&w=800"
+                })
+        except: continue
+
+    if cars_found:
+        with db.session() as session:
+            for c in cars_found:
+                session.add(CarTable(tenant_id=tenant_id, **c, type="SUV", description="Live Sync"))
+            session.commit()
+
+    return {"status": "success", "count": len(cars_found)}
 
 @api_router.get("/marketing/facebook/marketplace-helper/{car_id}")
 async def get_marketplace_helper(car_id: int, tenant_id: str = Depends(get_tenant_id)):

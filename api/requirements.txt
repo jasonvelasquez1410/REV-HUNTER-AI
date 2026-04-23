@@ -8,3 +8,6 @@ sqlalchemy
 databases[postgresql]
 psycopg2-binary
 pg8000
+beautifulsoup4
+requests
+lxml
