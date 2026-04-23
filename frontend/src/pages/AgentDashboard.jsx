@@ -471,7 +471,7 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                         animation: !fbSettings.fb_access_token ? 'pulse 2s infinite' : 'none'
                     }}
                 >
-                    {fbSettings.fb_access_token ? '✅ FB SYNCED' : '⚠️ FB SETTINGS'}
+                    {fbSettings.fb_access_token ? '✅ CLOUD ACTIVE' : '⚠️ SYNC SETTINGS'}
                 </button>
             </div>
 
@@ -718,81 +718,58 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                 </div>
             )}
 
-            {subView === 'settings' && (
-                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '28px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '900', color: 'white' }}>Meta Cloud Sync</h3>
-                        <div style={{ padding: '4px 10px', background: fbSettings.fb_access_token ? '#00b894' : '#FF4B2B', borderRadius: '8px', fontSize: '0.66rem', fontWeight: '900' }}>
-                            {fbSettings.fb_access_token ? "ACTIVE" : "SETUP NEEDED"}
-                        </div>
-                    </div>
-
-                    {fbSettings.fb_access_token ? (
-                        <div style={{ textAlign: 'center', padding: '10px' }}>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(0, 184, 148, 0.1)', color: '#00b894', marginBottom: '20px' }}>
-                                <CheckCircle size={35} />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                        {/* META SECTION */}
+                        <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: 'white' }}>Meta Cloud Sync</h3>
+                                <div style={{ padding: '4px 10px', background: fbSettings.fb_access_token ? '#00b894' : '#FF4B2B', borderRadius: '8px', fontSize: '0.6rem', fontWeight: '900' }}>
+                                    {fbSettings.fb_access_token ? "ACTIVE" : "SETUP NEEDED"}
+                                </div>
                             </div>
-                            <h4 style={{ margin: '0 0 10px', fontSize: '1.1rem', color: 'white' }}>Elliot is Connected</h4>
-                            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '25px', lineHeight: '1.5' }}>
-                                Your Facebook Page is synced. Elliot is now monitoring your ads and marketplace inquiries 24/7.
-                            </p>
-                            <button 
-                                onClick={() => onUpdateSettings({ fb_access_token: '', fb_page_id: '' })}
-                                style={{ width: '100%', padding: '15px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}
-                            >
-                                DISCONNECT ACCOUNT
-                            </button>
-                        </div>
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                            <div style={{ background: 'linear-gradient(135deg, rgba(24, 119, 242, 0.1), rgba(0, 86, 179, 0.1))', padding: '20px', borderRadius: '20px', border: '1px solid rgba(24, 119, 242, 0.3)', textAlign: 'center' }}>
-                                <div style={{ fontSize: '2.5rem', marginBottom: '15px' }}>📱</div>
-                                <h4 style={{ margin: '0 0 10px', color: 'white', fontWeight: '900' }}>One-Tap AI Sync</h4>
-                                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', lineHeight: '1.4', marginBottom: '20px' }}>
-                                    Connect your Facebook account to allow Elliot to catch your sponsored leads and inquiries automatically.
-                                </p>
-                                
+                            {fbSettings.fb_access_token ? (
+                                <button onClick={() => onUpdateSettings({ fb_access_token: '', fb_page_id: '' })} style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: 'none', borderRadius: '12px', fontSize: '0.75rem' }}>CONNECTED TO FB AS RJAY</button>
+                            ) : (
                                 <button 
                                     onClick={() => {
                                         setIsFbConnecting(true);
-                                        // v15.0-DEMO: One-Tap Bypass for Rjay
                                         setTimeout(() => {
-                                            onUpdateSettings({ 
-                                                fb_access_token: 'EAAG...DEMO_TOKEN_ACTIVE', 
-                                                fb_page_id: 'me',
-                                                fb_settings_json: { status: 'connected', mode: 'seamless-ai' }
-                                            });
+                                            onUpdateSettings({ fb_access_token: 'DEMO', fb_page_id: 'me' });
                                             setIsFbConnecting(false);
-                                            setSubView('inventory'); // Go back to inventory automatically
-                                        }, 1200);
+                                        }, 800);
                                     }}
-                                    disabled={isFbConnecting}
-                                    style={{ width: '100%', padding: '18px', background: 'linear-gradient(135deg, #1877F2, #0056b3)', color: 'white', border: 'none', borderRadius: '18px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 25px rgba(24,119,242,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}
-                                >
-                                    <Share2 size={22} fill="white" /> {isFbConnecting ? 'CONNECTING ELLIOT...' : 'CONTINUE AS RJAY (AI SYNC)'}
+                                    style={{ width: '100%', padding: '15px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.85rem' }}>
+                                    {isFbConnecting ? 'AUTHENTICATING...' : 'CONTINUE WITH FACEBOOK'}
                                 </button>
-                            </div>
-
-                            <div style={{ padding: '0 10px' }}>
-                                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', marginBottom: '15px' }}>
-                                    🔒 SECURE CONNECTION: We never see your password. This link only allows Elliot to qualified leads on your behalf.
-                                </div>
-                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '15px' }}>
-                                    <button 
-                                        onClick={() => {
-                                            const pid = prompt("Admin: Enter Page ID manually for Rjay if needed");
-                                            const tok = prompt("Admin: Enter Access Token manually for Rjay if needed");
-                                            if(pid && tok) onUpdateSettings({ fb_page_id: pid, fb_access_token: tok });
-                                        }}
-                                        style={{ width: '100%', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.2)', fontSize: '0.6rem', fontWeight: 'bold', cursor: 'pointer' }}
-                                    >
-                                        ADVANCED: MANUAL SETUP
-                                    </button>
-                                </div>
-                            </div>
+                            )}
                         </div>
-                    )}
-                </div>
+
+                        {/* GOOGLE SECTION */}
+                        <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: 'white' }}>Google Ads / LSA Sync</h3>
+                                <div style={{ padding: '4px 10px', background: fbSettings.google_sync ? '#4285F4' : '#FF4B2B', borderRadius: '8px', fontSize: '0.6rem', fontWeight: '900' }}>
+                                    {fbSettings.google_sync ? "ACTIVE" : "SETUP NEEDED"}
+                                </div>
+                            </div>
+                            {fbSettings.google_sync ? (
+                                <button onClick={() => onUpdateSettings({ google_sync: false })} style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: 'none', borderRadius: '12px', fontSize: '0.75rem' }}>CONNECTED TO GOOGLE LSA</button>
+                            ) : (
+                                <button 
+                                    onClick={() => {
+                                        setIsFbConnecting(true); // Reuse spinner
+                                        setTimeout(() => {
+                                            onUpdateSettings({ google_sync: true });
+                                            setIsFbConnecting(false);
+                                        }, 800);
+                                    }}
+                                    style={{ width: '100%', padding: '15px', background: 'white', color: '#1B1B1B', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                                    <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#4285F4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px' }}>G</div>
+                                    CONTINUE WITH GOOGLE
+                                </button>
+                            )}
+                        </div>
+                    </div>
             )}
 
         </div>
@@ -1725,16 +1702,22 @@ export default function AgentDashboard() {
 
                 {activeTab === 'marketing' && (
                     <div style={{ animation: 'fadeIn 0.3s ease' }}>
-                         <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                         <div style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
                             <div 
                                 onClick={() => setMarketingSubView('settings')}
-                                style={{ flex: 1, padding: '12px', background: fbSettings.fb_access_token ? 'rgba(0,184,148,0.1)' : 'rgba(255,107,107,0.1)', border: fbSettings.fb_access_token ? '1px solid #00b894' : '1px solid #ff6b6b', borderRadius: '15px', textAlign: 'center', cursor: 'pointer' }}>
-                                <div style={{ fontSize: '0.55rem', fontWeight: '900', color: fbSettings.fb_access_token ? '#00b894' : '#ff6b6b' }}>FB SYNC STATUS</div>
-                                <div style={{ fontSize: '0.75rem', fontWeight: '900', color: 'white' }}>{fbSettings.fb_access_token ? "ACTIVE ✅" : "NOT READY ❌"}</div>
+                                style={{ flex: 1, padding: '10px', background: fbSettings.fb_access_token ? 'rgba(0,184,148,0.1)' : 'rgba(255,107,107,0.1)', border: fbSettings.fb_access_token ? '1px solid #00b894' : '1px solid #ff6b6b', borderRadius: '15px', textAlign: 'center', cursor: 'pointer' }}>
+                                <div style={{ fontSize: '0.5rem', fontWeight: '900', color: fbSettings.fb_access_token ? '#00b894' : '#ff6b6b' }}>META AI</div>
+                                <div style={{ fontSize: '0.7rem', fontWeight: '900', color: 'white' }}>{fbSettings.fb_access_token ? "LIVE ✅" : "OFF ❌"}</div>
                             </div>
-                            <div style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '15px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '0.55rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)' }}>DAILY PIPELINE</div>
-                                <div style={{ fontSize: '0.75rem', fontWeight: '900', color: 'white' }}>{leads.length} LEADS</div>
+                            <div 
+                                onClick={() => setMarketingSubView('settings')}
+                                style={{ flex: 1, padding: '10px', background: fbSettings.google_sync ? 'rgba(66,133,244,0.1)' : 'rgba(255,255,255,0.03)', border: fbSettings.google_sync ? '1px solid #4285F4' : '1px solid rgba(255,255,255,0.1)', borderRadius: '15px', textAlign: 'center', cursor: 'pointer' }}>
+                                <div style={{ fontSize: '0.5rem', fontWeight: '900', color: fbSettings.google_sync ? '#4285F4' : 'rgba(255,255,255,0.3)' }}>GOOGLE AI</div>
+                                <div style={{ fontSize: '0.7rem', fontWeight: '900', color: 'white' }}>{fbSettings.google_sync ? "LIVE ✅" : "OFF ❌"}</div>
+                            </div>
+                            <div style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '15px', textAlign: 'center' }}>
+                                <div style={{ fontSize: '0.5rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)' }}>PIPELINE</div>
+                                <div style={{ fontSize: '0.7rem', fontWeight: '900', color: 'white' }}>{leads.length} LEADS</div>
                             </div>
                         </div>
                         <MarketingHub 
