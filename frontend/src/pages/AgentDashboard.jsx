@@ -718,6 +718,8 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                 </div>
             )}
 
+            {subView === 'settings' && (
+                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '28px', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
                         {/* META SECTION */}
                         <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -769,7 +771,8 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                                 </button>
                             )}
                         </div>
-                    </div>
+                        </div>
+                </div>
             )}
 
         </div>
