@@ -512,6 +512,7 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                                     </div>
                                 </div>
                             ))}
+                        </div>
                     </div>
 
                     {/* Inventory Sources Hub (Option A, B, C) */}
@@ -1442,6 +1443,7 @@ export default function AgentDashboard() {
                                             style={{ padding: '10px 15px', background: '#FF4B2B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '0.7rem', cursor: 'pointer' }}
                                         >
                                             POST NOW 🚀
+                                        </button>
                                     </div>
                                 ) : (
                                     <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
