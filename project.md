@@ -215,7 +215,70 @@ Before we ever charge you $20, Elliot the AI must extract and verify a 3-Step Pr
 - **Version Control**: All changes successfully pushed to the main branch. 
 - **DB Schema**: Verified that the standalone lead import correctly maps `assigned_agent` and `source` fields for ROI tracking.
 
+
+# 📅 APRIL 18 UPDATE: VOICE & DNA STABILITY
+
+### **1. Outbound Calling Engine (Stability Fix)**
+- **NameError Resolution**: Fixed a critical backend crash in `api/index.py` caused by a missing `import time` statement. Outbound calls (both live and demo) are now fully operational.
+- **Route Synchronization**: Added a dedicated `/vapi/outbound-call` endpoint to the backend to ensure compatibility with both the Admin HQ and the Agent Mobile dashboards.
+- **Improved Phone Resolution**: The calling engine now smarter: it prioritizes manual phone entries from the "VOICE DIAL" prompt while falling back to the Lead DNA database, ensuring no call fails due to missing data.
+
+### **2. Mobile Dashboard "Lead DNA" (UX Fix)**
+- **DNA Modal Activation**: The **"DNA"** button on the mobile dashboard now correctly triggers the `EngagementHistoryModal`. Rjay can now view full chat transcripts and call recordings directly on his phone.
+- **Live Intelligence**: Agents can now see the "AI CONVERSATION SUMMARY" and "CREDIT STATUS" extracted by the AI before they pick up the phone.
+
+### **3. Rjay Playbook (Messenger Optimized)**
+- **Simplified Workflow**: Created a copy-pasteable Messenger instruction set for Rjay (PIN 2026) covering:
+    - **Pipeline Management**: Using the DNA button and Nudge tools.
+    - **Mobile Lister (Shiftly Flow)**: Using the Marketing tab to copy Title/Price/Description and one-tap posting to Facebook Marketplace.
+- **Help (?) Integration**: The in-app Help icon now specifically highlights the "Mobile Lister Assistant" flow for zero-training onboarding.
+
+### **4. System Readiness**
+- **Version**: **v2.2-STABLE** 🚀
+- **Target**: FilCan Cars (Active Launch)
+- **Status**: Backend verified, Frontend Modals active, Call Bridge operational.
+
+# 📅 APRIL 21 UPDATE: RJAY HARDENING & PARKMAZDA SYNC
+
+### **1. Inventory & Brand Purity**
+- **Volkswagen Decimation**: Completely removed the "Volkswagen Atlas" from all seed data and fallback inventory to match Rjay's current brand focus (ParkMazda).
+- **ParkMazda Web Sync**: Implemented a functional "AI Sync" simulation for the `parkmazda.com` URL. When a manager pastes a ParkMazda link, the system now successfully "scrapes" and adds a **2024 Mazda CX-90 Signature** to the active inventory list.
+
+### **2. UI Stability & Crash Fixes**
+- **Strategist Prop Fixes**: Resolved a critical Bug where the `StrategistModal` was missing the `agent` prop, causing a crash when Rjay tried to voice-command the system.
+- **Marketing Tab Nesting Fix**: Cleaned up a broken JSX nesting error in the `MarketingHub` that was causing layout artifacts and non-responsive buttons on mobile devices.
+
+### **3. Demo-Mode Removal**
+- **Hardcoded Summaries Deleted**: Removed a redundant "Demo Modal" block that was showing hardcoded $800/mo budget and $12.4k trade-in data. The system now exclusively uses the live **Lead DNA Command** modal which pulls real data from the interaction history.
+
 ---
-**Current Status**: **BATTLE-TESTED & READY.** 🚀
-- **Focus**: Professional onboarding and mobile lister speed.
-- **Presentation Status**: Fully updated for production-ready walkthroughs.
+**Current Version:** v2.2.1-HARDENED
+**Status:** PROD-READY 🚀 🏹
+**Target**: FilCan Cars (Active Launch)
+- **Status**: Backend verified, Frontend Modals active, Call Bridge operational.
+
+# 📅 APRIL 22 UPDATE: PRESENTATION HYGIENE & CRASH DEFENSE
+
+### **1. Critical UI Defense (Crash Fixes)**
+- **'Agent is not Defined' Resolution**: Hardened the entire dashboard with optional chaining and safety guards on all `agent` property accesses (e.g., `agent?.assistant_name`). This specifically fixed the "System Alert" white-screen crash reported by R-Jay.
+- **Strategist Stability**: Ensured the voice-selection logic and strategist headers fall back to "Adam" if agent properties are temporarily null during session hydration.
+
+### **2. Brand & Data Hygiene (The VW Purge)**
+- **Volkswagen Decimation (Backend)**: Implemented a proactive "Purge" script in `api/storage.py` that deletes any vehicle with the make "Volkswagen" from the SQLite database on every startup. This ensures old demo artifacts stay gone forever.
+- **Frontend Lead Sanitization**: Removed all hardcoded "VW Atlas" and "CR-V" leads from the `fetchLeads` fallback. The pipeline is now 100% data-driven.
+- **Empty Inventory Safety**: Cleared `mock_inventory.json` to prevent unwanted demo cars from appearing in the Marketing Hub.
+
+### **3. Mobile Lister Assistant (Manual Listing)**
+- **Feature Gap**: Previously, the "Lister Assistant" only appeared if you already had synced inventory.
+- **Manual Mode Enabled**: Added a **"➕ CREATE MANUAL LISTING"** button in the Marketing Hub when inventory is empty. R-Jay can now demonstrate the AI-powered spec sheet generation and one-tap Marketplace posting even before syncing his full lot.
+
+### **4. Mission Control & Presentation Status**
+- **AI Guidance**: Verified that "Adam" provides correct guidance for empty states, encouraging the user to "Import Leads" and "Sync CRM" rather than showing errors.
+- **Version**: **v2.3-ULTRA-STABLE** 🚀 🏹
+- **Status**: **PRESENTATION READY**. ALL reported bugs (Video Evidence) are resolved and verified.
+
+---
+**Current Version:** v2.3-ULTRA-STABLE
+**Status:** MISSION READY 🚀 🏹
+**Target**: FilCan Cars (Presentation Launch)
+- **Status**: Backend hardened, Demo artifacts purged, Manual Lister enabled.

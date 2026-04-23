@@ -2,6 +2,8 @@ import json
 import os
 from typing import List, Dict, Optional
 from datetime import datetime, timedelta
+from contextlib import contextmanager
+from fastapi import HTTPException
 from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -19,9 +21,14 @@ def init_db():
     global engine, SessionLocal
     if engine is None:
         if not DATABASE_URL:
-            # Vercel Serverless: Only /tmp is writable
-            print("WARNING: DATABASE_URL not set. Falling back to /tmp/test.db for Vercel safety.")
-            db_url = "sqlite:////tmp/test_revhunter.db"
+            # Local/Windows: Use a relative path so it works everywhere
+            # Vercel: /tmp is the only writable directory
+            db_path = "revhunter_local.db"
+            if os.name != 'nt': # If not Windows (e.g. Vercel)
+                db_path = "/tmp/test_revhunter.db"
+            
+            print(f"WARNING: DATABASE_URL not set. Using fallback: {db_path}")
+            db_url = f"sqlite:///{db_path}"
         else:
             # Fix postgres:// to postgresql:// and use pure-python pg8000 for Vercel
             db_url = DATABASE_URL
@@ -35,19 +42,26 @@ def init_db():
             # Vercel Serverless: Reduce pool size and max overflow for stability
             engine = create_engine(
                 db_url, 
-                pool_size=2, 
-                max_overflow=0,
+                pool_size=2 if "sqlite" not in db_url else None, # Pool size not for sqlite
+                max_overflow=0 if "sqlite" not in db_url else None,
                 pool_pre_ping=True
-                # Removed connect_timeout for SQLite compatibility
             )
             SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
             # Create tables if they don't exist
             Base.metadata.create_all(bind=engine)
+            
+            # Migration check: Add edition column if it doesn't exist
+            try:
+                conn = engine.connect()
+                conn.execute("ALTER TABLE agents ADD COLUMN edition VARCHAR DEFAULT 'enterprise'")
+                conn.close()
+            except:
+                pass # Already exists
+            
             print("Database initialized successfully.")
         except Exception as e:
             print(f"Database Initialization Error: {e}")
-            # We don't raise here to allow the app to start in 'Degraded' mode
-            # Endpoints will handle the lack of engine/SessionLocal gracefully
+            SessionLocal = None # Explicitly ensure it's None
 
 # SQLAlchemy Models
 class TenantTable(Base):
@@ -108,6 +122,7 @@ class AgentTable(Base):
     pin = Column(String)
     avatar = Column(String, default="AG")
     role = Column(String, default="Sales Consultant")
+    edition = Column(String, default="enterprise") # 'standalone' | 'enterprise'
     is_active = Column(Boolean, default=True)
     fb_access_token = Column(Text, nullable=True)
     fb_page_id = Column(String, nullable=True)
@@ -152,9 +167,26 @@ class Storage:
             print(f"Storage Initialization Critical Error: {e}")
             self.session_factory = None
 
+    @contextmanager
+    def session(self):
+        """Safe session management with clear error if DB is offline."""
+        if not self.session_factory:
+            raise HTTPException(
+                status_code=503, 
+                detail="Database is currently offline or uninitialized. Please check your DATABASE_URL."
+            )
+        session = self.session_factory()
+        try:
+            yield session
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
     def _seed_data_if_empty(self):
-        if not self.session_factory: return
-        with self.session_factory() as session:
+        with self.session() as session:
             # Seed Tenants
             if session.query(TenantTable).count() == 0:
                 tenants = [
@@ -178,23 +210,11 @@ class Storage:
                 session.add_all(tenants)
                 session.commit()
 
-            # Seed Inventory (Premium FilCan Edition)
+            # Seed Inventory (Empty per User Request - Only show fetched/imported data)
             if session.query(CarTable).count() == 0:
-                inventory = [
-                    CarTable(tenant_id="filcan", make="Volkswagen", model="Atlas EXECLINE", year=2024, price=58900, mileage=12, type="SUV", image="https://images.unsplash.com/photo-1594976612316-401266a4cc44?auto=format&fit=crop&w=800&q=80", description="2024 VW Atlas EXECLINE. AWD, Panoramic Sunroof, Leather. The ultimate family SUV."),
-                    CarTable(tenant_id="filcan", make="Mazda", model="CX-5 Signature", year=2023, price=39500, mileage=8400, type="SUV", image="https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=800&q=80", description="Turbo AWD Signature Trim. Soul Red Crystal. Local one-owner vehicle."),
-                    CarTable(tenant_id="filcan", make="Ford", model="F-150 Lariat", year=2021, price=48500, mileage=32000, type="Truck", image="https://images.unsplash.com/photo-1591115765373-520b7a21f7cd?auto=format&fit=crop&w=800&q=80", description="Lariat Sport Supercrew. 5.0L V8. Sherword Park driven, immaculate condition."),
-                    CarTable(tenant_id="filcan", make="Honda", model="Civic Type R", year=2023, price=52000, mileage=5000, type="Sedan", image="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=800&q=80", description="Performance hatch in Championship White. Rare find, tracked & verified.")
-                ]
-                # Also seed for demo
-                inventory.extend([
-                    CarTable(tenant_id="demo", make="Tesla", model="Model S Plaid", year=2023, price=95000, mileage=500, type="Sedan", image="https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=800&q=80", description="Ludicrous speed, futuristic tech. 0-60 in 1.99s."),
-                ])
-                session.add_all(inventory)
-                session.commit()
+                pass
 
             # Lead seeding removed for live trial (RevHunter Standalone)
-            pass
             
             # Seed Agents (The Premium Team)
             if session.query(AgentTable).count() == 0:
@@ -202,8 +222,8 @@ class Storage:
                     AgentTable(tenant_id="filcan", name="Juan Dela Cruz", pin="1234", avatar="JD", role="Senior Sales Consultant"),
                     AgentTable(tenant_id="filcan", name="Mark Santos", pin="5678", avatar="MS", role="Sales Consultant"),
                     AgentTable(tenant_id="filcan", name="Jessica Cruz", pin="9012", avatar="JC", role="Junior Sales Consultant"),
-                    AgentTable(tenant_id="filcan", name="R-Jay", pin="1410", avatar="RJ", role="Sales Manager", subscription_status="active"),
-                    AgentTable(tenant_id="filcan", name="Rjay", pin="2026", avatar="RJ", role="Sales Associate", subscription_status="active")
+                    AgentTable(tenant_id="filcan", name="R-Jay", pin="1410", avatar="RJ", role="Sales Manager", subscription_status="active", edition="enterprise"),
+                    AgentTable(tenant_id="filcan", name="Rjay", pin="2026", avatar="RJ", role="Sales Associate", subscription_status="active", edition="standalone")
                 ]
                 session.add_all(agents)
                 session.commit()
@@ -261,7 +281,7 @@ class Storage:
             return fallback_config
             
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 tenant = session.query(TenantTable).filter(TenantTable.id == tenant_id).first()
                 if tenant:
                     # HEARBEAT: Force sync the latest greeting to the DB if it's outdated
@@ -284,15 +304,13 @@ class Storage:
             return fallback_config
 
     def get_inventory(self, tenant_id: str = "filcan") -> List[Dict]:
-        fallback_inventory = [
-            {"id": 1, "make": "Volkswagen", "model": "Atlas EXECLINE", "year": 2024, "price": 58900, "mileage": 12, "type": "SUV", "image": "", "description": "Local Backup Inventory - Premium Edition"}
-        ]
+        fallback_inventory = []
         
         if not self.session_factory:
             return fallback_inventory
             
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 cars = session.query(CarTable).filter(CarTable.tenant_id == tenant_id).all()
                 return [
                     {
@@ -313,7 +331,7 @@ class Storage:
 
     def get_leads(self, tenant_id: str = "filcan") -> List[PydanticLead]:
         fallback_leads = [
-            PydanticLead(id=1, name="Marvin Raymundo", email="marvin@example.com", phone="587-888-1234", status="Hot", quality_score=98, conversation_summary="Highly interested in VW Atlas. (Local Backup Active)"),
+            PydanticLead(id=1, name="Marvin Raymundo", email="marvin@example.com", phone="587-888-1234", status="Hot", quality_score=98, conversation_summary="Highly interested in Mazda CX-90. (Local Backup Active)"),
             PydanticLead(id=2, name="Jessica Chen", email="jess@outlook.com", phone="587-555-9000", status="Qualified", quality_score=85, conversation_summary="Looking for a reliable SUV. (Local Backup Active)")
         ]
         
@@ -321,7 +339,7 @@ class Storage:
             return fallback_leads
             
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 leads = session.query(LeadTable).filter(LeadTable.tenant_id == tenant_id).all()
                 return [PydanticLead(**l.__dict__) for l in leads]
         except Exception as e:
@@ -329,7 +347,7 @@ class Storage:
             return fallback_leads
 
     def report_lead(self, lead_id: int) -> bool:
-        with self.session_factory() as session:
+        with self.session() as session:
             lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
             if lead:
                 lead.is_reported = True
@@ -338,7 +356,7 @@ class Storage:
             return False
 
     def charge_lead(self, lead_id: int) -> bool:
-        with self.session_factory() as session:
+        with self.session() as session:
             lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
             if lead:
                 lead.is_billed = True
@@ -348,7 +366,7 @@ class Storage:
 
     def reactivate_lead(self, lead_id: int) -> bool:
         if not self.session_factory: return False
-        with self.session_factory() as session:
+        with self.session() as session:
             lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
             if lead:
                 lead.is_aged = False
@@ -362,7 +380,7 @@ class Storage:
     def update_lead_status(self, lead_id: int, new_status: str) -> bool:
         if not self.session_factory: return False
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
                 if lead:
                     lead.status = new_status
@@ -381,7 +399,7 @@ class Storage:
         """
         if not self.session_factory: return True # Simulate success in fallback mode
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
                 if lead:
                     print(f"SYNC-TO-GSHEETS: Lead {lead.name} would be synced to Google Sheets.")
@@ -398,7 +416,7 @@ class Storage:
         max_retries = 2
         for attempt in range(max_retries):
             try:
-                with self.session_factory() as session:
+                with self.session() as session:
                     lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
                     if lead:
                         lead.conversation_state = json.dumps(state)
@@ -413,7 +431,7 @@ class Storage:
         return False
 
     def get_or_create_lead(self, tenant_id: str, name: str, phone: str = None) -> LeadTable:
-        with self.session_factory() as session:
+        with self.session() as session:
             lead = session.query(LeadTable).filter(
                 LeadTable.tenant_id == tenant_id,
                 LeadTable.name == name
@@ -438,7 +456,7 @@ class Storage:
         if not self.session_factory: return None
         
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 # 1. Get all active agents for this tenant
                 agents = session.query(AgentTable).filter(
                     AgentTable.tenant_id == tenant_id,
@@ -483,7 +501,7 @@ class Storage:
         """Appends a message to the interaction_history JSON list."""
         if not self.session_factory: return False
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
                 if lead:
                     history = json.loads(lead.interaction_history or "[]")
@@ -503,7 +521,7 @@ class Storage:
     def update_recording_url(self, lead_id: int, url: str) -> bool:
         if not self.session_factory: return False
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
                 if lead:
                     lead.vapi_recording_url = url
@@ -516,7 +534,7 @@ class Storage:
         return None
 
     def add_ad(self, ad_data: Dict, tenant_id: str = "filcan"):
-        with self.session_factory() as session:
+        with self.session() as session:
             new_ad = AdTable(
                 tenant_id=tenant_id,
                 content=ad_data.get("content"),
@@ -533,7 +551,7 @@ class Storage:
             return fallback_ads
             
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 ads = session.query(AdTable).all()
                 return [{"id": a.id, "content": a.content, "platform": a.platform, "status": a.status, "tenant_id": a.tenant_id} for a in ads]
         except Exception as e:
@@ -543,7 +561,7 @@ class Storage:
     def update_agent_settings(self, agent_id: int, settings: Dict) -> bool:
         if not self.session_factory: return False
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 agent = session.query(AgentTable).filter(AgentTable.id == agent_id).first()
                 if agent:
                     if "fb_access_token" in settings:
@@ -562,7 +580,7 @@ class Storage:
     def get_agent_settings(self, agent_id: int) -> Dict:
         if not self.session_factory: return {}
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 agent = session.query(AgentTable).filter(AgentTable.id == agent_id).first()
                 if agent:
                     return {
@@ -578,7 +596,7 @@ class Storage:
     def get_appointments(self, tenant_id: str = "filcan") -> List[Dict]:
         if not self.session_factory: return []
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 appts = session.query(AppointmentTable).filter(AppointmentTable.tenant_id == tenant_id).all()
                 return [{
                     "id": a.id,
@@ -594,7 +612,7 @@ class Storage:
     def create_appointment(self, appt_data: Dict, tenant_id: str = "filcan") -> bool:
         if not self.session_factory: return False
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 new_appt = AppointmentTable(
                     tenant_id=tenant_id,
                     lead_id=appt_data.get("lead_id"),
@@ -612,13 +630,14 @@ class Storage:
     def get_agents(self, tenant_id: str = "filcan") -> List[Dict]:
         if not self.session_factory: return []
         try:
-            with self.session_factory() as session:
+            with self.session() as session:
                 agents = session.query(AgentTable).filter(AgentTable.tenant_id == tenant_id).all()
                 return [{
                     "id": a.id,
                     "name": a.name,
                     "role": a.role,
-                    "avatar": a.avatar
+                    "avatar": a.avatar,
+                    "edition": a.edition
                 } for a in agents]
         except Exception as e:
             print(f"DB Fetch Error (get_agents): {e}")

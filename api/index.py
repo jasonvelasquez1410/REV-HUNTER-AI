@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Annotated
 import os
 import json
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -200,7 +201,7 @@ async def update_lead_status(lead_id: int, status_update: dict):
     new_status = status_update.get("status")
     new_agent = status_update.get("assigned_agent")
     
-    with db.session_factory() as session:
+    with db.session() as session:
         lead = session.query(LeadTable).filter(LeadTable.id == lead_id).first()
         if not lead:
             raise HTTPException(status_code=404, detail="Lead not found")
@@ -230,24 +231,87 @@ async def verify_fb_webhook(hub_mode: str = None, hub_verify_token: str = None, 
 async def fb_webhook(request: Request):
     data = await request.json()
     try:
-        entry = data.get("entry", [{}])[0]
-        messaging = entry.get("messaging", [{}])[0]
-        sender_id = messaging.get("sender", {}).get("id")
-        message_text = messaging.get("message", {}).get("text")
-        
-        if sender_id and message_text:
-            tenant_id = "filcan"
-            lead = db.get_or_create_lead(tenant_id, name=f"FB User {sender_id}")
-            
-            # Log Customer Message
-            db.append_interaction(lead.id, "customer", message_text)
-            
-            response, next_state, summary = qualify_lead(message_text, lead.conversation_state, tenant_id)
-            
-            # Log AI Response
-            db.append_interaction(lead.id, "AI (Assistant)", response)
-            
-            db.update_lead_state(lead.id, json.loads(next_state), summary)
+        entries = data.get("entry", [])
+        for entry in entries:
+            # 1. Handle Messenger Messages (Lead Qualification)
+            messaging_list = entry.get("messaging", [])
+            for messaging in messaging_list:
+                sender_id = messaging.get("sender", {}).get("id")
+                message_text = messaging.get("message", {}).get("text")
+                
+                if sender_id and message_text:
+                    tenant_id = "filcan"
+                    lead = db.get_or_create_lead(tenant_id, name=f"FB User {sender_id}")
+                    
+                    # Log Customer Message
+                    db.append_interaction(lead.id, "customer", message_text)
+                    
+                    response, next_state, summary = qualify_lead(message_text, lead.conversation_state, tenant_id)
+                    
+                    # Log AI Response
+                    db.append_interaction(lead.id, "AI (Assistant)", response)
+                    db.update_lead_state(lead.id, json.loads(next_state), summary)
+
+            # 2. Handle Lead Ads (Leadgen Forms)
+            changes = entry.get("changes", [])
+            for change in changes:
+                if change.get("field") == "leadgen":
+                    leadgen_id = change.get("value", {}).get("leadgen_id")
+                    page_id = entry.get("id")
+                    
+                    if leadgen_id and page_id:
+                        # Find agent associated with this Page
+                        from .storage import AgentTable
+                        with db.session() as session:
+                            agent = session.query(AgentTable).filter(AgentTable.fb_page_id == str(page_id)).first()
+                            if agent and agent.fb_access_token:
+                                # Fetch Lead details from Graph API
+                                import requests
+                                try:
+                                    lead_res = requests.get(
+                                        f"https://graph.facebook.com/v19.0/{leadgen_id}",
+                                        params={"access_token": agent.fb_access_token}
+                                    )
+                                    lead_data = lead_res.json()
+                                    field_data = lead_data.get("field_data", [])
+                                    
+                                    # Extract common fields
+                                    name = next((f["values"][0] for f in field_data if "name" in f["name"].lower()), "FB Lead")
+                                    phone = next((f["values"][0] for f in field_data if "phone" in f["name"].lower()), None)
+                                    email = next((f["values"][0] for f in field_data if "email" in f["name"].lower()), None)
+                                    
+                                    # Create/Update the lead and persist extra fields
+                                    with db.session() as session:
+                                        from .storage import LeadTable
+                                        # Get or create within the same session
+                                        lead = session.query(LeadTable).filter(
+                                            LeadTable.tenant_id == agent.tenant_id,
+                                            LeadTable.name == f"{name} (Sponsored)"
+                                        ).first()
+                                        
+                                        if not lead:
+                                            lead = LeadTable(
+                                                tenant_id=agent.tenant_id,
+                                                name=f"{name} (Sponsored)",
+                                                phone=phone,
+                                                email=email,
+                                                source="FB Sponsored",
+                                                assigned_agent=agent.name,
+                                                status="Discovery",
+                                                last_action_time="Captured via Sponsored Form"
+                                            )
+                                            session.add(lead)
+                                        else:
+                                            lead.phone = phone or lead.phone
+                                            lead.email = email or lead.email
+                                            lead.assigned_agent = agent.name
+                                            lead.last_action_time = "Re-captured via Sponsored Form"
+                                        
+                                        session.commit()
+                                        print(f"WEBHOOK: Successfully synced Sponsored Lead {name} for Agent {agent.name}")
+                                except Exception as e:
+                                    print(f"FB Lead Fetch Error: {e}")
+
         return {"status": "success"}
     except Exception as e:
         print(f"Webhook Error: {e}")
@@ -260,7 +324,7 @@ async def admin_manual_reply(req: ManualReplyRequest):
 @api_router.post("/admin/simulate-nudge")
 async def simulate_nudge(req: ManualReplyRequest, tenant_id: str = Depends(get_tenant_id)):
     lead_index = int(req.recipient_id)
-    with db.session_factory() as session:
+    with db.session() as session:
         from .storage import LeadTable
         lead = session.query(LeadTable).filter(LeadTable.id == lead_index).first()
         if lead:
@@ -329,7 +393,7 @@ async def import_leads_frontend(payload: ImportLeadsPayload, tenant_id: str = De
     try:
         from .storage import LeadTable
         count = 0
-        with db.session_factory() as session:
+        with db.session() as session:
             for l in payload.leads:
                 # Basic get or create logic manually so we can set extra fields efficiently
                 lead = session.query(LeadTable).filter(
@@ -406,7 +470,7 @@ class BillRequest(BaseModel):
 @api_router.post("/leads/mark-billed")
 async def mark_billed(req: BillRequest):
     """Marks leads as billed."""
-    with db.session_factory() as session:
+    with db.session() as session:
         from .storage import LeadTable
         session.query(LeadTable).filter(LeadTable.id.in_(req.lead_ids)).update({"is_billed": True}, synchronize_session=False)
         session.commit()
@@ -452,7 +516,7 @@ async def agent_login(req: AgentLoginRequest):
     # Try DB first
     try:
         from .storage import AgentTable
-        with db.session_factory() as session:
+        with db.session() as session:
             agent = session.query(AgentTable).filter(
                 AgentTable.name == req.name, AgentTable.pin == req.pin, AgentTable.is_active == True
             ).first()
@@ -500,7 +564,7 @@ async def get_agents(tenant_id: str = Depends(get_tenant_id)):
     """List all agents."""
     try:
         from .storage import AgentTable
-        with db.session_factory() as session:
+        with db.session() as session:
             agents = session.query(AgentTable).filter(AgentTable.tenant_id == tenant_id).all()
             if agents:
                 return [{"id": a.id, "name": a.name, "avatar": a.avatar, "role": a.role, "is_active": a.is_active} for a in agents]
@@ -517,7 +581,7 @@ async def assign_lead(req: AssignLeadRequest):
     """Assign a lead to an agent."""
     try:
         from .storage import LeadTable
-        with db.session_factory() as session:
+        with db.session() as session:
             lead = session.query(LeadTable).filter(LeadTable.id == req.lead_id).first()
             if lead:
                 lead.assigned_agent = req.agent_name
@@ -609,13 +673,14 @@ class OutboundEngagementRequest(BaseModel):
     objective: str = "discover"
     lead_name: Optional[str] = None
     lead_phone: Optional[str] = None
+    phone_number: Optional[str] = None # Added for compatibility with Admin.jsx
     car: Optional[str] = None
 
 @api_router.post("/engagement/outbound-call")
 async def trigger_engagement_call(req: OutboundEngagementRequest):
     """Triggers a strategic outbound call via Vapi."""
     from .storage import LeadTable, AgentTable
-    with db.session_factory() as session:
+    with db.session() as session:
         lead = None
         if req.lead_id != -1:
             lead = session.query(LeadTable).filter(LeadTable.id == req.lead_id).first()
@@ -631,6 +696,7 @@ async def trigger_engagement_call(req: OutboundEngagementRequest):
                 agent = session.query(AgentTable).filter(AgentTable.name == req.agent_id).first()
         
         agent_name = agent.name if agent else "the team"
+        agent_id = agent.id if agent else req.agent_id
         
         # 2. Define Objectives with Custom Identity
         assistant_name = req.assistant_name or (agent.assistant_name if agent else "Adam")
@@ -643,9 +709,11 @@ async def trigger_engagement_call(req: OutboundEngagementRequest):
         }
         mission = objectives.get(req.objective, objectives['discover']).format(agent_name=agent_name, car=(lead.car if lead else "vehicle") or "vehicle")
 
-        phone = lead.phone if lead else req.lead_phone
+        # 3. Resolve phone number (Priority: Request explicit > Lead DB > Request fallback)
+        phone = req.phone_number or req.lead_phone or (lead.phone if lead else None)
         customer_name = lead.name if lead else (req.lead_name or "Valued Customer")
-        if not phone or phone.lower() == "none":
+        
+        if not phone or str(phone).lower() == "none":
             raise HTTPException(status_code=400, detail="Lead has no phone number")
             
         clean_phone = "".join(filter(lambda c: c.isdigit() or c == "+", phone))
@@ -710,7 +778,7 @@ class AssignmentRequest(BaseModel):
 async def manual_assign_lead(req: AssignmentRequest):
     """Admin Override: Manually assign a lead and lock it from auto-assignment."""
     from .storage import LeadTable
-    with db.session_factory() as session:
+    with db.session() as session:
         lead = session.query(LeadTable).filter(LeadTable.id == req.lead_id).first()
         if lead:
             lead.assigned_agent = req.agent_name
@@ -719,6 +787,11 @@ async def manual_assign_lead(req: AssignmentRequest):
             session.commit()
             return {"status": "success", "agent": req.agent_name}
     raise HTTPException(status_code=404, detail="Lead not found")
+
+@api_router.post("/vapi/outbound-call")
+async def trigger_vapi_outbound_alias(req: OutboundEngagementRequest):
+    """Alias for Admin dashboard compatibility."""
+    return await trigger_engagement_call(req)
 
 @api_router.post("/vapi/webhook")
 async def vapi_webhook(request: Request):
@@ -736,7 +809,7 @@ async def vapi_webhook(request: Request):
             
             if customer_phone:
                 from .storage import LeadTable
-                with db.session_factory() as session:
+                with db.session() as session:
                     # Match by last 10 digits for robustness
                     lead = session.query(LeadTable).filter(LeadTable.phone.contains(customer_phone[-10:])).first()
                     if lead:

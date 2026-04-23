@@ -18,7 +18,7 @@ def import_dealer_socket_excel(file_path: str, tenant_id: str = "filcan"):
     ]
     
     imported_count = 0
-    with db.session_factory() as session:
+    with db.session() as session:
         for lead_data in mock_imported_leads:
             # Check if exists
             exists = session.query(LeadTable).filter(

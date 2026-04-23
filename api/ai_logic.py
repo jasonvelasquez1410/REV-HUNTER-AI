@@ -66,20 +66,17 @@ def qualify_lead(message, context_str, tenant_id="filcan"):
     Inventory (Reference if needed for purchase queries):
     {inventory_str}
     
-    RELENTLESS SCRIPT (ELLIOT - THE FULL-STACK SPECIALIST):
+    RELENTLESS SCRIPT (CHAT SPECIALIST MODE):
     
-    1. GREETING: "Hello! I'm {current_persona}, your Digital Sales Specialist for {tenant['name']}. I see you're checking out our inventory. I'm here to help you get the best deal. May I know who I'm talking to?"
-    2. CONTACT: Once name is provided, ask: "Nice to meet you, [Name]! Just in case we get disconnected, may I get your phone number and email? I'll send you the 'Fast-Pass' specs for the vehicles you're interested in."
-    3. CREDIT RANGE (QUALIFICATION): "To make sure I'm showing you the right financing options, would you say your credit is: Excellent (740+), Good (680-739), Fair (580-679), or are we working on rebuilding it? This helps me find the best bank for you."
-    4. TRADE-IN & VIN (THE EVALUATOR): "Are you trading in your current ride? If so, what is the Year/Make/Model? Also, if you have the VIN handy, I can run a 'Shiftly' appraisal right now (using vAuto) to see what it's worth."
-    5. THE GOAL: "What would you like to achieve? (e.g., Lower monthly payments, $0 Down, or Cash Back for vacation/bills?) If Cash Back: 'Great! How much do you need?'"
-    6. HANDOVER VERIFICATION (OPTIONAL): "If my team can meet these needs, would you like to proceed? Briefly, I'll need your Address and Date of Birth to finalize the 'DealerTrack' profile."
-    7. DEEP QUALIFICATION: "Just to ensure everything matches, could you confirm your Occupation and Length of Employment?"
-    8. CREDIT CONSENT: "I have everything I need to get you approved. Can I get your consent for a soft credit check on our 'DealerTrack' portal? This won't impact your score."
-    9. INVENTORY MATCH: "Based on our inventory at {tenant['name']}, I have a few perfect matches. [Mention top 2 cars from inventory]."
-    10. SCHEDULING: "When can you come for a test drive in {tenant['location']}? 10am or 10:30am?"
-    11. CONFIRMATION: "I've logged your 'Lead DNA' into our system. I'll personally make sure our team is ready for you."
-    12. SIGN OFF: "GOD BLESS!"
+    1. GREETING: "Hello! I'm {current_persona}, your Digital Sales Specialist for {tenant['name']}. I would be happy to help you with your search for a vehicle and its availability. I've analyzed your request—may I start by getting your name?"
+    2. CONTACT: "Pleasure chatting with you, [Name]! Just in case we get disconnected or I need to send you the full spec sheet, what's the best phone number and email to follow up with you?"
+    3. INTEREST & KM: "Great! Are you looking for a specific model today? Also, if you're looking at a vehicle like the one we discussed, what is the year, make, and model of your current vehicle? Knowing the kilometers and condition helps my team get you the best value."
+    4. CREDIT & FINANCING (SOFT QUAL): "I need to get with my team on the financing options. To help them, would you say your credit is Excellent (740+), Good (680+), or are we working on a rebuild? Also, are you looking for $0 down or cash back options?"
+    5. THE GOAL (GUBAGO STYLE): "My goal is to make this smooth for you. Besides the vehicle, is there any specific information you need—like monthly payments, trade-in value, or an appointment time?"
+    6. HANDOVER: "Thanks! Just to finish up, can I have your last name and address? I'll have my sales team follow up with you as soon as possible with everything we discussed. Is there anything else I can do for you today?"
+    7. SCHEDULING: "When would be a good time for you to stop by? 10am or 2pm usually works best for our senior staff to assist you personally."
+    8. CONFIRMATION: "I've saved your details as Lead #3838 (Gubago Protocol). Our team is notified. Have a great day!"
+    9. SIGN OFF: "GOD BLESS!"
 
     Current State: Persona={current_persona}, Step={current_step}
     Collected Data: {json.dumps(collected_data)}
@@ -438,14 +435,31 @@ def manage_system_ops(message, tenant_id="filcan"):
     agents = db.get_agents(tenant_id)
     appointments = db.get_appointments(tenant_id)
     
+    # MISSION STATUS CHECK
+    has_leads = len(leads) > 0
+    # For a specific agent (assuming Rjay for standalone demo context)
+    agent = agents[0] if agents else {}
+    has_fb = bool(agent.get("fb_access_token"))
+    mission_complete = has_leads and has_fb
+    
+    current_persona = agent.get("assistant_name", "Elliot")
+    
     inventory_summary = f"Total: {len(inventory)} units. Models: {', '.join(set(c['model'] for c in inventory))}"
-    leads_summary = f"Total: {len(leads)} leads. Hot: {sum(1 for l in leads if l.status == 'Hot')}"
+    leads_summary = f"Total: {len(leads)} leads. Hot: {sum(1 for l in leads if (l.get('status') if isinstance(l, dict) else getattr(l, 'status', '')) == 'Hot')}"
     agents_summary = f"Team: {', '.join(a['name'] for a in agents)}"
     appts_summary = f"Appointments today: {len(appointments)}. Latest: {appointments[-1]['time'] if appointments else 'None'}"
     
     system_prompt = f"""
-    PERSONA: You are {current_persona}, the **Operational AI Assistant** for {tenant['name']}.
-    ROLE: You assist the Dealer Principal and Sales Managers in running the store.
+    PERSONA: You are {current_persona}, the **Operational AI Strategist** for {tenant['name']}.
+    ROLE: You assist the Sales Team in running their 'Elite Pipeline'. 
+    
+    MISSION INTEL:
+    - Facebook Ads Hooked: {"YES" if has_fb else "NO"}
+    - Lead Pipeline Loaded: {"YES" if has_leads else "NO"}
+    - MISSION COMPLETE: {"YES" if mission_complete else "NO"}
+    
+    If MISSION COMPLETE is YES: Your first greeting should be highly energetic and congratulatory. Tell the agent the 'machine is now hunting' and the sync is perfect.
+    If MISSION COMPLETE is NO: Remind the agent to finish their 'Onboarding Mission' so you can help them close deals.
     
     SYSTEM CONTEXT:
     - Inventory: {inventory_summary}
@@ -457,24 +471,21 @@ def manage_system_ops(message, tenant_id="filcan"):
     - You can answer questions about performance and inventory.
     - You can trigger "Global Commands" like booking appointments, assigning leads, or generating reports.
     
-    COMMAND EXTRACTION:
-    If the manager asks you to do something, include a "command" in your JSON response.
-    - BOOK: {{"type": "calendar", "action": "book", "lead_id": ID, "time": "ISO_DATE"}}
-    - ASSIGN: {{"type": "crm", "action": "assign", "lead_id": ID, "agent": "NAME"}}
-    - REPORT: {{"type": "system", "action": "generate_report", "target": "sales|marketing"}}
-    
     Return your response ONLY in this JSON format:
     {{
-        "response": "Your spoken/written reply to the manager",
-        "command": {{ "type": "tool_type", "action": "action_name", ... }},
+        "response": "Your spoken reply to the agent (Keep it under 3 sentences)",
+        "command": {{ "type": "tool_type", "action": "action_name" }},
         "summary": "Brief admin action log"
     }}
     """
     
     if not GOOGLE_API_KEY:
+        is_rjay = "Rjay" in message or mission_complete
+        congrat_msg = "Mission accomplished! Your AI Revenue Machine is now active. I am monitoring your leads and Facebook ads 24/7. Happy hunting!"
+        remind_msg = "The engine is warming up, but we aren't at 100% yet. Please finish importing your leads and syncing your Facebook account so I can start qualifying buyers for you."
         return {
-            "response": "Elliot (Ops Mode): I understand you want to manage the system. Please configure API keys for full operational command processing.",
-            "summary": "Elliot in Passive Demo Mode"
+            "response": congrat_msg if mission_complete else remind_msg,
+            "summary": "Elliot Strategist Guidance"
         }
 
     try:
