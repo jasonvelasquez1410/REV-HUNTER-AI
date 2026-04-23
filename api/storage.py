@@ -30,38 +30,43 @@ def init_db():
             print(f"WARNING: DATABASE_URL not set. Using fallback: {db_path}")
             db_url = f"sqlite:///{db_path}"
         else:
-            # Fix postgres:// to postgresql:// and use pure-python pg8000 for Vercel
+            # RevHunter Cloud: Robust postgres connection for Vercel/Supabase
             db_url = DATABASE_URL
+            # Supabase/Neon/Most Cloud DBs require SSL
+            if "sslmode" not in db_url:
+                separator = "&" if "?" in db_url else "?"
+                db_url += f"{separator}sslmode=require"
+            
+            # Use psycopg2-binary for production stability on Vercel
             if db_url.startswith("postgres://"):
-                db_url = db_url.replace("postgres://", "postgresql+pg8000://", 1)
-            elif db_url.startswith("postgresql://"):
-                db_url = db_url.replace("postgresql://", "postgresql+pg8000://", 1)
+                db_url = db_url.replace("postgres://", "postgresql://", 1)
             
         try:
-            # Supabase requires some pooling adjustments for serverless
-            # Vercel Serverless: Reduce pool size and max overflow for stability
+            # Elite Pooling: High resilience for serverless spikes
             engine = create_engine(
                 db_url, 
-                pool_size=2 if "sqlite" not in db_url else None, # Pool size not for sqlite
-                max_overflow=0 if "sqlite" not in db_url else None,
-                pool_pre_ping=True
+                pool_size=2 if "sqlite" not in db_url else None,
+                max_overflow=4 if "sqlite" not in db_url else None,
+                pool_pre_ping=True,
+                pool_recycle=300
             )
             SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
             # Create tables if they don't exist
             Base.metadata.create_all(bind=engine)
             
             # Migration check: Add edition column if it doesn't exist
+            from sqlalchemy import text
             try:
-                conn = engine.connect()
-                conn.execute("ALTER TABLE agents ADD COLUMN edition VARCHAR DEFAULT 'enterprise'")
-                conn.close()
-            except:
-                pass # Already exists
+                with engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE agents ADD COLUMN IF NOT EXISTS edition VARCHAR DEFAULT 'enterprise'"))
+                    conn.commit()
+            except Exception as migrate_err:
+                print(f"Migration Note (Non-critical): {migrate_err}")
             
-            print("Database initialized successfully.")
+            print("Production Database connected and synchronized.")
         except Exception as e:
-            print(f"Database Initialization Error: {e}")
-            SessionLocal = None # Explicitly ensure it's None
+            print(f"CRITICAL: Production Database Sync Failed: {e}")
+            SessionLocal = None 
 
 # SQLAlchemy Models
 class TenantTable(Base):

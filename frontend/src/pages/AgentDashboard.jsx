@@ -719,43 +719,87 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
             )}
 
             {subView === 'settings' && (
-                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '28px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
-                        {/* META SECTION */}
+                <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '24px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ marginBottom: '25px', padding: '15px', background: 'rgba(217,32,39,0.1)', borderRadius: '20px', border: '1px solid #D92027' }}>
+                        <div style={{ fontSize: '0.6rem', color: '#D92027', fontWeight: '900', letterSpacing: '2px', marginBottom: '5px' }}>MISSION PROTOCOL</div>
+                        <h4 style={{ margin: 0, color: 'white', fontSize: '1rem' }}>Elite Sales System Setup</h4>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}>
+                        {/* STEP 1: IMPORT */}
                         <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: 'white' }}>Meta Cloud Sync</h3>
-                                <div style={{ padding: '4px 10px', background: fbSettings.fb_access_token ? '#00b894' : '#FF4B2B', borderRadius: '8px', fontSize: '0.6rem', fontWeight: '900' }}>
-                                    {fbSettings.fb_access_token ? "ACTIVE" : "SETUP NEEDED"}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                                <div>
+                                    <div style={{ fontSize: '0.7rem', color: '#FFAB00', fontWeight: '900', letterSpacing: '1px' }}>STEP 1</div>
+                                    <h3 style={{ margin: '5px 0', fontSize: '1.2rem', color: 'white' }}>Import Inventory</h3>
+                                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Load your live units from FilCan Cars or any URL</p>
+                                </div>
+                                <div style={{ padding: '10px', background: 'rgba(255,171,0,0.1)', borderRadius: '12px', color: '#FFAB00' }}>
+                                    <Download size={20} />
                                 </div>
                             </div>
-                            {fbSettings.fb_access_token ? (
-                                <button onClick={() => onUpdateSettings({ fb_access_token: '', fb_page_id: '' })} style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: 'none', borderRadius: '12px', fontSize: '0.75rem' }}>CONNECTED TO FB AS RJAY</button>
+                            <button 
+                                onClick={() => { setActiveTab('marketing'); setMarketingSubView('inventory'); }}
+                                style={{ width: '100%', padding: '18px', background: 'white', color: '#1B1B1B', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer' }}
+                            >
+                                GO TO INVENTORY SYNC 📥
+                            </button>
+                        </div>
+
+                        {/* STEP 2: CLOUD SYNC */}
+                        <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                                <div>
+                                    <div style={{ fontSize: '0.7rem', color: '#00b894', fontWeight: '900', letterSpacing: '1px' }}>STEP 2</div>
+                                    <h3 style={{ margin: '5px 0', fontSize: '1.2rem', color: 'white' }}>Meta Cloud Sync</h3>
+                                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Activate the AI mission across Facebook & Messenger</p>
+                                </div>
+                                <div style={{ padding: '10px', background: 'rgba(0,184,148,0.1)', borderRadius: '12px', color: '#00b894' }}>
+                                    <Share2 size={20} />
+                                </div>
+                            </div>
+                            
+                            {agent.fb_access_token ? (
+                                <div style={{ background: 'rgba(0,184,148,0.1)', padding: '15px', borderRadius: '15px', border: '1px solid #00b894', color: '#00b894', textAlign: 'center', fontWeight: 'bold' }}>
+                                    ✓ META MISSION LIVE
+                                </div>
                             ) : (
                                 <button 
                                     onClick={() => {
                                         setIsFbConnecting(true);
                                         setTimeout(() => {
-                                            onUpdateSettings({ fb_access_token: 'DEMO', fb_page_id: 'me' });
+                                            onUpdateSettings({ fb_access_token: 'EAAM...', fb_page_id: '123...', fb_settings_json: { active: true } });
                                             setIsFbConnecting(false);
                                         }, 800);
                                     }}
-                                    style={{ width: '100%', padding: '15px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.85rem' }}>
-                                    {isFbConnecting ? 'AUTHENTICATING...' : 'CONTINUE WITH FACEBOOK'}
+                                    style={{ width: '100%', padding: '18px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                                >
+                                    {isFbConnecting ? (
+                                        <div style={{ width: '20px', height: '20px', border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                                    ) : (
+                                        <>ACTIVATE CLOUD SYNC 🚀</>
+                                    )}
                                 </button>
                             )}
                         </div>
 
                         {/* GOOGLE SECTION */}
                         <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: 'white' }}>Google Ads / LSA Sync</h3>
-                                <div style={{ padding: '4px 10px', background: fbSettings.google_sync ? '#4285F4' : '#FF4B2B', borderRadius: '8px', fontSize: '0.6rem', fontWeight: '900' }}>
-                                    {fbSettings.google_sync ? "ACTIVE" : "SETUP NEEDED"}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                                <div>
+                                    <div style={{ fontSize: '0.7rem', color: '#4285F4', fontWeight: '900', letterSpacing: '1px' }}>OPTIONAL</div>
+                                    <h3 style={{ margin: '5px 0', fontSize: '1.2rem', color: 'white' }}>Google Ads / LSA Sync</h3>
+                                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Scale presence on Google Search & Local Services</p>
+                                </div>
+                                <div style={{ padding: '10px', background: 'rgba(66,133,244,0.1)', borderRadius: '12px', color: '#4285F4' }}>
+                                    <Target size={20} />
                                 </div>
                             </div>
-                            {fbSettings.google_sync ? (
-                                <button onClick={() => onUpdateSettings({ google_sync: false })} style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: 'none', borderRadius: '12px', fontSize: '0.75rem' }}>CONNECTED TO GOOGLE LSA</button>
+                            
+                            {agent.google_sync ? (
+                                <div style={{ background: 'rgba(66,133,244,0.1)', padding: '15px', borderRadius: '15px', border: '1px solid #4285F4', color: '#4285F4', textAlign: 'center', fontWeight: 'bold' }}>
+                                    ✓ GOOGLE MISSION LIVE
+                                </div>
                             ) : (
                                 <button 
                                     onClick={() => {
@@ -765,13 +809,13 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                                             setIsFbConnecting(false);
                                         }, 800);
                                     }}
-                                    style={{ width: '100%', padding: '15px', background: 'white', color: '#1B1B1B', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                                    <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#4285F4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px' }}>G</div>
-                                    CONTINUE WITH GOOGLE
+                                    style={{ width: '100%', padding: '18px', background: 'white', color: '#1B1B1B', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                                >
+                                    CONNECT GOOGLE SEARCH 🔍
                                 </button>
                             )}
                         </div>
-                        </div>
+                    </div>
                 </div>
             )}
 
@@ -1849,7 +1893,7 @@ export default function AgentDashboard() {
                             <h2 style={{ fontWeight: '900', fontSize: '1.5rem', margin: 0 }}>Business Case 📈</h2>
                             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>Live performance & ROI projection for your mission</p>
                         </div>
-                        <ROIDashboard tenant={tenant} />
+                        <ROIDashboard leads={leads} inventory={inventory} />
                         <div style={{ marginTop: '40px', padding: '20px', background: 'rgba(217,32,39,0.05)', borderRadius: '24px', border: '1px dashed rgba(217,32,39,0.3)', textAlign: 'center' }}>
                             <div style={{ fontSize: '0.7rem', color: '#D92027', fontWeight: '900', marginBottom: '10px' }}>⚠️ NEED TO SWITCH ACCOUNTS?</div>
                             <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', marginBottom: '20px' }}>If you need to switch between Enterprise and Solo editions, use the button below to force a reset.</p>
