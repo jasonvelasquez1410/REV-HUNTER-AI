@@ -1038,6 +1038,13 @@ export default function AgentDashboard() {
         setIsGeneratingListing(false);
     };
 
+    const onUpdateSettings = (newSettings) => {
+        const updatedAgent = { ...agent, ...newSettings };
+        setAgent(updatedAgent);
+        localStorage.setItem('revhunter_agent', JSON.stringify(updatedAgent));
+        vibrate(80); // Success feedback
+    };
+
     const copyToClipboard = (text, label) => {
         navigator.clipboard.writeText(text);
         setCopyStatus(label);

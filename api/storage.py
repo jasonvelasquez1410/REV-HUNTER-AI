@@ -174,11 +174,16 @@ class Storage:
 
     @contextmanager
     def session(self):
-        """Safe session management with clear error if DB is offline."""
+        """Safe session management with automatic re-init on fallback."""
+        if not self.session_factory:
+            print("DB Factory was None. Attempting lazy re-init...")
+            init_db()
+            self.session_factory = SessionLocal
+            
         if not self.session_factory:
             raise HTTPException(
                 status_code=503, 
-                detail="Database is currently offline or uninitialized. Please check your DATABASE_URL."
+                detail="Database is currently offline or unreachable. Please verify your DATABASE_URL in Vercel settings."
             )
         session = self.session_factory()
         try:
