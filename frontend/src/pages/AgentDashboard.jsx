@@ -317,7 +317,7 @@ function AgentLogin({ onLogin }) {
                 <div style={{ textAlign: 'center', marginBottom: '50px' }}>
                     <div style={{ fontSize: '4rem', marginBottom: '15px', textShadow: '0 0 30px rgba(255,255,0,0.4)' }}>⚡</div>
                     <h1 style={{ color: 'white', fontSize: '2.2rem', fontWeight: '900', margin: 0, letterSpacing: '-1px' }}>REVHUNTER</h1>
-                    <div style={{ color: '#D92027', fontWeight: '900', letterSpacing: '2px', fontSize: '0.8rem', marginTop: '5px' }}>AGENT OS v2.0</div>
+                    <div style={{ color: '#D92027', fontWeight: '900', letterSpacing: '2px', fontSize: '0.8rem', marginTop: '5px' }}>AGENT OS v2.4.2-ULTRA-PATCH</div>
                     <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '1rem', marginTop: '15px' }}>Access your lead intelligence</p>
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '30px', padding: '40px 30px', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
