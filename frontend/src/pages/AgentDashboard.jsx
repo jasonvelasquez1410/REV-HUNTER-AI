@@ -1881,6 +1881,34 @@ export default function AgentDashboard() {
                                 </div>
                             </div>
 
+                            {/* TECHNICAL MISSION CONTROL */}
+                            <div style={{ background: 'rgba(255, 75, 43, 0.05)', borderRadius: '24px', padding: '20px', border: '1px solid rgba(255, 75, 43, 0.2)' }}>
+                                <div style={{ fontSize: '0.65rem', color: '#FF4B2B', fontWeight: '900', letterSpacing: '2px', marginBottom: '15px' }}>MISSION CRITICAL SETUP</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <button 
+                                        onClick={() => fileInputRef.current?.click()}
+                                        style={{ width: '100%', padding: '18px', background: leads.length > 0 ? 'rgba(0,184,148,0.1)' : 'rgba(255,255,255,0.02)', border: leads.length > 0 ? '1px solid #00b894' : '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '15px', color: 'white', fontWeight: '900', cursor: 'pointer' }}
+                                    >
+                                        <FileSpreadsheet size={18} color={leads.length > 0 ? '#00b894' : 'white'} />
+                                        <div style={{ textAlign: 'left' }}>
+                                            <div style={{ fontSize: '0.8rem' }}>1. IMPORT LEAD LIST</div>
+                                            <div style={{ fontSize: '0.6rem', opacity: 0.5 }}>{leads.length > 0 ? "Leads Active" : "Upload Excel/CSV"}</div>
+                                        </div>
+                                    </button>
+
+                                    <button 
+                                        onClick={() => setActiveTab('marketing')}
+                                        style={{ width: '100%', padding: '18px', background: fbSettings.fb_access_token ? 'rgba(0,184,148,0.1)' : 'rgba(255,255,255,0.02)', border: fbSettings.fb_access_token ? '1px solid #00b894' : '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '15px', color: 'white', fontWeight: '900', cursor: 'pointer' }}
+                                    >
+                                        <LayoutDashboard size={18} color={fbSettings.fb_access_token ? '#00b894' : 'white'} />
+                                        <div style={{ textAlign: 'left' }}>
+                                            <div style={{ fontSize: '0.8rem' }}>2. MARKETPLACE SYNC</div>
+                                            <div style={{ fontSize: '0.6rem', opacity: 0.5 }}>{fbSettings.fb_access_token ? "Cloud Active" : "Connect Facebook"}</div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
                             <div style={{ background: 'rgba(0,184,148,0.05)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(0,184,148,0.2)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#00b894', fontWeight: 'bold', fontSize: '0.85rem' }}>
                                     <Zap size={16} fill="currentColor" />
