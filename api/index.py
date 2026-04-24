@@ -58,14 +58,26 @@ api_router = APIRouter()
 @api_router.get("/status")
 async def get_status():
     """Diagnostic endpoint to check backend health."""
+    db_url = os.getenv("DATABASE_URL")
+    masked_url = "Not Set (SQLite Active)"
+    if db_url:
+        # Mask the password and show host/db
+        try:
+            from urllib.parse import urlparse
+            p = urlparse(db_url)
+            masked_url = f"{p.scheme}://****@{p.hostname}/{p.path.lstrip('/')}"
+        except:
+            masked_url = "Malformed URL"
+            
     db_status = "Online" if db.session_factory else "Degraded (Local Backup Active)"
     ai_status = "Online" if os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY") else "Demo Mode (Key Missing)"
     return {
         "status": "RevHunter AI Backend Active",
         "engine": "Gemini 1.5 Flash",
         "database": db_status,
+        "database_target": masked_url,
         "ai_model": ai_status,
-        "v10_monorepo": True
+        "v11_diagnostic": True
     }
 
 @api_router.get("/")
