@@ -355,7 +355,7 @@ function AgentLogin({ onLogin }) {
 
 // ── MARKETING HUB VIEW ────────────────────────────
 // ── MARKETING HUB VIEW ────────────────────────────
-function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSettings, apiUrl, tenant, subView, setSubView, onImportInventory, onOrganize }) {
+function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSettings, apiUrl, tenant, subView, setSubView, onImportInventory, onOrganize, fbAccessTokenInput, setFbAccessTokenInput, fbPageIdInput, setFbPageIdInput, isFbConnecting, setIsFbConnecting }) {
     const isStandalone = agent?.edition === 'standalone';
     const [isPosting, setIsPosting] = useState(false);
     const [status, setStatus] = useState(null);
@@ -363,9 +363,6 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
     const [scrapingUrl, setScrapingUrl] = useState('');
     const [sourceStatus, setSourceStatus] = useState(null);
     const [showPlaybook, setShowPlaybook] = useState(false);
-    const [fbAccessTokenInput, setFbAccessTokenInput] = useState('');
-    const [fbPageIdInput, setFbPageIdInput] = useState('');
-    const [isFbConnecting, setIsFbConnecting] = useState(false);
 
     const handlePost = async (car, listing) => {
         setIsPosting(true);
@@ -1038,6 +1035,9 @@ export default function AgentDashboard() {
     const [importFileName, setImportFileName] = useState('');
     const [inventory, setInventory] = useState([]);
     const [fbSettings, setFbSettings] = useState({ fb_access_token: '', fb_page_id: '' });
+    const [fbAccessTokenInput, setFbAccessTokenInput] = useState('');
+    const [fbPageIdInput, setFbPageIdInput] = useState('');
+    const [isFbConnecting, setIsFbConnecting] = useState(false);
     const [dialing, setDialing] = useState(null);
     const [selectedDNA, setSelectedDNA] = useState(null);
     const [isStrategistOpen, setIsStrategistOpen] = useState(false);
@@ -1827,6 +1827,12 @@ export default function AgentDashboard() {
                             setSubView={setMarketingSubView}
                             onImportInventory={() => inventoryInputRef.current?.click()}
                             onOrganize={handleOrganize}
+                            fbAccessTokenInput={fbAccessTokenInput}
+                            setFbAccessTokenInput={setFbAccessTokenInput}
+                            fbPageIdInput={fbPageIdInput}
+                            setFbPageIdInput={setFbPageIdInput}
+                            isFbConnecting={isFbConnecting}
+                            setIsFbConnecting={setIsFbConnecting}
                         />
                     </div>
                 )}

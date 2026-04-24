@@ -68,16 +68,8 @@ def init_db():
             print("DATABASE: Production Cloud Connected.")
         except Exception as e:
             print(f"DATABASE CLOUD FAILURE: {e}")
-            print("FALLBACK: Switching to Local SQLite for Demo Stability.")
-            
-            # EMERGENCY FALLBACK: Use a local file so the app doesn't crash
-            fallback_path = "/tmp/revhunter_fallback.db" if os.name != 'nt' else "revhunter_fallback.db"
-            fallback_url = f"sqlite:///{fallback_path}"
-            
-            engine = create_engine(fallback_url, pool_pre_ping=True)
-            SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-            Base.metadata.create_all(bind=engine)
-            print(f"DATABASE: Local Fallback Active at {fallback_path}")
+            # Do NOT fall back to SQLite for production paying customers. We want them to see the real error.
+            raise HTTPException(status_code=503, detail=f"Database Offline: {str(e)}. Please check your Supabase project status.")
 
 # SQLAlchemy Models
 class TenantTable(Base):
