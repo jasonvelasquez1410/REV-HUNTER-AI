@@ -759,7 +759,8 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                                 </div>
                             </div>
                             
-                            {!agent.fb_access_token ? (
+                            {/* Use fbSettings instead of agent to ensure we show the most up-to-date sync state */}
+                            {!fbSettings.fb_access_token ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                     <div style={{ position: 'relative' }}>
                                         <input 
@@ -1306,7 +1307,13 @@ export default function AgentDashboard() {
     }, [agent, fetchLeads, fetchMarketingData, leads.length, hasGreeted, loading]);
 
     const handleUpdateSettings = async (newSettings) => {
-        setFbSettings(newSettings);
+        // Optimistic update: Update both global fbSettings and local agent object
+        setFbSettings(prev => ({ ...prev, ...newSettings }));
+        
+        const updatedAgent = { ...agent, ...newSettings };
+        setAgent(updatedAgent);
+        localStorage.setItem('revhunter_agent', JSON.stringify(updatedAgent));
+
         try {
             await fetch(`${apiUrl}/agents/${agent.id}/settings`, {
                 method: 'PATCH',

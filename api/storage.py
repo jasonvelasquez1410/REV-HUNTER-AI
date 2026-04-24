@@ -67,15 +67,21 @@ def init_db():
             print("Production Database connected and synchronized.")
         except Exception as e:
             error_msg = str(e)
-            if "could not translate host name" in error_msg:
-                print(f"CRITICAL: Database Hostname Resolution Failed! Host: {db_url.split('@')[-1] if '@' in db_url else 'Unknown'}")
-                print("Tip: Check if your Vercel DATABASE_URL is correct or if Supabase is down.")
-                # Force local fallback if on Vercel and cloud is down to keep demo running? 
-                # Better to let the user know because they might wonder why data is missing.
-                raise HTTPException(status_code=500, detail=f"Database DNS Error: Could not reach {db_url.split('@')[-1].split('/')[0] if '@' in db_url else 'DB Host'}. Please check your connection or project ID.")
+            print(f"DATABASE ERROR Details: {error_msg}")
             
-            print(f"CRITICAL: Production Database Sync Failed: {error_msg}")
-            raise e
+            # Specific Fix: If direct Supabase connection fails DNS lookup, try the pooler host version if known, 
+            # or inform the user to use the pooler URL from Supabase dashboard.
+            if "could not translate host name" in error_msg:
+                if "supabase.co" in db_url and ":5432" in db_url:
+                    pooler_note = "TIP: You are using a direct Supabase host which often fails DNS on Vercel. Switch to the Pooler URL (Port 6543) in your Environment Variables."
+                    raise HTTPException(status_code=500, detail=f"Database DNS Error. {pooler_note}")
+                
+                raise HTTPException(status_code=500, detail=f"Database DNS Error: Could not reach {db_url.split('@')[-1].split('/')[0] if '@' in db_url else 'DB Host'}.")
+            
+            if "SSL error" in error_msg or "sslmode" in error_msg:
+                raise HTTPException(status_code=500, detail="Database SSL Error. Please ensure sslmode=require is in your DATABASE_URL.")
+                
+            raise HTTPException(status_code=500, detail=f"Database Connection Error: {error_msg}")
 
 # SQLAlchemy Models
 class TenantTable(Base):
