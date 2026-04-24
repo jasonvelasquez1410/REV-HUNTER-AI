@@ -43,7 +43,7 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads, agent }) {
 
     const speak = (text) => {
         if (typeof window === 'undefined' || !window.speechSynthesis) return;
-        console.log("Elliot Attempting to speak:", text);
+        console.log("RevHunter AI Attempting to speak:", text);
         
         // Force un-mute logic for mobile
         window.speechSynthesis.cancel();
@@ -53,16 +53,16 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads, agent }) {
             const voices = window.speechSynthesis.getVoices();
             
             // Priority: Assistant Name Match -> Natural -> Google -> Male -> English
-            let elliot = voices.find(v => v.name.toLowerCase().includes((agent?.assistant_name || "Adam").toLowerCase()) && v.name.includes('Male'))
+            let Revhunter AI = voices.find(v => v.name.toLowerCase().includes((agent?.assistant_name || "Adam").toLowerCase()) && v.name.includes('Male'))
                 || voices.find(v => v.lang.includes('en-US') && (v.name.includes('Natural') || v.name.includes('Neural')) && v.name.includes('Male'))
                 || voices.find(v => (v.lang.includes('en-US') || v.lang.includes('en-GB')) && v.name.includes('Google') && v.name.includes('Male'))
                 || voices.find(v => v.lang.includes('en') && v.name.includes('Male'))
                 || voices.find(v => v.lang.includes('en-US'))
                 || voices[0];
 
-            if (elliot) {
-                console.log("Selected voice:", elliot.name);
-                msg.voice = elliot;
+            if (Revhunter AI) {
+                console.log("Selected voice:", Revhunter AI.name);
+                msg.voice = Revhunter AI;
             }
             msg.pitch = 0.85;
             msg.rate = 1.0;
@@ -432,7 +432,7 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                         <div style={{ paddingLeft: '12px', borderLeft: '3px solid #1877F2' }}>
                             <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#1877F2' }}>Step 4: Connect the App</div>
                             <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', marginTop: '4px', lineHeight: '1.4' }}>
-                                Tap the blue <b>"CONNECT TO FB APP"</b> button. Give it a second while Elliot authenticates the connection. Note: Once successful, the login screen will disappear, and you will see a big green checkmark ✅ saying "Connected to Facebook Marketplace".
+                                Tap the blue <b>"CONNECT TO FB APP"</b> button. Give it a second while RevHunter AI authenticates the connection. Note: Once successful, the login screen will disappear, and you will see a big green checkmark ✅ saying "Connected to Facebook Marketplace".
                             </div>
                         </div>
                         <div style={{ paddingLeft: '12px', borderLeft: '3px solid #00b894' }}>
@@ -507,7 +507,7 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                             <span style={{ fontWeight: '900', fontSize: '0.9rem', color: 'white', letterSpacing: '1px' }}>MARKETPLACE HOT PICKS</span>
                         </div>
                         <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: '15px', lineHeight: '1.4' }}>
-                           Elliot analyzed {inventory.length} vehicles. **Shiftly Lister Assistant** active for these units:
+                           RevHunter AI analyzed {inventory.length} vehicles. **Shiftly Lister Assistant** active for these units:
                         </p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             {inventory.slice(0, 1).map((car) => (
@@ -591,7 +591,7 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                             />
                             <button 
                                 onClick={async () => { 
-                                    setSourceStatus("Elliot is analyzing lot data..."); 
+                                    setSourceStatus("RevHunter AI is analyzing lot data..."); 
                                     
                                     try {
                                         const res = await fetch(`${apiUrl}/inventory/sync`, {
@@ -670,7 +670,7 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                                 </div>
                             </div>
                             <button 
-                                onClick={() => setSourceStatus("Elliot is analyzing image via Vision AI...")}
+                                onClick={() => setSourceStatus("RevHunter AI is analyzing image via Vision AI...")}
                                 style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.85rem', marginTop: '10px' }}
                             >
                                 ANALYZE PHOTO
@@ -969,7 +969,7 @@ function EngagementHistoryModal({ lead, onClose, onDial }) {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <Phone size={20} /> EXECUTE {callObjective?.toUpperCase() || 'AI CALL'}
                             </div>
-                            <span style={{ fontSize: '0.55rem', opacity: 0.7, fontWeight: '700' }}>Elliot will dial now</span>
+                            <span style={{ fontSize: '0.55rem', opacity: 0.7, fontWeight: '700' }}>RevHunter AI will dial now</span>
                         </button>
                     </div>
                 </div>
@@ -1621,9 +1621,9 @@ export default function AgentDashboard() {
                                     <div style={{ padding: '18px 25px', background: 'rgba(255, 255, 255, 0.05)', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', alignItems: 'center', gap: '15px' }}>
                                         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#FF4B2B', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '1.2rem', boxShadow: '0 0 15px rgba(255, 75, 43, 0.3)', flexShrink: 0 }}>✨</div>
                                         <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'white', lineHeight: '1.4' }}>
-                                            {leads.length === 0 ? "Elliot: \"Boss, your pipeline is empty. Tap Step 1 to import your lead list from Excel/CSV!\"" : 
-                                             !fbSettings.fb_access_token ? "Elliot: \"Leads are ready. Now go to Step 2 to sync your Facebook account so I can hunt Marketplace inquiries!\"" : 
-                                             "Elliot: \"Systems are green! Everything is synced. Tap Step 3 to LAUNCH MISSION and start the hunt!\""}
+                                            {leads.length === 0 ? "RevHunter AI: \"Boss, your pipeline is empty. Tap Step 1 to import your lead list from Excel/CSV!\"" : 
+                                             !fbSettings.fb_access_token ? "RevHunter AI: \"Leads are ready. Now go to Step 2 to sync your Facebook account so I can hunt Marketplace inquiries!\"" : 
+                                             "RevHunter AI: \"Systems are green! Everything is synced. Tap Step 3 to LAUNCH MISSION and start the hunt!\""}
                                         </div>
                                     </div>
 
@@ -1673,9 +1673,9 @@ export default function AgentDashboard() {
                                                 if (leads.length > 0 && fbSettings.fb_access_token) {
                                                     setHasCompletedOnboarding(true);
                                                     localStorage.setItem('revhunter_onboarding_done', 'true');
-                                                    alert("🎯 MISSION DEPLOYED: All systems are green. Elliot and Adam are now hunting your leads in real-time!");
+                                                    alert("🎯 MISSION DEPLOYED: All systems are green. RevHunter AI and Adam are now hunting your leads in real-time!");
                                                 } else {
-                                                    alert("⚠️ MISSION BLOCKED: You haven't finished Step 1 and 2 yet! Follow Elliot's advice at the top.");
+                                                    alert("⚠️ MISSION BLOCKED: You haven't finished Step 1 and 2 yet! Follow RevHunter AI's advice at the top.");
                                                 }
                                             }}
                                             className={(leads.length > 0 && fbSettings.fb_access_token) ? 'pulse-glow' : ''}
@@ -1899,8 +1899,8 @@ export default function AgentDashboard() {
                 {activeTab === 'studio' && (
                     <div style={{ animation: 'fadeIn 0.3s ease', background: 'rgba(255,255,255,0.02)', padding: '30px', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.05)' }}>
                          <div style={{ marginBottom: '30px' }}>
-                            <h2 style={{ fontWeight: '900', fontSize: '1.5rem', margin: 0 }}>AI Studio 🎨</h2>
-                            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>Personalize your AI Assistant's identity</p>
+                            <h2 style={{ fontWeight: '900', fontSize: '1.5rem', margin: 0 }}>SETUP & IDENTITY ⚙️</h2>
+                            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>Configure your RevHunter AI Mission Control</p>
                         </div>
                         
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
@@ -1910,7 +1910,7 @@ export default function AgentDashboard() {
                                     <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '15px' }}>Give your agent a name. This name will be used in greeting calls and strategist modes.</div>
                                     <input 
                                         type="text"
-                                        placeholder="e.g. Jarvis, Elliot, Sarah"
+                                        placeholder="e.g. Jarvis, RevHunter AI, Sarah"
                                         value={agent?.assistant_name || "Adam"}
                                         onChange={(e) => {
                                             const newAgent = { ...agent, assistant_name: e.target.value };
@@ -1937,16 +1937,49 @@ export default function AgentDashboard() {
                                         </div>
                                     </button>
 
-                                    <button 
-                                        onClick={() => setActiveTab('marketing')}
-                                        style={{ width: '100%', padding: '18px', background: fbSettings.fb_access_token ? 'rgba(0,184,148,0.1)' : 'rgba(255,255,255,0.02)', border: fbSettings.fb_access_token ? '1px solid #00b894' : '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '15px', color: 'white', fontWeight: '900', cursor: 'pointer' }}
-                                    >
-                                        <LayoutDashboard size={18} color={fbSettings.fb_access_token ? '#00b894' : 'white'} />
-                                        <div style={{ textAlign: 'left' }}>
-                                            <div style={{ fontSize: '0.8rem' }}>2. MARKETPLACE SYNC</div>
-                                            <div style={{ fontSize: '0.6rem', opacity: 0.5 }}>{fbSettings.fb_access_token ? "Cloud Active" : "Connect Facebook"}</div>
-                                        </div>
-                                    </button>
+                                    {/* FACEBOOK SYNC SECTION (PERMANENT PRODUCTION) */}
+                                    <div style={{ background: 'rgba(255, 255, 255, 0.03)', borderRadius: '24px', padding: '24px', border: '1px solid rgba(255, 255, 255, 0.1)', marginTop: '20px' }}>
+                                        <div style={{ fontSize: '0.7rem', color: '#1877F2', fontWeight: '900', letterSpacing: '2px', marginBottom: '15px', textTransform: 'uppercase' }}>Facebook Marketing Integration</div>
+                                        
+                                        {!fbSettings.fb_access_token ? (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                                <input 
+                                                    type="password"
+                                                    placeholder="Meta Access Token"
+                                                    value={fbAccessTokenInput}
+                                                    onChange={(e) => setFbAccessTokenInput(e.target.value)}
+                                                    style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                                />
+                                                <input 
+                                                    type="text"
+                                                    placeholder="Facebook Page ID"
+                                                    value={fbPageIdInput}
+                                                    onChange={(e) => setFbPageIdInput(e.target.value)}
+                                                    style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                                />
+                                                <button 
+                                                    onClick={() => {
+                                                        if(!fbAccessTokenInput || !fbPageIdInput) return alert("Please enter both Token and Page ID.");
+                                                        handleUpdateSettings({ fb_access_token: fbAccessTokenInput, fb_page_id: fbPageIdInput });
+                                                    }}
+                                                    style={{ width: '100%', padding: '18px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+                                                >
+                                                    CONNECT SYNC ENGINE 🚀
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div style={{ background: 'rgba(0,184,148,0.1)', padding: '20px', borderRadius: '20px', border: '1px solid #00b894', textAlign: 'center' }}>
+                                                <div style={{ fontWeight: '900', color: '#00b894', marginBottom: '8px' }}>✓ SYNC ACTIVE</div>
+                                                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>Pushing inventory to Marketplace is enabled.</div>
+                                                <button 
+                                                    onClick={() => handleUpdateSettings({ fb_access_token: '', fb_page_id: '' })}
+                                                    style={{ marginTop: '15px', background: 'none', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.4)', padding: '8px 15px', borderRadius: '10px', fontSize: '0.7rem' }}
+                                                >
+                                                    Disconnect
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -2030,7 +2063,7 @@ export default function AgentDashboard() {
                     style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === 'marketing' ? '#D92027' : 'rgba(255,255,255,0.3)', transition: 'all 0.2s' }}
                 >
                     <ImageIcon size={24} color={activeTab === 'marketing' ? '#D92027' : 'currentColor'} />
-                    <span style={{ fontSize: '0.65rem', fontWeight: '900', letterSpacing: '0.5px' }}>MARKETPLACE</span>
+                    <span style={{ fontSize: '0.65rem', fontWeight: '900', letterSpacing: '0.5px' }}>LISTER & ADS</span>
                 </button>
                 <button 
                     onClick={() => { vibrate(30); setActiveTab('studio'); }}
