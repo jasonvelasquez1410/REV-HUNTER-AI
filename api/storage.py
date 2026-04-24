@@ -45,10 +45,11 @@ def init_db():
             # Elite Pooling: High resilience for serverless spikes
             engine = create_engine(
                 db_url, 
-                pool_size=2 if "sqlite" not in db_url else None,
-                max_overflow=4 if "sqlite" not in db_url else None,
+                pool_size=5 if "sqlite" not in db_url else None,
+                max_overflow=10 if "sqlite" not in db_url else None,
                 pool_pre_ping=True,
-                pool_recycle=300
+                pool_recycle=300,
+                connect_args={"sslmode": "require"} if "postgresql" in db_url else {}
             )
             SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
             # Create tables if they don't exist
@@ -65,8 +66,10 @@ def init_db():
             
             print("Production Database connected and synchronized.")
         except Exception as e:
-            print(f"CRITICAL: Production Database Sync Failed: {e}")
-            SessionLocal = None 
+            print(f"CRITICAL: Production Database Sync Failed: {str(e)}")
+            # We don't set SessionLocal to None yet, we let it try to re-init
+            # But we must ensure it's logged
+            raise e
 
 # SQLAlchemy Models
 class TenantTable(Base):
@@ -179,8 +182,14 @@ class Storage:
         
         # If factory is missing or closed, force a heartbeat check/re-init
         if not self.session_factory or not SessionLocal:
-            init_db()
-            self.session_factory = SessionLocal
+            try:
+                init_db()
+                self.session_factory = SessionLocal
+            except Exception as e:
+                raise HTTPException(
+                    status_code=503, 
+                    detail=f"DB OFFLINE: {str(e)}. Please check your DATABASE_URL in Vercel settings."
+                )
             
         if not self.session_factory:
             raise HTTPException(
