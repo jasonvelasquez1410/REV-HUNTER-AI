@@ -53,16 +53,16 @@ function StrategistModal({ isOpen, onClose, leads, hotLeads, agent }) {
             const voices = window.speechSynthesis.getVoices();
             
             // Priority: Assistant Name Match -> Natural -> Google -> Male -> English
-            let Revhunter AI = voices.find(v => v.name.toLowerCase().includes((agent?.assistant_name || "Adam").toLowerCase()) && v.name.includes('Male'))
+            let revHunterAI = voices.find(v => v.name.toLowerCase().includes((agent?.assistant_name || "Adam").toLowerCase()) && v.name.includes('Male'))
                 || voices.find(v => v.lang.includes('en-US') && (v.name.includes('Natural') || v.name.includes('Neural')) && v.name.includes('Male'))
                 || voices.find(v => (v.lang.includes('en-US') || v.lang.includes('en-GB')) && v.name.includes('Google') && v.name.includes('Male'))
                 || voices.find(v => v.lang.includes('en') && v.name.includes('Male'))
                 || voices.find(v => v.lang.includes('en-US'))
                 || voices[0];
 
-            if (Revhunter AI) {
-                console.log("Selected voice:", Revhunter AI.name);
-                msg.voice = Revhunter AI;
+            if (revHunterAI) {
+                console.log("Selected voice:", revHunterAI.name);
+                msg.voice = revHunterAI;
             }
             msg.pitch = 0.85;
             msg.rate = 1.0;
