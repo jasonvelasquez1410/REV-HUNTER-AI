@@ -66,9 +66,15 @@ def init_db():
             
             print("Production Database connected and synchronized.")
         except Exception as e:
-            print(f"CRITICAL: Production Database Sync Failed: {str(e)}")
-            # We don't set SessionLocal to None yet, we let it try to re-init
-            # But we must ensure it's logged
+            error_msg = str(e)
+            if "could not translate host name" in error_msg:
+                print(f"CRITICAL: Database Hostname Resolution Failed! Host: {db_url.split('@')[-1] if '@' in db_url else 'Unknown'}")
+                print("Tip: Check if your Vercel DATABASE_URL is correct or if Supabase is down.")
+                # Force local fallback if on Vercel and cloud is down to keep demo running? 
+                # Better to let the user know because they might wonder why data is missing.
+                raise HTTPException(status_code=500, detail=f"Database DNS Error: Could not reach {db_url.split('@')[-1].split('/')[0] if '@' in db_url else 'DB Host'}. Please check your connection or project ID.")
+            
+            print(f"CRITICAL: Production Database Sync Failed: {error_msg}")
             raise e
 
 # SQLAlchemy Models

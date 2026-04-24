@@ -363,8 +363,8 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
     const [scrapingUrl, setScrapingUrl] = useState('');
     const [sourceStatus, setSourceStatus] = useState(null);
     const [showPlaybook, setShowPlaybook] = useState(false);
-    const [fbEmail, setFbEmail] = useState('');
-    const [fbPassword, setFbPassword] = useState('');
+    const [fbAccessTokenInput, setFbAccessTokenInput] = useState('');
+    const [fbPageIdInput, setFbPageIdInput] = useState('');
     const [isFbConnecting, setIsFbConnecting] = useState(false);
 
     const handlePost = async (car, listing) => {
@@ -759,27 +759,61 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                                 </div>
                             </div>
                             
-                            {agent.fb_access_token ? (
-                                <div style={{ background: 'rgba(0,184,148,0.1)', padding: '15px', borderRadius: '15px', border: '1px solid #00b894', color: '#00b894', textAlign: 'center', fontWeight: 'bold' }}>
-                                    ✓ META MISSION LIVE
+                            {!agent.fb_access_token ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <div style={{ position: 'relative' }}>
+                                        <input 
+                                            type="password"
+                                            placeholder="FB Access Token"
+                                            value={fbAccessTokenInput}
+                                            onChange={(e) => setFbAccessTokenInput(e.target.value)}
+                                            style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '0.8rem', boxSizing: 'border-box' }}
+                                        />
+                                        <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', marginTop: '4px', paddingLeft: '5px' }}>Obtained from Meta for Developers</div>
+                                    </div>
+                                    <input 
+                                        type="text"
+                                        placeholder="FB Page ID"
+                                        value={fbPageIdInput}
+                                        onChange={(e) => setFbPageIdInput(e.target.value)}
+                                        style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '0.8rem', boxSizing: 'border-box' }}
+                                    />
+                                    <button 
+                                        onClick={() => {
+                                            if (!fbAccessTokenInput || !fbPageIdInput) {
+                                                alert("Please enter both Access Token and Page ID");
+                                                return;
+                                            }
+                                            setIsFbConnecting(true);
+                                            setTimeout(() => {
+                                                onUpdateSettings({ 
+                                                    fb_access_token: fbAccessTokenInput, 
+                                                    fb_page_id: fbPageIdInput, 
+                                                    fb_settings_json: { active: true } 
+                                                });
+                                                setIsFbConnecting(false);
+                                                window.location.reload(); // Refresh to sync everything
+                                            }, 800);
+                                        }}
+                                        style={{ width: '100%', padding: '15px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                                    >
+                                        {isFbConnecting ? (
+                                            <div style={{ width: '18px', height: '18px', border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                                        ) : (
+                                            <>CONNECT FACEBOOK OPS 🚀</>
+                                        )}
+                                    </button>
                                 </div>
                             ) : (
-                                <button 
-                                    onClick={() => {
-                                        setIsFbConnecting(true);
-                                        setTimeout(() => {
-                                            onUpdateSettings({ fb_access_token: 'EAAM...', fb_page_id: '123...', fb_settings_json: { active: true } });
-                                            setIsFbConnecting(false);
-                                        }, 800);
-                                    }}
-                                    style={{ width: '100%', padding: '18px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
-                                >
-                                    {isFbConnecting ? (
-                                        <div style={{ width: '20px', height: '20px', border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                                    ) : (
-                                        <>ACTIVATE CLOUD SYNC 🚀</>
-                                    )}
-                                </button>
+                                <div style={{ background: 'rgba(0,184,148,0.1)', padding: '15px', borderRadius: '15px', border: '1px solid #00b894', color: '#00b894', textAlign: 'center' }}>
+                                    <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>✓ META MISSION LIVE</div>
+                                    <button 
+                                        onClick={() => onUpdateSettings({ fb_access_token: null, fb_page_id: null })}
+                                        style={{ background: 'none', border: 'none', color: '#00b894', fontSize: '0.65rem', textDecoration: 'underline', marginTop: '8px', cursor: 'pointer' }}
+                                    >
+                                        Disconnect Account
+                                    </button>
+                                </div>
                             )}
                         </div>
 
