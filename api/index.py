@@ -828,6 +828,9 @@ async def trigger_engagement_call(req: OutboundEngagementRequest):
             payload = {
                 "assistantId": assistant_id,
                 "assistantOverrides": {
+                    "variableValues": {
+                        "agent_name": agent_name
+                    },
                     "voice": {
                         "provider": "playht",
                         "voiceId": "adam" # Adam Voice - High Quality American Male

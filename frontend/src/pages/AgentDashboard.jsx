@@ -1956,6 +1956,10 @@ export default function AgentDashboard() {
                                                     onChange={(e) => setFbAccessTokenInput(e.target.value)}
                                                     style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
                                                 />
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 5px' }}>
+                                                    <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noreferrer" style={{ fontSize: '0.6rem', color: '#1877F2', textDecoration: 'none' }}>🔗 Find my Access Token</a>
+                                                </div>
+
                                                 <input 
                                                     type="text"
                                                     placeholder="Facebook Page ID"
@@ -1963,12 +1967,16 @@ export default function AgentDashboard() {
                                                     onChange={(e) => setFbPageIdInput(e.target.value)}
                                                     style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
                                                 />
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 5px' }}>
+                                                    <a href="https://findmyfbid.in/" target="_blank" rel="noreferrer" style={{ fontSize: '0.6rem', color: '#1877F2', textDecoration: 'none' }}>🔗 Find my Page ID</a>
+                                                </div>
+
                                                 <button 
                                                     onClick={() => {
                                                         if(!fbAccessTokenInput || !fbPageIdInput) return alert("Please enter both Token and Page ID.");
                                                         handleUpdateSettings({ fb_access_token: fbAccessTokenInput, fb_page_id: fbPageIdInput });
                                                     }}
-                                                    style={{ width: '100%', padding: '18px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+                                                    style={{ width: '100%', padding: '18px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px' }}
                                                 >
                                                     CONNECT SYNC ENGINE 🚀
                                                 </button>
