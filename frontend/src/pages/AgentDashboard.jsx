@@ -723,25 +723,38 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}>
-                        {/* STEP 1: IMPORT */}
-                        <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-                                <div>
-                                    <div style={{ fontSize: '0.7rem', color: '#FFAB00', fontWeight: '900', letterSpacing: '1px' }}>STEP 1</div>
-                                    <h3 style={{ margin: '5px 0', fontSize: '1.2rem', color: 'white' }}>Import Inventory</h3>
-                                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Load your live units from FilCan Cars or any URL</p>
+                        {/* STEP 1: IMPORT - Collapsed if inventory exists */}
+                        {inventory.length === 0 ? (
+                            <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                                    <div>
+                                        <div style={{ fontSize: '0.7rem', color: '#FFAB00', fontWeight: '900', letterSpacing: '1px' }}>STEP 1</div>
+                                        <h3 style={{ margin: '5px 0', fontSize: '1.2rem', color: 'white' }}>Import Inventory</h3>
+                                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Load your live units from FilCan Cars or any URL</p>
+                                    </div>
+                                    <div style={{ padding: '10px', background: 'rgba(255,171,0,0.1)', borderRadius: '12px', color: '#FFAB00' }}>
+                                        <Download size={20} />
+                                    </div>
                                 </div>
-                                <div style={{ padding: '10px', background: 'rgba(255,171,0,0.1)', borderRadius: '12px', color: '#FFAB00' }}>
-                                    <Download size={20} />
-                                </div>
+                                <button 
+                                    onClick={() => { setActiveTab('marketing'); setMarketingSubView('inventory'); }}
+                                    style={{ width: '100%', padding: '18px', background: 'white', color: '#1B1B1B', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer' }}
+                                >
+                                    GO TO INVENTORY SYNC 📥
+                                </button>
                             </div>
-                            <button 
+                        ) : (
+                            <div 
                                 onClick={() => { setActiveTab('marketing'); setMarketingSubView('inventory'); }}
-                                style={{ width: '100%', padding: '18px', background: 'white', color: '#1B1B1B', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer' }}
+                                style={{ padding: '15px 20px', background: 'rgba(0,184,148,0.05)', borderRadius: '16px', border: '1px solid rgba(0,184,148,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
                             >
-                                GO TO INVENTORY SYNC 📥
-                            </button>
-                        </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <CheckCircle size={16} color="#00b894" />
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'white' }}>Step 1: Inventory Ready ({inventory.length} Units)</span>
+                                </div>
+                                <span style={{ fontSize: '0.6rem', color: '#00b894', fontWeight: 'bold' }}>EDIT 🔄</span>
+                            </div>
+                        )}
 
                         {/* STEP 2: CLOUD SYNC */}
                         <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
