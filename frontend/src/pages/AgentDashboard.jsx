@@ -718,50 +718,12 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
             {subView === 'settings' && (
                 <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '24px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
-                        {/* STEP 1: INVENTORY FOCUS (AUTO-COLLAPSES) */}
-                        {inventory.length === 0 ? (
-                            <div style={{ padding: '30px', background: 'linear-gradient(135deg, rgba(255, 171, 0, 0.1), rgba(255, 131, 0, 0.05))', borderRadius: '28px', border: '1px solid rgba(255, 171, 0, 0.2)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-                                    <div>
-                                        <div style={{ fontSize: '0.7rem', color: '#FFAB00', fontWeight: '900', letterSpacing: '2px' }}>ACTION REQUIRED</div>
-                                        <h3 style={{ margin: '5px 0', fontSize: '1.4rem', color: 'white', fontWeight: '900' }}>1. Load Your Inventory</h3>
-                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', lineHeight: '1.4' }}>Import your units from Excel or sync directly from your website URL.</p>
-                                    </div>
-                                    <div style={{ padding: '12px', background: 'rgba(255,171,0,0.1)', borderRadius: '15px', color: '#FFAB00' }}>
-                                        <Download size={24} />
-                                    </div>
-                                </div>
-                                <button 
-                                    onClick={() => { setActiveTab('marketing'); setMarketingSubView('inventory'); }}
-                                    style={{ width: '100%', padding: '20px', background: 'white', color: '#1B1B1B', border: 'none', borderRadius: '18px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }}
-                                >
-                                    OPEN SYNC ENGINE 📥
-                                </button>
-                            </div>
-                        ) : (
-                            <div 
-                                onClick={() => { setActiveTab('marketing'); setMarketingSubView('inventory'); }}
-                                style={{ padding: '20px 25px', background: 'rgba(0,184,148,0.08)', borderRadius: '24px', border: '1px solid rgba(0,184,148,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-                            >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#00b894', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                                        <CheckCircle size={18} />
-                                    </div>
-                                    <div>
-                                        <div style={{ fontSize: '0.9rem', fontWeight: '900', color: 'white' }}>Inventory Synchronized</div>
-                                        <div style={{ fontSize: '0.65rem', color: '#00b894', fontWeight: 'bold' }}>{inventory.length} units ready for Marketplace</div>
-                                    </div>
-                                </div>
-                                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>MANAGE 🔄</div>
-                            </div>
-                        )}
-
-                        {/* STEP 2: FACEBOOK INTEGRATION (THE FOCUS) */}
-                        <div style={{ padding: '30px', background: !fbSettings.fb_access_token ? 'linear-gradient(135deg, rgba(24, 119, 242, 0.1), rgba(24, 119, 242, 0.05))' : 'rgba(255,255,255,0.02)', borderRadius: '28px', border: !fbSettings.fb_access_token ? '2px solid rgba(24, 119, 242, 0.4)' : '1px solid rgba(255,255,255,0.06)', animation: !fbSettings.fb_access_token ? 'pulse 2s infinite' : 'none' }}>
+                        {/* STEP 1: FACEBOOK INTEGRATION (NOW AT THE TOP) */}
+                        <div id="fb-setup-section" style={{ padding: '30px', background: !fbSettings.fb_access_token ? 'linear-gradient(135deg, rgba(24, 119, 242, 0.1), rgba(24, 119, 242, 0.05))' : 'rgba(255,255,255,0.02)', borderRadius: '28px', border: !fbSettings.fb_access_token ? '2px solid rgba(24, 119, 242, 0.4)' : '1px solid rgba(255,255,255,0.06)', animation: !fbSettings.fb_access_token ? 'pulse 2s infinite' : 'none' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '25px' }}>
                                 <div>
                                     <div style={{ fontSize: '0.7rem', color: '#1877F2', fontWeight: '900', letterSpacing: '2px' }}>MISSION CRITICAL</div>
-                                    <h3 style={{ margin: '5px 0', fontSize: '1.4rem', color: 'white', fontWeight: '900' }}>2. Meta Marketplace Sync</h3>
+                                    <h3 style={{ margin: '5px 0', fontSize: '1.4rem', color: 'white', fontWeight: '900' }}>1. Meta Marketplace Sync</h3>
                                     <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', lineHeight: '1.4' }}>Connect your Facebook account to enable AI-automated posting and message sync.</p>
                                 </div>
                                 <div style={{ padding: '12px', background: 'rgba(24,119,242,0.1)', borderRadius: '15px', color: '#1877F2' }}>
@@ -833,6 +795,44 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                                 </div>
                             )}
                         </div>
+
+                        {/* STEP 2: INVENTORY SYNC (NOW BELOW FACEBOOK) */}
+                        {inventory.length === 0 ? (
+                            <div style={{ padding: '30px', background: 'linear-gradient(135deg, rgba(255, 171, 0, 0.1), rgba(255, 131, 0, 0.05))', borderRadius: '28px', border: '1px solid rgba(255, 171, 0, 0.2)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                                    <div>
+                                        <div style={{ fontSize: '0.7rem', color: '#FFAB00', fontWeight: '900', letterSpacing: '2px' }}>ACTION REQUIRED</div>
+                                        <h3 style={{ margin: '5px 0', fontSize: '1.4rem', color: 'white', fontWeight: '900' }}>2. Load Your Inventory</h3>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', lineHeight: '1.4' }}>Import your units from Excel or sync directly from your website URL.</p>
+                                    </div>
+                                    <div style={{ padding: '12px', background: 'rgba(255,171,0,0.1)', borderRadius: '15px', color: '#FFAB00' }}>
+                                        <Download size={24} />
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => { setActiveTab('marketing'); setMarketingSubView('inventory'); }}
+                                    style={{ width: '100%', padding: '20px', background: 'white', color: '#1B1B1B', border: 'none', borderRadius: '18px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }}
+                                >
+                                    OPEN SYNC ENGINE 📥
+                                </button>
+                            </div>
+                        ) : (
+                            <div 
+                                onClick={() => { setActiveTab('marketing'); setMarketingSubView('inventory'); }}
+                                style={{ padding: '20px 25px', background: 'rgba(0,184,148,0.08)', borderRadius: '24px', border: '1px solid rgba(0,184,148,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#00b894', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                                        <CheckCircle size={18} />
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '0.9rem', fontWeight: '900', color: 'white' }}>Inventory Synchronized</div>
+                                        <div style={{ fontSize: '0.65rem', color: '#00b894', fontWeight: 'bold' }}>{inventory.length} units ready for Marketplace</div>
+                                    </div>
+                                </div>
+                                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>MANAGE 🔄</div>
+                            </div>
+                        )}
 
                         {/* GOOGLE SECTION */}
                         <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
