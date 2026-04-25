@@ -717,116 +717,116 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
 
             {subView === 'settings' && (
                 <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '24px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <div style={{ marginBottom: '25px', padding: '15px', background: 'rgba(217,32,39,0.1)', borderRadius: '20px', border: '1px solid #D92027' }}>
-                        <div style={{ fontSize: '0.6rem', color: '#D92027', fontWeight: '900', letterSpacing: '2px', marginBottom: '5px' }}>MISSION PROTOCOL</div>
-                        <h4 style={{ margin: 0, color: 'white', fontSize: '1rem' }}>Elite Sales System Setup</h4>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}>
-                        {/* STEP 1: IMPORT - Collapsed if inventory exists */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                        {/* STEP 1: INVENTORY FOCUS (AUTO-COLLAPSES) */}
                         {inventory.length === 0 ? (
-                            <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div style={{ padding: '30px', background: 'linear-gradient(135deg, rgba(255, 171, 0, 0.1), rgba(255, 131, 0, 0.05))', borderRadius: '28px', border: '1px solid rgba(255, 171, 0, 0.2)' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                                     <div>
-                                        <div style={{ fontSize: '0.7rem', color: '#FFAB00', fontWeight: '900', letterSpacing: '1px' }}>STEP 1</div>
-                                        <h3 style={{ margin: '5px 0', fontSize: '1.2rem', color: 'white' }}>Import Inventory</h3>
-                                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Load your live units from FilCan Cars or any URL</p>
+                                        <div style={{ fontSize: '0.7rem', color: '#FFAB00', fontWeight: '900', letterSpacing: '2px' }}>ACTION REQUIRED</div>
+                                        <h3 style={{ margin: '5px 0', fontSize: '1.4rem', color: 'white', fontWeight: '900' }}>1. Load Your Inventory</h3>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', lineHeight: '1.4' }}>Import your units from Excel or sync directly from your website URL.</p>
                                     </div>
-                                    <div style={{ padding: '10px', background: 'rgba(255,171,0,0.1)', borderRadius: '12px', color: '#FFAB00' }}>
-                                        <Download size={20} />
+                                    <div style={{ padding: '12px', background: 'rgba(255,171,0,0.1)', borderRadius: '15px', color: '#FFAB00' }}>
+                                        <Download size={24} />
                                     </div>
                                 </div>
                                 <button 
                                     onClick={() => { setActiveTab('marketing'); setMarketingSubView('inventory'); }}
-                                    style={{ width: '100%', padding: '18px', background: 'white', color: '#1B1B1B', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer' }}
+                                    style={{ width: '100%', padding: '20px', background: 'white', color: '#1B1B1B', border: 'none', borderRadius: '18px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }}
                                 >
-                                    GO TO INVENTORY SYNC 📥
+                                    OPEN SYNC ENGINE 📥
                                 </button>
                             </div>
                         ) : (
                             <div 
                                 onClick={() => { setActiveTab('marketing'); setMarketingSubView('inventory'); }}
-                                style={{ padding: '15px 20px', background: 'rgba(0,184,148,0.05)', borderRadius: '16px', border: '1px solid rgba(0,184,148,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                                style={{ padding: '20px 25px', background: 'rgba(0,184,148,0.08)', borderRadius: '24px', border: '1px solid rgba(0,184,148,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
                             >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <CheckCircle size={16} color="#00b894" />
-                                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'white' }}>Step 1: Inventory Ready ({inventory.length} Units)</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#00b894', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                                        <CheckCircle size={18} />
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '0.9rem', fontWeight: '900', color: 'white' }}>Inventory Synchronized</div>
+                                        <div style={{ fontSize: '0.65rem', color: '#00b894', fontWeight: 'bold' }}>{inventory.length} units ready for Marketplace</div>
+                                    </div>
                                 </div>
-                                <span style={{ fontSize: '0.6rem', color: '#00b894', fontWeight: 'bold' }}>EDIT 🔄</span>
+                                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>MANAGE 🔄</div>
                             </div>
                         )}
 
-                        {/* STEP 2: CLOUD SYNC */}
-                        <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                        {/* STEP 2: FACEBOOK INTEGRATION (THE FOCUS) */}
+                        <div style={{ padding: '30px', background: !fbSettings.fb_access_token ? 'linear-gradient(135deg, rgba(24, 119, 242, 0.1), rgba(24, 119, 242, 0.05))' : 'rgba(255,255,255,0.02)', borderRadius: '28px', border: !fbSettings.fb_access_token ? '2px solid rgba(24, 119, 242, 0.4)' : '1px solid rgba(255,255,255,0.06)', animation: !fbSettings.fb_access_token ? 'pulse 2s infinite' : 'none' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '25px' }}>
                                 <div>
-                                    <div style={{ fontSize: '0.7rem', color: '#00b894', fontWeight: '900', letterSpacing: '1px' }}>STEP 2</div>
-                                    <h3 style={{ margin: '5px 0', fontSize: '1.2rem', color: 'white' }}>Meta Cloud Sync</h3>
-                                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Activate the AI mission across Facebook & Messenger</p>
+                                    <div style={{ fontSize: '0.7rem', color: '#1877F2', fontWeight: '900', letterSpacing: '2px' }}>MISSION CRITICAL</div>
+                                    <h3 style={{ margin: '5px 0', fontSize: '1.4rem', color: 'white', fontWeight: '900' }}>2. Meta Marketplace Sync</h3>
+                                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', lineHeight: '1.4' }}>Connect your Facebook account to enable AI-automated posting and message sync.</p>
                                 </div>
-                                <div style={{ padding: '10px', background: 'rgba(0,184,148,0.1)', borderRadius: '12px', color: '#00b894' }}>
-                                    <Share2 size={20} />
+                                <div style={{ padding: '12px', background: 'rgba(24,119,242,0.1)', borderRadius: '15px', color: '#1877F2' }}>
+                                    <Share2 size={24} />
                                 </div>
                             </div>
                             
-                            {/* Use fbSettings instead of agent to ensure we show the most up-to-date sync state */}
                             {!fbSettings.fb_access_token ? (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                        <div style={{ position: 'relative' }}>
-                                            <input 
-                                                type="password"
-                                                placeholder="Meta Access Token"
-                                                value={fbAccessTokenInput}
-                                                onChange={(e) => setFbAccessTokenInput(e.target.value)}
-                                                style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '0.85rem', boxSizing: 'border-box' }}
-                                            />
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', padding: '0 5px' }}>
-                                                <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noreferrer" style={{ fontSize: '0.65rem', color: '#1877F2', textDecoration: 'none', fontWeight: 'bold' }}>🔗 Get Access Token</a>
-                                            </div>
-                                        </div>
-                                        <div style={{ position: 'relative' }}>
-                                            <input 
-                                                type="text"
-                                                placeholder="Facebook Page ID"
-                                                value={fbPageIdInput}
-                                                onChange={(e) => setFbPageIdInput(e.target.value)}
-                                                style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '0.85rem', boxSizing: 'border-box' }}
-                                            />
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', padding: '0 5px' }}>
-                                                <a href="https://findmyfbid.in/" target="_blank" rel="noreferrer" style={{ fontSize: '0.65rem', color: '#1877F2', textDecoration: 'none', fontWeight: 'bold' }}>🔗 Find Page ID</a>
-                                            </div>
-                                        </div>
-                                        <button 
-                                            onClick={() => {
-                                                if (!fbAccessTokenInput || !fbPageIdInput) {
-                                                    alert("Please enter both Access Token and Page ID");
-                                                    return;
-                                                }
-                                                setIsFbConnecting(true);
-                                                setTimeout(() => {
-                                                    onUpdateSettings({ 
-                                                        fb_access_token: fbAccessTokenInput, 
-                                                        fb_page_id: fbPageIdInput, 
-                                                        fb_settings_json: { active: true } 
-                                                    });
-                                                    setIsFbConnecting(false);
-                                                }, 800);
-                                            }}
-                                            style={{ width: '100%', padding: '18px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '10px', boxShadow: '0 8px 20px rgba(24,119,242,0.3)' }}
-                                        >
-                                            {isFbConnecting ? (
-                                                <div style={{ width: '18px', height: '18px', border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                                            ) : (
-                                                <>ACTIVATE META SYNC 🚀</>
-                                            )}
-                                        </button>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    <div style={{ position: 'relative' }}>
+                                        <div style={{ fontSize: '0.65rem', color: '#1877F2', fontWeight: '900', marginBottom: '8px', marginLeft: '5px' }}>META ACCESS TOKEN</div>
+                                        <input 
+                                            type="password"
+                                            placeholder="Paste your token here..."
+                                            value={fbAccessTokenInput}
+                                            onChange={(e) => setFbAccessTokenInput(e.target.value)}
+                                            style={{ width: '100%', padding: '18px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                                        />
+                                        <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: '8px', fontSize: '0.7rem', color: '#1877F2', textDecoration: 'underline', fontWeight: 'bold' }}>🔗 Found in Meta Developer Hub</a>
                                     </div>
+
+                                    <div style={{ position: 'relative', marginTop: '10px' }}>
+                                        <div style={{ fontSize: '0.65rem', color: '#1877F2', fontWeight: '900', marginBottom: '8px', marginLeft: '5px' }}>FACEBOOK PAGE ID</div>
+                                        <input 
+                                            type="text"
+                                            placeholder="e.g. 1029384756..."
+                                            value={fbPageIdInput}
+                                            onChange={(e) => setFbPageIdInput(e.target.value)}
+                                            style={{ width: '100%', padding: '18px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '1rem', boxSizing: 'border-box', fontWeight: 'bold' }}
+                                        />
+                                        <a href="https://findmyfbid.in/" target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: '8px', fontSize: '0.7rem', color: '#1877F2', textDecoration: 'underline', fontWeight: 'bold' }}>🔗 Click here to find your ID</a>
+                                    </div>
+
+                                    <button 
+                                        onClick={() => {
+                                            if (!fbAccessTokenInput || !fbPageIdInput) {
+                                                alert("Please enter both Access Token and Page ID");
+                                                return;
+                                            }
+                                            setIsFbConnecting(true);
+                                            setTimeout(() => {
+                                                onUpdateSettings({ 
+                                                    fb_access_token: fbAccessTokenInput, 
+                                                    fb_page_id: fbPageIdInput, 
+                                                });
+                                                setIsFbConnecting(false);
+                                            }, 1200);
+                                        }}
+                                        style={{ width: '100%', padding: '22px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '20px', fontWeight: '900', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginTop: '15px', boxShadow: '0 15px 35px rgba(24,119,242,0.3)' }}
+                                    >
+                                        {isFbConnecting ? (
+                                            <div style={{ width: '22px', height: '22px', border: '3px solid white', borderTop: '3px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                                        ) : (
+                                            <>ACTIVATE AI SYNC ENGINE 🚀</>
+                                        )}
+                                    </button>
+                                </div>
                             ) : (
-                                <div style={{ background: 'rgba(0,184,148,0.1)', padding: '15px', borderRadius: '15px', border: '1px solid #00b894', color: '#00b894', textAlign: 'center' }}>
-                                    <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>✓ META MISSION LIVE</div>
+                                <div style={{ background: 'rgba(0,184,148,0.1)', padding: '25px', borderRadius: '24px', border: '1px solid #00b894', color: '#00b894', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '1.5rem', marginBottom: '10px' }}>✅</div>
+                                    <div style={{ fontWeight: '900', fontSize: '1.1rem', marginBottom: '5px' }}>CLOUD SYNC ACTIVE</div>
+                                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginBottom: '20px' }}>Your Solo Hunter is now hunting Marketplace inquiries live!</div>
                                     <button 
                                         onClick={() => onUpdateSettings({ fb_access_token: null, fb_page_id: null })}
-                                        style={{ background: 'none', border: 'none', color: '#00b894', fontSize: '0.65rem', textDecoration: 'underline', marginTop: '8px', cursor: 'pointer' }}
+                                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(0,184,148,0.3)', color: 'rgba(255,255,255,0.4)', padding: '12px 25px', borderRadius: '15px', fontSize: '0.75rem', fontWeight: 'bold' }}
                                     >
                                         Disconnect Account
                                     </button>
