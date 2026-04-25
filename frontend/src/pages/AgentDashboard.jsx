@@ -850,7 +850,7 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto' }} className="custom-scroll">
                                 {leads.length > 0 ? leads.slice(0, 5).map(l => (
                                     <div key={l.id} style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <div onClick={() => setSelectedLead(l)} style={{ cursor: 'pointer' }}>
+                                        <div onClick={() => { setSelectedDNA(l); vibrate(40); }} style={{ cursor: 'pointer' }}>
                                             <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{l.name}</div>
                                             <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>{l.car || 'New Lead'} • {l.phone}</div>
                                         </div>
