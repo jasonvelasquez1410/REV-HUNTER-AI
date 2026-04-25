@@ -69,14 +69,22 @@ async def get_status():
         except:
             masked_url = "Malformed URL"
             
+    from .storage import LeadTable
     db_status = "Online" if db.session_factory else "Degraded (Local Backup Active)"
     ai_status = "Online" if os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY") else "Demo Mode (Key Missing)"
+    
+    total_leads = 0
+    if db.session_factory:
+        with db.session() as session:
+            total_leads = session.query(LeadTable).count()
+
     return {
         "status": "RevHunter AI Backend Active",
         "engine": "Gemini 1.5 Flash",
         "database": db_status,
         "database_target": masked_url,
         "ai_model": ai_status,
+        "total_leads_in_db": total_leads,
         "v11_diagnostic": True
     }
 
