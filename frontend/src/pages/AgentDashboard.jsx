@@ -817,7 +817,7 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                                     </div>
                                 </div>
                                 <button 
-                                    onClick={() => { setMarketingSubView('inventory'); }}
+                                    onClick={() => { setActiveTab('marketing'); setMarketingSubView('inventory'); }}
                                     style={{ width: '100%', padding: '20px', background: 'white', color: '#1B1B1B', border: 'none', borderRadius: '18px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }}
                                 >
                                     OPEN SYNC ENGINE 📥
@@ -840,6 +840,32 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                                 <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>MANAGE 🔄</div>
                             </div>
                         )}
+
+                        {/* MISSION COMMAND - LEAD QUICK SELECT */}
+                        <div style={{ padding: '30px', background: 'rgba(255,255,255,0.02)', borderRadius: '28px', border: '1px solid rgba(255,255,255,0.06)', marginTop: '20px' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#00b894', fontWeight: '900', letterSpacing: '2px', marginBottom: '15px' }}>MISSION COMMAND</div>
+                            <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem', color: 'white', fontWeight: '900' }}>Manual AI Call Trigger</h3>
+                            <p style={{ margin: '0 0 20px 0', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>Select a lead from your pipeline to have the AI call them immediately.</p>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto' }} className="custom-scroll">
+                                {leads.length > 0 ? leads.slice(0, 5).map(l => (
+                                    <div key={l.id} style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div onClick={() => setSelectedLead(l)} style={{ cursor: 'pointer' }}>
+                                            <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{l.name}</div>
+                                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>{l.car || 'New Lead'} • {l.phone}</div>
+                                        </div>
+                                        <button 
+                                            onClick={() => handleAutoDial(l.id)}
+                                            style={{ background: '#00b894', color: 'white', border: 'none', borderRadius: '12px', padding: '8px 15px', fontSize: '0.7rem', fontWeight: '900' }}
+                                        >
+                                            AI CALL 📞
+                                        </button>
+                                    </div>
+                                )) : (
+                                    <div style={{ padding: '20px', textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.8rem' }}>No leads in queue yet.</div>
+                                )}
+                            </div>
+                        </div>
 
                         {/* GOOGLE SECTION */}
                         <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
