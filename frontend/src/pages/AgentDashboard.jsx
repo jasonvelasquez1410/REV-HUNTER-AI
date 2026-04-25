@@ -1423,12 +1423,11 @@ export default function AgentDashboard() {
             <input type="file" ref={inventoryInputRef} onChange={handleInventoryFileChange} style={{ display: 'none' }} accept=".xlsx, .xls, .csv" />
 
             {/* Launch Readiness Bar */}
-            {(!fbSettings.fb_access_token || leads.length === 0) && (
+            {(!fbSettings.fb_access_token || leads.length === 0 || inventory.length === 0) && (
                 <div style={{ background: '#D92027', color: 'white', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: '900', fontSize: '0.7rem', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.1)', animation: 'pulse 2s infinite', cursor: 'pointer' }} onClick={() => {
                     setActiveTab('leads');
                     setTimeout(() => {
                         missionControlRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        // Add a subtle flash effect to mission control
                         if (missionControlRef.current) {
                             missionControlRef.current.style.boxShadow = "0 0 30px #D92027";
                             setTimeout(() => { missionControlRef.current.style.boxShadow = "0 20px 50px rgba(0,0,0,0.3)"; }, 1000);
@@ -1437,7 +1436,11 @@ export default function AgentDashboard() {
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <AlertCircle size={14} />
-                        LAUNCH READINESS: {fbSettings.fb_access_token ? "50%" : "0%"} COMPLETE
+                        LAUNCH READINESS: {
+                            (leads.length > 0 ? 33 : 0) + 
+                            (inventory.length > 0 ? 33 : 0) + 
+                            (fbSettings.fb_access_token ? 34 : 0)
+                        }% COMPLETE (v2.5)
                     </div>
                     <div style={{ background: 'white', color: '#D92027', borderRadius: '5px', padding: '4px 10px', fontSize: '0.6rem', fontWeight: 'bold' }}>FIX NOW</div>
                 </div>
