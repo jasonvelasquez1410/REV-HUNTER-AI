@@ -69,6 +69,9 @@ def init_db():
             return True
         except Exception as e:
             print(f"DATABASE CLOUD FAILURE: {e}")
+            # Reset globals so we can try again on next request
+            engine = None
+            SessionLocal = None
             # Ensure we store the error for later reporting
             raise e
 
@@ -198,7 +201,7 @@ class Storage:
                 )
             
         if not self.session_factory:
-            err_msg = f"Critical Connection Error: {self.init_error}" if self.init_error else "Could not reach lead database."
+            err_msg = f"Critical Connection Error: {self.init_error}" if self.init_error else "Could not reach lead database"
             raise HTTPException(
                 status_code=503, 
                 detail=f"{err_msg}. Check Vercel DATABASE_URL."
