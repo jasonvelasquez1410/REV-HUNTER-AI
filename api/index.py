@@ -224,7 +224,7 @@ async def update_lead_status(lead_id: int, status_update: dict):
         if new_status:
             lead.status = new_status
         if new_agent:
-            lead.assigned_to = new_agent
+            lead.assigned_agent = new_agent
             
         session.commit()
         return {"message": "Lead updated successfully", "agent": new_agent, "status": new_status}

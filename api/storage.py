@@ -4,7 +4,7 @@ from typing import List, Dict, Optional
 from datetime import datetime, timedelta
 from contextlib import contextmanager
 from fastapi import HTTPException
-from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey, Text, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey, Text, DateTime, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from .models import Lead as PydanticLead, Car, AdApproval
@@ -66,10 +66,11 @@ def init_db():
             except: pass
             
             print("DATABASE: Production Cloud Connected.")
+            return True
         except Exception as e:
             print(f"DATABASE CLOUD FAILURE: {e}")
-            # Do NOT fall back to SQLite for production paying customers. We want them to see the real error.
-            raise HTTPException(status_code=503, detail=f"Database Offline: {str(e)}. Please check your Supabase project status.")
+            # Ensure we store the error for later reporting
+            raise e
 
 # SQLAlchemy Models
 class TenantTable(Base):
@@ -107,6 +108,7 @@ class LeadTable(Base):
     credit_score = Column(Integer, nullable=True)
     monthly_budget = Column(Float, nullable=True)
     trade_in_details = Column(String, nullable=True)
+    car = Column(String, nullable=True)
     status = Column(String, default="Pending")
     is_reported = Column(Boolean, default=False)
     is_billed = Column(Boolean, default=False)
@@ -167,12 +169,14 @@ TENANTS_FILE = os.path.join(os.path.dirname(__file__), "tenants.json")
 
 class Storage:
     def __init__(self):
+        self.init_error = None
         try:
             init_db()
             self.session_factory = SessionLocal
             self._seed_data_if_empty()
         except Exception as e:
             print(f"Storage Initialization Critical Error: {e}")
+            self.init_error = str(e)
             self.session_factory = None
 
     @contextmanager
@@ -185,16 +189,19 @@ class Storage:
             try:
                 init_db()
                 self.session_factory = SessionLocal
+                self.init_error = None # Clear error on success
             except Exception as e:
+                self.init_error = str(e)
                 raise HTTPException(
                     status_code=503, 
                     detail=f"DB OFFLINE: {str(e)}. Please check your DATABASE_URL in Vercel settings."
                 )
             
         if not self.session_factory:
+            err_msg = f"Critical Connection Error: {self.init_error}" if self.init_error else "Could not reach lead database."
             raise HTTPException(
                 status_code=503, 
-                detail="Critical Connection Error: Could not reach lead database. Check Vercel DATABASE_URL."
+                detail=f"{err_msg}. Check Vercel DATABASE_URL."
             )
             
         session = self.session_factory()
