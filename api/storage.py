@@ -370,21 +370,29 @@ class Storage:
             return fallback_inventory
 
     def get_leads(self, tenant_id: str = "filcan") -> List[PydanticLead]:
-        fallback_leads = [
-            PydanticLead(id=1, name="Marvin Raymundo", email="marvin@example.com", phone="587-888-1234", status="Hot", quality_score=98, conversation_summary="Highly interested in Mazda CX-90. (Local Backup Active)"),
-            PydanticLead(id=2, name="Jessica Chen", email="jess@outlook.com", phone="587-555-9000", status="Qualified", quality_score=85, conversation_summary="Looking for a reliable SUV. (Local Backup Active)")
-        ]
-        
-        if not self.session_factory:
-            return fallback_leads
-            
+        # Diagnostic: Try tenant-specific first
         try:
             with self.session() as session:
                 leads = session.query(LeadTable).filter(LeadTable.tenant_id == tenant_id).all()
-                return [PydanticLead(**l.__dict__) for l in leads]
+                if not leads and tenant_id == "filcan":
+                    # If empty but we are in filcan mode, try to find ANY leads as a backup
+                    leads = session.query(LeadTable).all()
+                
+                result = []
+                for l in leads:
+                    try:
+                        # Convert SQLAlchemy model to dict, sanitize for Pydantic
+                        d = {c.name: getattr(l, c.name) for c in l.__table__.columns}
+                        # Ensure mandatory strings are not None for Pydantic
+                        for field in ["email", "phone", "name"]:
+                            if d.get(field) is None: d[field] = "N/A"
+                        result.append(PydanticLead(**d))
+                    except Exception as ve:
+                        print(f"Lead Validation Error for ID {l.id}: {ve}")
+                return result
         except Exception as e:
             print(f"Database Fetch Error (get_leads): {e}")
-            return fallback_leads
+            return [] # Return empty list so UI knows it's empty but connected
 
     def report_lead(self, lead_id: int) -> bool:
         with self.session() as session:
