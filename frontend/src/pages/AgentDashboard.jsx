@@ -908,7 +908,7 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
 }
 
 // ── ENGAGEMENT HISTORY MODAL ──────────────────────
-function EngagementHistoryModal({ lead, onClose, onDial }) {
+function EngagementHistoryModal({ lead, onClose, onDial, onOrganize }) {
     const [callObjective, setCallObjective] = useState('discover');
     if (!lead) return null;
     let history = [];
@@ -970,9 +970,10 @@ function EngagementHistoryModal({ lead, onClose, onDial }) {
                             </p>
                             <button 
                                 onClick={() => {
-                                    const match = inventory.find(c => lead.car.toLowerCase().includes(c.model.toLowerCase()));
-                                    if(match) handleOrganize(match);
-                                    else alert("No exact match in current inventory, but you can post a regular listing!");
+                                    const carName = lead.car || '';
+                                    const match = inventory.find(c => carName.toLowerCase().includes(c.model.toLowerCase()));
+                                    if(match) onOrganize(match);
+                                    else alert(`No exact match in inventory for "${carName}", but you can post a regular listing!`);
                                 }}
                                 style={{ width: '100%', padding: '12px', background: '#FFAB00', color: 'black', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '0.75rem', cursor: 'pointer' }}
                             >
@@ -1136,6 +1137,23 @@ export default function AgentDashboard() {
         navigator.clipboard.writeText(text);
         setCopyStatus(label);
         setTimeout(() => setCopyStatus(null), 2000);
+    };
+
+    const scrollToLeads = (filter = 'all') => {
+        vibrate(40);
+        setActiveTab('leads');
+        setLeadFilter(filter);
+        setSearchTerm(''); // Clear search to ensure leads are found
+        
+        // Use a longer timeout to ensure components are mounted
+        setTimeout(() => {
+            if (leadsListRef.current) {
+                leadsListRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                // Fallback if ref still null (content area mounting slow)
+                window.scrollTo({ top: 300, behavior: 'smooth' });
+            }
+        }, 300);
     };
 
     const fileInputRef = useRef(null);
@@ -1549,8 +1567,8 @@ export default function AgentDashboard() {
             {/* Stats Bar */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px', padding: '25px 5%' }}>
                 {[
-                    { icon: <Users size={24} />, label: 'My Leads', value: leads.length, color: '#6c5ce7', action: () => { setLeadFilter('all'); setActiveTab('leads'); leadsListRef.current?.scrollIntoView({ behavior: 'smooth' }); } },
-                    { icon: <Star size={24} />, label: 'Hot Leads', value: (leads.filter(l => (l.quality_score || 0) >= 80)).length, color: '#D92027', action: () => { setLeadFilter('all'); setActiveTab('leads'); leadsListRef.current?.scrollIntoView({ behavior: 'smooth' }); } },
+                    { icon: <Users size={24} />, label: 'My Leads', value: leads.length, color: '#6c5ce7', action: () => scrollToLeads('all') },
+                    { icon: <Star size={24} />, label: 'Hot Leads', value: (leads.filter(l => (l.quality_score || 0) >= 80)).length, color: '#D92027', action: () => scrollToLeads('all') },
                     { icon: <Zap size={24} />, label: 'AI Nudges', value: leads.reduce((acc, l) => acc + (l.follow_up_streak || 0), 0), color: '#fdcb6e' },
                     { icon: <TrendingUp size={24} />, label: 'Close Rate', value: leads.length > 0 ? Math.round(((leads.filter(l => (l.quality_score || 0) >= 80)).length / leads.length) * 100) + '%' : '0%', color: '#00b894' }
                 ].map((stat, i) => (
@@ -1591,6 +1609,15 @@ export default function AgentDashboard() {
 
             {/* Content Area */}
             <div style={{ padding: '0 5% 120px 5%' }}>
+                <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '4px', height: '24px', background: '#FF4B2B', borderRadius: '2px' }} />
+                    <h2 style={{ margin: 0, fontSize: '0.8rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '2px', color: 'rgba(255,255,255,0.4)' }}>
+                        {activeTab === 'leads' ? 'MISSION STATUS // PIPELINE' : 
+                         activeTab === 'marketing' ? 'MARKETPLACE // AD GENERATOR' :
+                         activeTab === 'studio' ? 'AI BRAIN // AGENT SETTINGS' :
+                         activeTab === 'roi' ? 'PERFORMANCE // REVENUE' : 'SOLO HUNTER OS'}
+                    </h2>
+                </div>
                 {/* MESSENGER BROWSER SHIELD (Rjay's Stability Fix) - Global Visibility */}
                 {/FBAN|FBAV|Messenger/.test(typeof navigator !== 'undefined' ? navigator.userAgent : '') && (
                     <div className="glass-panel" style={{ padding: '15px 20px', background: 'rgba(255, 171, 0, 0.1)', border: '1px solid #FFAB00', marginBottom: '20px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', animation: 'slideUpNative 0.5s ease', position: 'sticky', top: '10px', zIndex: 10000 }}>
@@ -1758,15 +1785,21 @@ export default function AgentDashboard() {
 
                         {/* Filtered Logic */}
                         {(() => {
-                            const filtered = leads.filter(l => {
-                                if (leadFilter === 'all') return true;
-                                if (leadFilter === 'ai') return l.source !== 'Imported' && l.source !== 'File';
-                                if (leadFilter === 'imported') return l.source === 'Imported' || l.source === 'File';
-                                return true;
-                            });
+                             const filtered = leads.filter(l => {
+                                 const matchesFilter = leadFilter === 'all' || 
+                                                     (leadFilter === 'ai' && l.source !== 'Imported' && l.source !== 'File') ||
+                                                     (leadFilter === 'imported' && (l.source === 'Imported' || l.source === 'File'));
+                                 
+                                 const matchesSearch = !searchTerm || 
+                                                     (l.name && l.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                                                     (l.phone && l.phone.includes(searchTerm)) ||
+                                                     (l.car && l.car.toLowerCase().includes(searchTerm.toLowerCase()));
+                                 
+                                 return matchesFilter && matchesSearch;
+                             });
 
                             const hLimit = filtered.filter(l => (l.quality_score || 0) >= 80);
-                            const wLimit = filtered.filter(l => (l.quality_score || 0) >= 50 && (l.quality_score || 0) < 80);
+                            const wLimit = filtered.filter(l => (l.quality_score || 0) < 80);
 
                             return (
                                 <div ref={leadsListRef}>
@@ -1774,7 +1807,13 @@ export default function AgentDashboard() {
                                         <div>
                                             <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#FF4B2B', marginBottom: '12px', letterSpacing: '2px' }}>🔥 HOT LEADS ({hLimit.length})</div>
                                             {hLimit.map(lead => (
-                                                <div key={lead.id} style={{ background: 'rgba(255, 75, 43, 0.05)', borderRadius: '24px', padding: '25px', marginBottom: '15px', border: '1px solid rgba(255, 75, 43, 0.2)' }}>
+                                                <div 
+                                                    key={lead.id} 
+                                                    onClick={() => setSelectedDNA(lead)}
+                                                    style={{ background: 'rgba(255, 75, 43, 0.05)', borderRadius: '24px', padding: '25px', marginBottom: '15px', border: '1px solid rgba(255, 75, 43, 0.2)', cursor: 'pointer', transition: 'transform 0.2s' }}
+                                                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                                >
                                                     <div style={{ display: 'flex', flexDirection: window.innerWidth < 600 ? 'column' : 'row', justifyContent: 'space-between', alignItems: window.innerWidth < 600 ? 'flex-start' : 'center', gap: '20px' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                                             <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(255, 75, 43, 0.15)', color: '#FF4B2B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>{lead.name.charAt(0)}</div>
@@ -1788,7 +1827,7 @@ export default function AgentDashboard() {
                                                                 <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{lead.car || 'Interested Purchaser'}</div>
                                                             </div>
                                                         </div>
-                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }} onClick={e => e.stopPropagation()}>
                                                             <button onClick={() => setSelectedDNA(lead)} style={{ background: 'white', color: '#000', border: 'none', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
                                                                 <MessageSquare size={20} />
                                                                 <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>DETAILS</span>
@@ -1822,7 +1861,13 @@ export default function AgentDashboard() {
                                         <div>
                                             <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#fdcb6e', marginBottom: '12px', letterSpacing: '2px' }}>🟡 WARMING UP ({wLimit.length})</div>
                                             {wLimit.map(lead => (
-                                                <div key={lead.id} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', padding: '16px', marginBottom: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                                                <div 
+                                                    key={lead.id} 
+                                                    onClick={() => setSelectedDNA(lead)}
+                                                    style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', padding: '16px', marginBottom: '10px', border: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer', transition: 'background 0.2s' }}
+                                                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                                                >
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                             <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(253,203,110,0.1)', color: '#fdcb6e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.75rem' }}>{lead.name.charAt(0)}</div>
@@ -1836,7 +1881,7 @@ export default function AgentDashboard() {
                                                                 <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>{lead.car || 'Browsing'} • Score: {lead.quality_score}%</div>
                                                             </div>
                                                         </div>
-                                                        <div style={{ display: 'flex', gap: '5px' }}>
+                                                        <div style={{ display: 'flex', gap: '5px' }} onClick={e => e.stopPropagation()}>
                                                             <button onClick={() => setSelectedDNA(lead)} style={{ padding: '8px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.7rem' }}>
                                                                 DNA
                                                             </button>
@@ -1847,6 +1892,25 @@ export default function AgentDashboard() {
                                                     </div>
                                                 </div>
                                             ))}
+                                        </div>
+                                    )}
+                                    {hLimit.length === 0 && wLimit.length === 0 && (
+                                        <div style={{ textAlign: 'center', padding: '60px 40px', background: 'rgba(255,255,255,0.02)', borderRadius: '32px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                                            <div style={{ fontSize: '3rem', marginBottom: '20px', opacity: 0.5 }}>📡</div>
+                                            <h3 style={{ margin: '0 0 10px 0', fontSize: '1.1rem', fontWeight: '900' }}>Active Pipeline Clear</h3>
+                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', lineHeight: '1.5' }}>
+                                                {leadFilter === 'all' 
+                                                    ? "You don't have any leads yet. Import your first list or connect Facebook to start hunting!" 
+                                                    : `No leads found for the "${leadFilter.toUpperCase()}" filter.`}
+                                            </p>
+                                            {leads.length === 0 && (
+                                                <button 
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    style={{ marginTop: '25px', padding: '14px 25px', background: 'white', color: 'black', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.85rem', cursor: 'pointer' }}
+                                                >
+                                                    📥 IMPORT LEADS NOW
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -2099,18 +2163,7 @@ export default function AgentDashboard() {
             {/* Bottom Bar */}
             <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(10,10,10,0.98)', backdropFilter: 'blur(30px)', borderTop: '1px solid rgba(255,255,255,0.1)', padding: '15px 5%', paddingBottom: 'calc(15px + env(safe-area-inset-bottom))', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 1000, boxShadow: '0 -10px 40px rgba(0,0,0,0.5)' }}>
                 <button 
-                    onClick={() => {
-                        vibrate(30);
-                        setActiveTab('leads');
-                        setLeadFilter('all');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                        // Trigger a slight "pulse" for feedback
-                        const btn = document.getElementById('pipeline-btn');
-                        if (btn) {
-                            btn.style.transform = 'scale(0.9)';
-                            setTimeout(() => { btn.style.transform = 'scale(1)'; }, 100);
-                        }
-                    }}
+                    onClick={() => scrollToLeads('all')}
                     id="pipeline-btn"
                     style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === 'leads' ? '#D92027' : 'rgba(255,255,255,0.3)', transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' }}
                 >
@@ -2166,11 +2219,12 @@ export default function AgentDashboard() {
 
             {/* Engagement Lead DNA Modal */}
             {selectedDNA && (
-                <EngagementHistoryModal 
-                    lead={selectedDNA} 
-                    onClose={() => setSelectedDNA(null)}
-                    onDial={handleAutoDial}
-                />
+                    <EngagementHistoryModal 
+                        lead={selectedDNA} 
+                        onClose={() => setSelectedDNA(null)}
+                        onDial={handleAutoDial}
+                        onOrganize={handleOrganize}
+                    />
             )}
 
             {/* MANUAL LEAD ENTRY MODAL */}
