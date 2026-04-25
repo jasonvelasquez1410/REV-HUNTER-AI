@@ -758,50 +758,56 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                             
                             {/* Use fbSettings instead of agent to ensure we show the most up-to-date sync state */}
                             {!fbSettings.fb_access_token ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                    <div style={{ position: 'relative' }}>
-                                        <input 
-                                            type="password"
-                                            placeholder="FB Access Token"
-                                            value={fbAccessTokenInput}
-                                            onChange={(e) => setFbAccessTokenInput(e.target.value)}
-                                            style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '0.8rem', boxSizing: 'border-box' }}
-                                        />
-                                        <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', marginTop: '4px', paddingLeft: '5px' }}>Obtained from Meta for Developers</div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                        <div style={{ position: 'relative' }}>
+                                            <input 
+                                                type="password"
+                                                placeholder="Meta Access Token"
+                                                value={fbAccessTokenInput}
+                                                onChange={(e) => setFbAccessTokenInput(e.target.value)}
+                                                style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                                            />
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', padding: '0 5px' }}>
+                                                <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noreferrer" style={{ fontSize: '0.65rem', color: '#1877F2', textDecoration: 'none', fontWeight: 'bold' }}>🔗 Get Access Token</a>
+                                            </div>
+                                        </div>
+                                        <div style={{ position: 'relative' }}>
+                                            <input 
+                                                type="text"
+                                                placeholder="Facebook Page ID"
+                                                value={fbPageIdInput}
+                                                onChange={(e) => setFbPageIdInput(e.target.value)}
+                                                style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                                            />
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', padding: '0 5px' }}>
+                                                <a href="https://findmyfbid.in/" target="_blank" rel="noreferrer" style={{ fontSize: '0.65rem', color: '#1877F2', textDecoration: 'none', fontWeight: 'bold' }}>🔗 Find Page ID</a>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={() => {
+                                                if (!fbAccessTokenInput || !fbPageIdInput) {
+                                                    alert("Please enter both Access Token and Page ID");
+                                                    return;
+                                                }
+                                                setIsFbConnecting(true);
+                                                setTimeout(() => {
+                                                    onUpdateSettings({ 
+                                                        fb_access_token: fbAccessTokenInput, 
+                                                        fb_page_id: fbPageIdInput, 
+                                                        fb_settings_json: { active: true } 
+                                                    });
+                                                    setIsFbConnecting(false);
+                                                }, 800);
+                                            }}
+                                            style={{ width: '100%', padding: '18px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '10px', boxShadow: '0 8px 20px rgba(24,119,242,0.3)' }}
+                                        >
+                                            {isFbConnecting ? (
+                                                <div style={{ width: '18px', height: '18px', border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                                            ) : (
+                                                <>ACTIVATE META SYNC 🚀</>
+                                            )}
+                                        </button>
                                     </div>
-                                    <input 
-                                        type="text"
-                                        placeholder="FB Page ID"
-                                        value={fbPageIdInput}
-                                        onChange={(e) => setFbPageIdInput(e.target.value)}
-                                        style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '0.8rem', boxSizing: 'border-box' }}
-                                    />
-                                    <button 
-                                        onClick={() => {
-                                            if (!fbAccessTokenInput || !fbPageIdInput) {
-                                                alert("Please enter both Access Token and Page ID");
-                                                return;
-                                            }
-                                            setIsFbConnecting(true);
-                                            setTimeout(() => {
-                                                onUpdateSettings({ 
-                                                    fb_access_token: fbAccessTokenInput, 
-                                                    fb_page_id: fbPageIdInput, 
-                                                    fb_settings_json: { active: true } 
-                                                });
-                                                setIsFbConnecting(false);
-                                                window.location.reload(); // Refresh to sync everything
-                                            }, 800);
-                                        }}
-                                        style={{ width: '100%', padding: '15px', background: '#1877F2', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
-                                    >
-                                        {isFbConnecting ? (
-                                            <div style={{ width: '18px', height: '18px', border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                                        ) : (
-                                            <>CONNECT FACEBOOK OPS 🚀</>
-                                        )}
-                                    </button>
-                                </div>
                             ) : (
                                 <div style={{ background: 'rgba(0,184,148,0.1)', padding: '15px', borderRadius: '15px', border: '1px solid #00b894', color: '#00b894', textAlign: 'center' }}>
                                     <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>✓ META MISSION LIVE</div>
