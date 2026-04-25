@@ -846,23 +846,52 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                             <div style={{ fontSize: '0.7rem', color: '#00b894', fontWeight: '900', letterSpacing: '2px', marginBottom: '15px' }}>MISSION COMMAND</div>
                             <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem', color: 'white', fontWeight: '900' }}>Manual AI Call Trigger</h3>
                             <p style={{ margin: '0 0 20px 0', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>Select a lead from your pipeline to have the AI call them immediately.</p>
+                            <div style={{ position: 'relative', marginBottom: '15px' }}>
+                                <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)' }} size={14} />
+                                <input 
+                                    type="text" 
+                                    placeholder="Quick search pipeline..."
+                                    style={{ width: '100%', padding: '10px 15px 10px 35px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: 'white', fontSize: '0.75rem', boxSizing: 'border-box' }}
+                                    onChange={(e) => {
+                                        const term = e.target.value.toLowerCase();
+                                        const items = document.querySelectorAll('.mission-lead-item');
+                                        items.forEach(item => {
+                                            const text = item.innerText.toLowerCase();
+                                            item.style.display = text.includes(term) ? 'flex' : 'none';
+                                        });
+                                    }}
+                                />
+                            </div>
                             
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto' }} className="custom-scroll">
-                                {leads.length > 0 ? leads.slice(0, 5).map(l => (
-                                    <div key={l.id} style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <div onClick={() => { setSelectedDNA(l); vibrate(40); }} style={{ cursor: 'pointer' }}>
-                                            <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{l.name}</div>
-                                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>{l.car || 'New Lead'} • {l.phone}</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '450px', overflowY: 'auto', paddingRight: '5px' }} className="custom-scroll">
+                                {leads.length > 0 ? leads.map(l => (
+                                    <div key={l.id} className="mission-lead-item" style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)', animation: 'slideUp 0.3s ease' }}>
+                                        <div onClick={() => { setSelectedDNA(l); vibrate(40); }} style={{ cursor: 'pointer', flex: 1, minWidth: 0 }}>
+                                            <div style={{ fontWeight: '900', fontSize: '0.9rem', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.name || 'Anonymous Lead'}</div>
+                                            <div style={{ display: 'flex', gap: '10px', marginTop: '4px', alignItems: 'center' }}>
+                                                <div style={{ fontSize: '0.7rem', color: '#00b894', fontWeight: 'bold' }}>📞 {l.phone || 'No Contact'}</div>
+                                                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>🚗 {l.car || 'General Interest'}</div>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+                                                <div style={{ fontSize: '0.55rem', background: (l.quality_score || 0) >= 80 ? 'rgba(255, 75, 43, 0.1)' : 'rgba(255, 255, 255, 0.05)', color: (l.quality_score || 0) >= 80 ? '#FF4B2B' : 'rgba(255,255,255,0.4)', padding: '2px 8px', borderRadius: '6px', fontWeight: '900', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    QLT: {l.quality_score || 0}%
+                                                </div>
+                                                <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.2)', fontWeight: '700' }}>#{l.id.toString().slice(-4)}</div>
+                                            </div>
                                         </div>
                                         <button 
-                                            onClick={() => handleAutoDial(l.id)}
-                                            style={{ background: '#00b894', color: 'white', border: 'none', borderRadius: '12px', padding: '8px 15px', fontSize: '0.7rem', fontWeight: '900' }}
+                                            onClick={() => { handleAutoDial(l.id); vibrate(60); }}
+                                            style={{ background: 'linear-gradient(135deg, #00b894, #008f72)', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 15px', fontSize: '0.65rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', marginLeft: '15px', boxShadow: '0 5px 15px rgba(0,184,148,0.2)', flexShrink: 0 }}
                                         >
                                             AI CALL 📞
                                         </button>
                                     </div>
                                 )) : (
-                                    <div style={{ padding: '20px', textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.8rem' }}>No leads in queue yet.</div>
+                                    <div style={{ padding: '60px 20px', textAlign: 'center', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                                        <div style={{ fontSize: '2rem', marginBottom: '15px', opacity: 0.3 }}>📡</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>No Leads in Active Pipeline</div>
+                                        <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)', marginTop: '5px' }}>Import a list or connect FB to start hunting.</div>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -1819,12 +1848,15 @@ export default function AgentDashboard() {
                                                             <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(255, 75, 43, 0.15)', color: '#FF4B2B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.1rem' }}>{lead.name.charAt(0)}</div>
                                                             <div>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                                    <div style={{ fontWeight: '800', fontSize: '1.1rem', color: 'white' }}>{lead.name}</div>
+                                                                    <div style={{ fontWeight: '800', fontSize: '1.2rem', color: 'white', letterSpacing: '-0.5px' }}>{lead.name}</div>
                                                                     <span style={{ fontSize: '0.55rem', padding: '2px 6px', borderRadius: '4px', background: (lead.source === 'Imported' || lead.source === 'File') ? '#6c5ce7' : '#00b894', color: 'white', fontWeight: '900' }}>
                                                                         {(lead.source === 'Imported' || lead.source === 'File') ? '📥 IMPORT' : '✨ ELLIOT'}
                                                                     </span>
                                                                 </div>
-                                                                <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{lead.car || 'Interested Purchaser'}</div>
+                                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '4px' }}>
+                                                                    <div style={{ fontSize: '0.85rem', color: '#00b894', fontWeight: 'bold' }}>📞 {lead.phone}</div>
+                                                                    <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>🚗 {lead.car || 'Interested Purchaser'}</div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }} onClick={e => e.stopPropagation()}>
@@ -1878,7 +1910,9 @@ export default function AgentDashboard() {
                                                                         {(lead.source === 'Imported' || lead.source === 'File') ? 'IMPORT' : 'ELLIOT'}
                                                                     </span>
                                                                 </div>
-                                                                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>{lead.car || 'Browsing'} • Score: {lead.quality_score}%</div>
+                                                                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>
+                                                                    <span style={{ color: '#00b894' }}>{lead.phone}</span> • {lead.car || 'Browsing'} • Score: {lead.quality_score}%
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <div style={{ display: 'flex', gap: '5px' }} onClick={e => e.stopPropagation()}>
