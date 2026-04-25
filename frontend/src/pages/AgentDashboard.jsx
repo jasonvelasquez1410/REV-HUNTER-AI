@@ -355,7 +355,7 @@ function AgentLogin({ onLogin }) {
 
 // ── MARKETING HUB VIEW ────────────────────────────
 // ── MARKETING HUB VIEW ────────────────────────────
-function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSettings, apiUrl, tenant, subView, setSubView, onImportInventory, onOrganize, fbAccessTokenInput, setFbAccessTokenInput, fbPageIdInput, setFbPageIdInput, isFbConnecting, setIsFbConnecting }) {
+function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSettings, apiUrl, tenant, subView, setSubView, onImportInventory, onOrganize, fbAccessTokenInput, setFbAccessTokenInput, fbPageIdInput, setFbPageIdInput, isFbConnecting, setIsFbConnecting, leads = [], handleAutoDial, setSelectedDNA }) {
     const isStandalone = agent?.edition === 'standalone';
     const [isPosting, setIsPosting] = useState(false);
     const [status, setStatus] = useState(null);
@@ -1888,6 +1888,9 @@ export default function AgentDashboard() {
                             setFbPageIdInput={setFbPageIdInput}
                             isFbConnecting={isFbConnecting}
                             setIsFbConnecting={setIsFbConnecting}
+                            leads={leads}
+                            handleAutoDial={handleAutoDial}
+                            setSelectedDNA={setSelectedDNA}
                         />
                     </div>
                 )}
