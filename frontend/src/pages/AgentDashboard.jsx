@@ -546,18 +546,13 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                             <Camera size={16} />
                             <span style={{ fontSize: '0.55rem', fontWeight: '900' }}>PHOTO AD</span>
                         </button>
-                        {!isStandalone && (
-                            <div style={{ background: 'rgba(0,184,148,0.1)', border: '1px solid #00b894', borderRadius: '12px', padding: '12px 5px', color: '#00b894', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                                <Building2 size={16} />
-                                <span style={{ fontSize: '0.55rem', fontWeight: '900' }}>FILCAN</span>
-                            </div>
-                        )}
-                        {isStandalone && (
-                             <div style={{ background: 'rgba(217,32,39,0.1)', border: '1px solid #D92027', borderRadius: '12px', padding: '12px 5px', color: '#D92027', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                                <TrendingUp size={16} />
-                                <span style={{ fontSize: '0.55rem', fontWeight: '900' }}>REVENUE</span>
-                             </div>
-                        )}
+                        <button 
+                            onClick={() => setActiveSourceModal('dealer')}
+                            style={{ background: activeSourceModal === 'dealer' ? 'rgba(0, 184, 148, 0.15)' : 'rgba(255,255,255,0.03)', border: activeSourceModal === 'dealer' ? '1px solid #00b894' : '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '12px 5px', color: activeSourceModal === 'dealer' ? '#00b894' : 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}
+                        >
+                            <Building2 size={16} />
+                            <span style={{ fontSize: '0.55rem', fontWeight: '900' }}>DEALER SYNC</span>
+                        </button>
                     </div>
 
                     {isStandalone && inventory.length === 0 && (
@@ -652,28 +647,40 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                     {/* Pocket Listing Area */}
                     {activeSourceModal === 'pocket' && (
                         <div style={{ background: 'rgba(255, 75, 43, 0.05)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(255, 75, 43, 0.2)', animation: 'slideDown 0.3s ease' }}>
-                             <div style={{ fontWeight: '800', fontSize: '0.8rem', color: '#FF4B2B', marginBottom: '10px', display: 'flex', justifyContent: 'space-between' }}>
-                                ADD POCKET LISTING
-                                <button onClick={() => setActiveSourceModal(null)} style={{ background: 'none', border: 'none', color: '#FF4B2B', fontWeight: 'bold' }}>✕</button>
+                             <div style={{ fontWeight: '800', fontSize: '0.8rem', color: '#FF4B2B', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                 ADD POCKET LISTING
+                                 <button onClick={() => setActiveSourceModal(null)} style={{ background: 'none', border: 'none', color: '#FF4B2B', fontWeight: 'bold' }}>✕</button>
+                             </div>
+                             
+                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                <input type="file" id="camera-capture" accept="image/*" capture="camera" style={{ display: 'none' }} onChange={() => setSourceStatus("AI analyzing high-demand capture...")} />
+                                <input type="file" id="gallery-pick" accept="image/*" style={{ display: 'none' }} onChange={() => setSourceStatus("AI extracting vehicle metadata...")} />
+                                
+                                <button 
+                                    onClick={() => document.getElementById('camera-capture').click()}
+                                    style={{ height: '100px', borderRadius: '18px', background: 'rgba(0,0,0,0.3)', border: '1px dashed rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}
+                                >
+                                    <Camera size={22} color="#FF4B2B" />
+                                    <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.7)', fontWeight: 'bold' }}>OPEN CAMERA</span>
+                                </button>
+                                
+                                <button 
+                                    onClick={() => document.getElementById('gallery-pick').click()}
+                                    style={{ height: '100px', borderRadius: '18px', background: 'rgba(0,0,0,0.3)', border: '1px dashed rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}
+                                >
+                                    <ImageIcon size={22} color="#6366f1" />
+                                    <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.7)', fontWeight: 'bold' }}>GALLERY</span>
+                                </button>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                <div style={{ height: '100px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: '1px dashed rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                                    <Camera size={20} color="rgba(255,255,255,0.2)" />
-                                    <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>OPEN CAMERA</span>
-                                </div>
-                                <div style={{ height: '100px', borderRadius: '12px', background: 'rgba(0,0,0,0.3)', border: '1px dashed rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                                    <ImageIcon size={20} color="rgba(255,255,255,0.2)" />
-                                    <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>GALLERY</span>
-                                </div>
-                            </div>
-                            <button 
-                                onClick={() => setSourceStatus("RevHunter AI is analyzing image via Vision AI...")}
-                                style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.85rem', marginTop: '10px' }}
-                            >
-                                ANALYZE PHOTO
-                            </button>
-                        </div>
-                    )}
+
+                             <button 
+                                 onClick={() => setSourceStatus("RevHunter AI is analyzing image via Vision AI...")}
+                                 style={{ width: '100%', padding: '16px', background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900', fontSize: '0.85rem', marginTop: '15px' }}
+                             >
+                                 ANALYZE PHOTO 🚀
+                             </button>
+                         </div>
+                     )}
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
                         {inventory.length === 0 && (
