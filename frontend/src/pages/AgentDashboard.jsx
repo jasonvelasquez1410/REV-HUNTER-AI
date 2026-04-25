@@ -1141,6 +1141,7 @@ export default function AgentDashboard() {
     const fileInputRef = useRef(null);
     const inventoryInputRef = useRef(null);
     const missionControlRef = useRef(null);
+    const leadsListRef = useRef(null);
 
     const isStandalone = agent?.edition === 'standalone';
 
@@ -1548,12 +1549,16 @@ export default function AgentDashboard() {
             {/* Stats Bar */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px', padding: '25px 5%' }}>
                 {[
-                    { icon: <Users size={24} />, label: 'My Leads', value: leads.length, color: '#6c5ce7' },
-                    { icon: <Star size={24} />, label: 'Hot Leads', value: hotLeads.length, color: '#D92027' },
-                    { icon: <Zap size={24} />, label: 'AI Nudges', value: totalFollowUps, color: '#fdcb6e' },
-                    { icon: <TrendingUp size={24} />, label: 'Close Rate', value: leads.length > 0 ? Math.round((hotLeads.length / leads.length) * 100) + '%' : '0%', color: '#00b894' }
+                    { icon: <Users size={24} />, label: 'My Leads', value: leads.length, color: '#6c5ce7', action: () => { setLeadFilter('all'); setActiveTab('leads'); leadsListRef.current?.scrollIntoView({ behavior: 'smooth' }); } },
+                    { icon: <Star size={24} />, label: 'Hot Leads', value: (leads.filter(l => (l.quality_score || 0) >= 80)).length, color: '#D92027', action: () => { setLeadFilter('all'); setActiveTab('leads'); leadsListRef.current?.scrollIntoView({ behavior: 'smooth' }); } },
+                    { icon: <Zap size={24} />, label: 'AI Nudges', value: leads.reduce((acc, l) => acc + (l.follow_up_streak || 0), 0), color: '#fdcb6e' },
+                    { icon: <TrendingUp size={24} />, label: 'Close Rate', value: leads.length > 0 ? Math.round(((leads.filter(l => (l.quality_score || 0) >= 80)).length / leads.length) * 100) + '%' : '0%', color: '#00b894' }
                 ].map((stat, i) => (
-                    <div key={i} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '25px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+                    <div 
+                        key={i} 
+                        onClick={() => { if(stat.action) { stat.action(); vibrate(40); } }}
+                        style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '24px', padding: '25px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', cursor: stat.action ? 'pointer' : 'default' }}
+                    >
                         <div style={{ color: stat.color, marginBottom: '12px' }}>{stat.icon}</div>
                         <div style={{ fontSize: '2.2rem', fontWeight: '900', color: 'white', lineHeight: '1' }}>{stat.value}</div>
                         <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', marginTop: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>{stat.label}</div>
@@ -1764,7 +1769,7 @@ export default function AgentDashboard() {
                             const wLimit = filtered.filter(l => (l.quality_score || 0) >= 50 && (l.quality_score || 0) < 80);
 
                             return (
-                                <>
+                                <div ref={leadsListRef}>
                                     {hLimit.length > 0 && (
                                         <div>
                                             <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#FF4B2B', marginBottom: '12px', letterSpacing: '2px' }}>🔥 HOT LEADS ({hLimit.length})</div>
@@ -1844,7 +1849,7 @@ export default function AgentDashboard() {
                                             ))}
                                         </div>
                                     )}
-                                </>
+                                </div>
                             );
                         })()}
                     </>
