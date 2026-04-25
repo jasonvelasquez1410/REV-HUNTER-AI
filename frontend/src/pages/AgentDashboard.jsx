@@ -810,7 +810,7 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                                     </div>
                                 </div>
                                 <button 
-                                    onClick={() => { setActiveTab('marketing'); setMarketingSubView('inventory'); }}
+                                    onClick={() => { setMarketingSubView('inventory'); }}
                                     style={{ width: '100%', padding: '20px', background: 'white', color: '#1B1B1B', border: 'none', borderRadius: '18px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }}
                                 >
                                     OPEN SYNC ENGINE 📥
