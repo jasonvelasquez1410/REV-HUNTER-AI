@@ -1210,33 +1210,63 @@ export default function AgentDashboard() {
                 const wb = XLSX.read(bstr, { type: 'binary' });
                 const wsname = wb.SheetNames[0];
                 const ws = wb.Sheets[wsname];
-                const data = XLSX.utils.sheet_to_json(ws);
-                
-                const mappedLeads = data.map((item, index) => {
-                    // Smart Name Extraction
-                    const firstName = item['First Name'] || item['firstname'] || item['First'] || '';
-                    const lastName = item['Last Name'] || item['lastname'] || item['Last'] || '';
-                    const fullName = item.Name || item.name || item['Full Name'] || item['Customer'] || item['Customer Name'] || item['Lead Name'] || '';
-                    const finalName = fullName || (firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || 'New Lead');
+                const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+                if (rows.length < 1) return;
 
-                    // Smart Car Extraction
-                    const carInt = item.Car || item.car || item['Vehicle Interest'] || item['Vehicle'] || item['Model'] || item['Interested In'] || 'Browsing';
+                // Detect if first row is headers or data
+                const firstRow = rows[0];
+                const isHeaderRow = firstRow.some(cell => 
+                    typeof cell === 'string' && 
+                    ['name', 'phone', 'customer', 'contact', 'vehicle', 'email'].some(k => cell.toLowerCase().includes(k))
+                );
+
+                const dataRows = isHeaderRow ? rows.slice(1) : rows;
+                const headers = isHeaderRow ? firstRow : [];
+
+                const mappedLeads = dataRows.map((row, index) => {
+                    let lead = {};
                     
-                    // Smart Score Extraction
-                    const score = Number(item.Score || item.score || item['Quality Score'] || item['Quality'] || 85);
+                    if (isHeaderRow) {
+                        // Keyword-based mapping
+                        const getVal = (keys) => {
+                            const idx = headers.findIndex(h => h && keys.some(k => String(h).toLowerCase().includes(k.toLowerCase())));
+                            return idx !== -1 ? row[idx] : null;
+                        };
+
+                        const firstName = getVal(['First Name', 'firstname']) || '';
+                        const lastName = getVal(['Last Name', 'lastname']) || '';
+                        const fullName = getVal(['Name', 'Full Name', 'Customer', 'Lead Name']);
+                        
+                        lead.name = fullName || (firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || 'New Lead');
+                        lead.phone = String(getVal(['Phone', 'Mobile', 'Contact', 'Cell']) || '');
+                        lead.email = getVal(['Email', 'E-mail']) || '';
+                        lead.car = getVal(['Car', 'Vehicle', 'Model', 'Interested']) || 'Browsing';
+                        lead.quality_score = Number(getVal(['Score', 'Quality']) || 85);
+                        lead.notes = getVal(['Inquiry', 'Notes', 'Message', 'Comment']) || '';
+                    } else {
+                        // Positional Mapping (Optimized for Revenue Radar / DealerSocket exports)
+                        // Based on: [ID, Full Name, First, Last, Source, Note, Year, Make, Model, ..., Email, ..., Phone]
+                        lead.name = row[1] || (row[2] && row[3] ? `${row[2]} ${row[3]}` : 'New Lead');
+                        lead.phone = String(row[18] || row[17] || '');
+                        lead.email = row[14] || '';
+                        lead.car = (row[6] && row[7] && row[8]) ? `${row[6]} ${row[7]} ${row[8]}` : (row[8] || 'Browsing');
+                        lead.notes = row[5] || '';
+                        lead.quality_score = 85;
+                        lead.assigned_agent = row[12] || agent.name;
+                    }
 
                     return {
                         id: `imported-${Date.now()}-${index}`,
-                        name: finalName,
-                        phone: String(item.Phone || item.phone || item['Phone Number'] || item['Mobile'] || item['Contact'] || ''),
-                        email: item.Email || item.email || item['E-mail'] || '',
-                        car: carInt,
-                        quality_score: score,
-                        status: score >= 80 ? 'Hot' : 'Warm',
+                        name: lead.name,
+                        phone: lead.phone,
+                        email: lead.email,
+                        car: lead.car,
+                        quality_score: lead.quality_score,
+                        status: lead.quality_score >= 80 ? 'Hot' : 'Warm',
                         source: 'Imported',
-                        notes: item.Notes || item.notes || item['Inquiry'] || item['Message'] || '',
+                        notes: lead.notes,
                         last_action_time: 'Ready to Hunt',
-                        assigned_agent: agent.name
+                        assigned_agent: lead.assigned_agent || agent.name
                     };
                 });
                 
