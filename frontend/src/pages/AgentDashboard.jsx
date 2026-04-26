@@ -1101,12 +1101,18 @@ function EngagementHistoryModal({ lead, onClose, onDial, onOrganize }) {
                 </div>
             )}
 export default function AgentDashboard() {
+    const [revHunterSearch, setRevHunterSearch] = useState('');
     const { tenant } = useTenant();
     const apiUrl = import.meta.env.VITE_API_URL || '/api';
     const [agent, setAgent] = useState(() => {
         const saved = localStorage.getItem('revhunter_agent');
         return saved ? JSON.parse(saved) : null;
     });
+
+    // Global bridge for stability
+    useEffect(() => {
+        if (typeof window !== 'undefined') window.revHunterSearch = revHunterSearch;
+    }, [revHunterSearch]);
     const [leads, setLeads] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeView, setActiveView] = useState('leads');
@@ -1137,12 +1143,6 @@ export default function AgentDashboard() {
     const [isGeneratingListing, setIsGeneratingListing] = useState(false);
     const [organizedListing, setOrganizedListing] = useState(null);
     const [copyStatus, setCopyStatus] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    
-    // Ensure searchTerm is at least defined for closure stability
-    useEffect(() => {
-        if (typeof window !== 'undefined') window._searchTerm = searchTerm;
-    }, [searchTerm]);
 
     const handleOrganize = async (car) => {
         setPostingCar(car);
@@ -1178,7 +1178,7 @@ export default function AgentDashboard() {
         vibrate(40);
         setActiveTab('leads');
         setLeadFilter(filter);
-        setSearchTerm(''); // Clear search to ensure leads are found
+        setRevHunterSearch(''); // Clear search to ensure leads are found
         
         // Use a longer timeout to ensure components are mounted
         setTimeout(() => {
@@ -1728,15 +1728,15 @@ export default function AgentDashboard() {
                             <input 
                                 type="text" 
                                 placeholder="Search by name, phone, or car..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                value={revHunterSearch}
+                                onChange={(e) => setRevHunterSearch(e.target.value)}
                                 style={{ 
                                     width: '100%', padding: '12px 15px 12px 42px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'white', fontSize: '0.85rem', boxSizing: 'border-box'
                                 }}
                             />
-                            {searchTerm && (
+                            {revHunterSearch && (
                                 <button 
-                                    onClick={() => setSearchTerm('')}
+                                    onClick={() => setRevHunterSearch('')}
                                     style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '1rem' }}
                                 >
                                     ✕
@@ -1845,15 +1845,16 @@ export default function AgentDashboard() {
 
                         {/* Filtered Logic */}
                         {(() => {
+                             const localTerm = (typeof revHunterSearch !== 'undefined' ? revHunterSearch : (window.revHunterSearch || ''));
                              const filtered = leads.filter(l => {
                                  const matchesFilter = leadFilter === 'all' || 
                                                      (leadFilter === 'ai' && l.source !== 'Imported' && l.source !== 'File') ||
                                                      (leadFilter === 'imported' && (l.source === 'Imported' || l.source === 'File'));
                                  
-                                 const matchesSearch = !(typeof searchTerm !== 'undefined' ? searchTerm : '') || 
-                                                     (l.name && l.name.toLowerCase().includes((searchTerm || '').toLowerCase())) ||
-                                                     (l.phone && l.phone.includes(searchTerm || '')) ||
-                                                     (l.car && l.car.toLowerCase().includes((searchTerm || '').toLowerCase()));
+                                 const matchesSearch = !localTerm || 
+                                                     (l.name && l.name.toLowerCase().includes(localTerm.toLowerCase())) ||
+                                                     (l.phone && l.phone.includes(localTerm)) ||
+                                                     (l.car && l.car.toLowerCase().includes(localTerm.toLowerCase()));
                                  
                                  return matchesFilter && matchesSearch;
                              });
