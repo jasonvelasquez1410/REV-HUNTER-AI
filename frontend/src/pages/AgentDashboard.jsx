@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Download, Target, Bell, LogOut, FileSpreadsheet, CheckCircle, AlertCircle, Share2, Settings, LayoutDashboard, Image as ImageIcon, Send, MessageSquare, Mic, Link, Camera, Building2, HelpCircle } from 'lucide-react';
+import { Zap, Phone, TrendingUp, Users, Clock, Star, Upload, Download, Target, Bell, LogOut, FileSpreadsheet, CheckCircle, AlertCircle, Share2, Settings, LayoutDashboard, Image as ImageIcon, Send, MessageSquare, Mic, Link, Camera, Building2, HelpCircle, Search } from 'lucide-react';
 import { useTenant } from '../context/TenantContext';
 import * as XLSX from 'xlsx';
 import ROIDashboard from '../components/ROIDashboard';
@@ -1138,6 +1138,11 @@ export default function AgentDashboard() {
     const [organizedListing, setOrganizedListing] = useState(null);
     const [copyStatus, setCopyStatus] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    
+    // Ensure searchTerm is at least defined for closure stability
+    useEffect(() => {
+        if (typeof window !== 'undefined') window._searchTerm = searchTerm;
+    }, [searchTerm]);
 
     const handleOrganize = async (car) => {
         setPostingCar(car);
@@ -1845,10 +1850,10 @@ export default function AgentDashboard() {
                                                      (leadFilter === 'ai' && l.source !== 'Imported' && l.source !== 'File') ||
                                                      (leadFilter === 'imported' && (l.source === 'Imported' || l.source === 'File'));
                                  
-                                 const matchesSearch = !searchTerm || 
-                                                     (l.name && l.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                                                     (l.phone && l.phone.includes(searchTerm)) ||
-                                                     (l.car && l.car.toLowerCase().includes(searchTerm.toLowerCase()));
+                                 const matchesSearch = !(typeof searchTerm !== 'undefined' ? searchTerm : '') || 
+                                                     (l.name && l.name.toLowerCase().includes((searchTerm || '').toLowerCase())) ||
+                                                     (l.phone && l.phone.includes(searchTerm || '')) ||
+                                                     (l.car && l.car.toLowerCase().includes((searchTerm || '').toLowerCase()));
                                  
                                  return matchesFilter && matchesSearch;
                              });
