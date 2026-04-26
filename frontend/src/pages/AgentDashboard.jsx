@@ -1212,17 +1212,33 @@ export default function AgentDashboard() {
                 const ws = wb.Sheets[wsname];
                 const data = XLSX.utils.sheet_to_json(ws);
                 
-                const mappedLeads = data.map((item, index) => ({
-                    id: `imported-${Date.now()}-${index}`,
-                    name: item.Name || item.name || item['Full Name'] || 'New Lead',
-                    phone: String(item.Phone || item.phone || item['Phone Number'] || ''),
-                    car: item.Car || item.car || item['Vehicle Interest'] || 'Discovery',
-                    quality_score: 85,
-                    status: 'Hot',
-                    source: 'Imported',
-                    last_action_time: 'Ready to Hunt',
-                    assigned_agent: agent.name
-                }));
+                const mappedLeads = data.map((item, index) => {
+                    // Smart Name Extraction
+                    const firstName = item['First Name'] || item['firstname'] || item['First'] || '';
+                    const lastName = item['Last Name'] || item['lastname'] || item['Last'] || '';
+                    const fullName = item.Name || item.name || item['Full Name'] || item['Customer'] || item['Customer Name'] || item['Lead Name'] || '';
+                    const finalName = fullName || (firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || 'New Lead');
+
+                    // Smart Car Extraction
+                    const carInt = item.Car || item.car || item['Vehicle Interest'] || item['Vehicle'] || item['Model'] || item['Interested In'] || 'Browsing';
+                    
+                    // Smart Score Extraction
+                    const score = Number(item.Score || item.score || item['Quality Score'] || item['Quality'] || 85);
+
+                    return {
+                        id: `imported-${Date.now()}-${index}`,
+                        name: finalName,
+                        phone: String(item.Phone || item.phone || item['Phone Number'] || item['Mobile'] || item['Contact'] || ''),
+                        email: item.Email || item.email || item['E-mail'] || '',
+                        car: carInt,
+                        quality_score: score,
+                        status: score >= 80 ? 'Hot' : 'Warm',
+                        source: 'Imported',
+                        notes: item.Notes || item.notes || item['Inquiry'] || item['Message'] || '',
+                        last_action_time: 'Ready to Hunt',
+                        assigned_agent: agent.name
+                    };
+                });
                 
                 setImportedLeads(mappedLeads);
                 setShowImportPreview(true);
@@ -1881,8 +1897,8 @@ export default function AgentDashboard() {
                                                             <div>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                                     <div style={{ fontWeight: '800', fontSize: '1.2rem', color: 'white', letterSpacing: '-0.5px' }}>{lead.name}</div>
-                                                                    <span style={{ fontSize: '0.55rem', padding: '2px 6px', borderRadius: '4px', background: (lead.source === 'Imported' || lead.source === 'File') ? '#6c5ce7' : '#00b894', color: 'white', fontWeight: '900' }}>
-                                                                        {(lead.source === 'Imported' || lead.source === 'File') ? '📥 IMPORT' : '✨ ELLIOT'}
+                                                                    <span style={{ fontSize: '0.55rem', padding: '2px 6px', borderRadius: '4px', background: (lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? '#6c5ce7' : '#00b894', color: 'white', fontWeight: '900' }}>
+                                                                        {(lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? '📥 IMPORT' : '✨ ELLIOT'}
                                                                     </span>
                                                                 </div>
                                                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '4px' }}>
@@ -1938,8 +1954,8 @@ export default function AgentDashboard() {
                                                             <div>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                                                     <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{lead.name}</div>
-                                                                    <span style={{ fontSize: '0.45rem', padding: '1px 4px', borderRadius: '3px', background: (lead.source === 'Imported' || lead.source === 'File') ? 'rgba(108,92,231,0.2)' : 'rgba(0,184,148,0.2)', color: (lead.source === 'Imported' || lead.source === 'File') ? '#a29bfe' : '#00b894', fontWeight: '900' }}>
-                                                                        {(lead.source === 'Imported' || lead.source === 'File') ? 'IMPORT' : 'ELLIOT'}
+                                                                    <span style={{ fontSize: '0.45rem', padding: '1px 4px', borderRadius: '3px', background: (lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? 'rgba(108,92,231,0.2)' : 'rgba(0,184,148,0.2)', color: (lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? '#a29bfe' : '#00b894', fontWeight: '900' }}>
+                                                                        {(lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? 'IMPORT' : 'ELLIOT'}
                                                                     </span>
                                                                 </div>
                                                                 <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>
