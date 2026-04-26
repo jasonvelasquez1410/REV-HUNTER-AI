@@ -1137,6 +1137,7 @@ export default function AgentDashboard() {
     const [isGeneratingListing, setIsGeneratingListing] = useState(false);
     const [organizedListing, setOrganizedListing] = useState(null);
     const [copyStatus, setCopyStatus] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const handleOrganize = async (car) => {
         setPostingCar(car);
@@ -1714,11 +1715,36 @@ export default function AgentDashboard() {
                                     {f.label}
                                 </button>
                             ))}
+                        </div>
+
+                        {/* Search Bar */}
+                        <div style={{ position: 'relative', marginBottom: '15px' }}>
+                            <Search style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)' }} size={16} />
+                            <input 
+                                type="text" 
+                                placeholder="Search by name, phone, or car..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{ 
+                                    width: '100%', padding: '12px 15px 12px 42px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'white', fontSize: '0.85rem', boxSizing: 'border-box'
+                                }}
+                            />
+                            {searchTerm && (
+                                <button 
+                                    onClick={() => setSearchTerm('')}
+                                    style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '1rem' }}
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
                             <button
                                 onClick={() => { if(confirm('⚠️ DELETE ALL LEADS? This cannot be undone.')) setLeads([]); }}
-                                style={{ padding: '8px 15px', borderRadius: '10px', fontSize: '0.65rem', fontWeight: '900', border: '1px solid rgba(217,32,39,0.3)', background: 'rgba(217,32,39,0.05)', color: '#D92027', cursor: 'pointer', marginLeft: 'auto' }}
+                                style={{ padding: '8px 15px', borderRadius: '10px', fontSize: '0.65rem', fontWeight: '900', border: '1px solid rgba(217,32,39,0.3)', background: 'rgba(217,32,39,0.05)', color: '#D92027', cursor: 'pointer' }}
                             >
-                                CLEAR ALL
+                                CLEAR ALL PIPELINE
                             </button>
                         </div>
 
