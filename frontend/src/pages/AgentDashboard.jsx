@@ -1287,9 +1287,12 @@ export default function AgentDashboard() {
                 leads: importedLeads.map(l => ({
                     name: l.name,
                     phone: l.phone,
+                    email: l.email || '',
                     car: l.car,
                     assigned_agent: agent.name,
-                    source: 'Imported File'
+                    source: 'Imported File',
+                    quality_score: l.quality_score || 85,
+                    notes: l.notes || ''
                 }))
             };
 
