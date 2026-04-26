@@ -406,6 +406,7 @@ class ImportedLead(BaseModel):
     assigned_agent: Optional[str] = None
     car: Optional[str] = None
     notes: Optional[str] = None
+    quality_score: Optional[int] = 85
     source: Optional[str] = "CRM Import"
 
 class ImportLeadsPayload(BaseModel):
@@ -430,11 +431,12 @@ async def import_leads_frontend(payload: ImportLeadsPayload, tenant_id: str = De
                         name=l.name,
                         phone=l.phone,
                         email=l.email,
-                        status="Discovery",
+                        status="Hot" if (l.quality_score or 85) >= 80 else "Qualified",
                         source=l.source,
                         is_manual_assignment=True if l.assigned_agent else False,
                         assigned_agent=l.assigned_agent,
-                        conversation_summary=f"Imported. Car Int: {l.car or 'None'}. Notes: {l.notes or 'None'}",
+                        quality_score=l.quality_score or 85,
+                        conversation_summary=f"Mission Intelligence: Interested in {l.car or 'General Inventory'}. Note: {l.notes or 'None provided.'}",
                         last_action_time="Just Imported"
                     )
                     session.add(lead)
@@ -445,6 +447,9 @@ async def import_leads_frontend(payload: ImportLeadsPayload, tenant_id: str = De
                     if l.assigned_agent: 
                         lead.assigned_agent = l.assigned_agent
                         lead.is_manual_assignment = True
+                    if l.quality_score: lead.quality_score = l.quality_score
+                    if l.notes or l.car:
+                        lead.conversation_summary = f"Mission Update: Interested in {l.car or 'General Inventory'}. Note: {l.notes or 'N/A'}"
                     lead.source = l.source
                 count += 1
             session.commit()
