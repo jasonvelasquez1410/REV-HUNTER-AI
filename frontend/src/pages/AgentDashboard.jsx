@@ -1907,6 +1907,11 @@ export default function AgentDashboard() {
                                                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '4px' }}>
                                                                     <div style={{ fontSize: '0.85rem', color: '#00b894', fontWeight: 'bold' }}>📞 {lead.phone}</div>
                                                                     <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>🚗 {lead.car || 'Interested Purchaser'}</div>
+                                                                    {lead.notes && (
+                                                                        <div style={{ width: '100%', fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', marginTop: '8px', padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', borderLeft: '2px solid #00b894' }}>
+                                                                            📝 "{lead.notes.length > 80 ? lead.notes.substring(0, 80) + '...' : lead.notes}"
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1961,8 +1966,14 @@ export default function AgentDashboard() {
                                                                         {(lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? 'IMPORT' : 'ELLIOT'}
                                                                     </span>
                                                                 </div>
-                                                                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>
-                                                                    <span style={{ color: '#00b894' }}>{lead.phone}</span> • {lead.car || 'Browsing'} • Score: {lead.quality_score}%
+                                                                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>
+                                                                    <span style={{ color: '#00b894', fontWeight: 'bold' }}>📞 {lead.phone}</span> • 🚗 {lead.car || 'Browsing'}
+                                                                </div>
+                                                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+                                                                    <div style={{ fontSize: '0.55rem', background: 'rgba(253,203,110,0.1)', color: '#fdcb6e', padding: '2px 6px', borderRadius: '4px', fontWeight: '900' }}>
+                                                                        QLT: {lead.quality_score}%
+                                                                    </div>
+                                                                    {lead.notes && <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>💬 Has inquiry notes</div>}
                                                                 </div>
                                                             </div>
                                                         </div>
