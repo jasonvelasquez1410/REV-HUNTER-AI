@@ -883,7 +883,7 @@ function EngagementHistoryModal({ lead, onClose, onDial, onOrganize }) {
 
     return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 40000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
-            <div style={{ width: '100%', maxWidth: '440px', background: '#111', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', height: '85vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+            <div style={{ width: '100%', maxWidth: '440px', background: '#111', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', maxHeight: '90vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
                 {/* Header */}
                 <div style={{ padding: '25px', background: 'linear-gradient(135deg, #1A1A2E 0%, #111 100%)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
@@ -892,6 +892,8 @@ function EngagementHistoryModal({ lead, onClose, onDial, onOrganize }) {
                     </div>
                     <button onClick={onClose} style={{ padding: '10px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer' }}>✕</button>
                 </div>
+                
+                <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '30px' }} className="custom-scroll">
 
                 {/* Lead Profile Cards (Mobile Friendly) */}
                 <div style={{ padding: '15px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -926,7 +928,7 @@ function EngagementHistoryModal({ lead, onClose, onDial, onOrganize }) {
                     {lead.car && lead.car !== 'Discovery' && (
                         <div style={{ background: 'linear-gradient(135deg, rgba(255, 171, 0, 0.1), rgba(255, 107, 0, 0.1))', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255, 171, 0, 0.3)' }}>
                             <div style={{ fontSize: '0.6rem', color: '#FFAB00', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                                <Zap size={10} fill="#FFAB00" /> ELLIOT MARKETING TIP
+                                <Zap size={10} fill="#FFAB00" /> {(agent?.assistant_name || "AI").toUpperCase()} MARKETING TIP
                             </div>
                             <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', margin: '0 0 10px 0', lineHeight: '1.4' }}>
                                 Since this lead is interested in a <b>{lead.car}</b>, posting one to Marketplace now will attract similar high-intent buyers.
@@ -946,7 +948,7 @@ function EngagementHistoryModal({ lead, onClose, onDial, onOrganize }) {
                     )}
 
                     <div style={{ background: 'rgba(255, 75, 43, 0.05)', padding: '20px', borderRadius: '24px', border: '1px dashed rgba(255, 75, 43, 0.3)' }}>
-                        <div style={{ fontSize: '0.65rem', color: '#FF4B2B', fontWeight: '900', letterSpacing: '2px', marginBottom: '12px' }}>🎯 CALL OBJECTIVE FOR ELLIOT</div>
+                        <div style={{ fontSize: '0.65rem', color: '#FF4B2B', fontWeight: '900', letterSpacing: '2px', marginBottom: '12px' }}>🎯 CALL OBJECTIVE FOR {(agent?.assistant_name || "AI").toUpperCase()}</div>
                         
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
                             {[
@@ -982,7 +984,7 @@ function EngagementHistoryModal({ lead, onClose, onDial, onOrganize }) {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <Phone size={20} /> EXECUTE {callObjective?.toUpperCase() || 'AI CALL'}
                             </div>
-                            <span style={{ fontSize: '0.55rem', opacity: 0.7, fontWeight: '700' }}>RevHunter AI will dial now</span>
+                            <span style={{ fontSize: '0.55rem', opacity: 0.7, fontWeight: '700' }}>{(agent?.assistant_name || "AI")} will dial now</span>
                         </button>
                     </div>
                 </div>
@@ -1180,14 +1182,20 @@ export default function AgentDashboard() {
                     } else {
                         // Positional Mapping (Optimized for Revenue Radar / DealerSocket exports)
                         // Based on: [ID, Full Name, First, Last, Source, Note, Year, Make, Model, ..., Email, ..., Phone]
-                        lead.name = row[1] || (row[2] && row[3] ? `${row[2]} ${row[3]}` : 'New Lead');
+                        lead.name = row[1] || (row[2] && row[3] ? `${row[2]} ${row[3]}` : '');
                         lead.phone = String(row[18] || row[17] || '');
                         lead.email = row[14] || '';
-                        lead.car = (row[6] && row[7] && row[8]) ? `${row[6]} ${row[7]} ${row[8]}` : (row[8] || 'Browsing');
                         lead.notes = row[5] || '';
+                        lead.car = (row[6] && row[7] && row[8]) ? `${row[6]} ${row[7]} ${row[8]}` : (row[8] || 'Browsing');
                         lead.quality_score = 85;
                         lead.assigned_agent = row[12] || agent.name;
                     }
+
+                    // SKIP HEADERS & BLANKS
+                    if (!lead.phone || lead.name.toLowerCase().includes('equity') || lead.name.toLowerCase().includes('minimum') || lead.name === 'Full Name' || lead.name === 'Customer') {
+                        return null; 
+                    }
+                    if (!lead.name) lead.name = "Prospect Lead";
 
                     return {
                         id: `imported-${Date.now()}-${index}`,
