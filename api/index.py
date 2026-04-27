@@ -412,6 +412,18 @@ class ImportedLead(BaseModel):
 class ImportLeadsPayload(BaseModel):
     leads: List[ImportedLead]
 
+@api_router.delete("/leads/clear")
+async def clear_leads(tenant_id: str = Depends(get_tenant_id)):
+    """Wipes all leads for the current tenant. Use with caution!"""
+    try:
+        from .storage import LeadTable
+        with db.session() as session:
+            session.query(LeadTable).filter(LeadTable.tenant_id == tenant_id).delete()
+            session.commit()
+        return {"status": "success", "message": "Pipeline wiped clean."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.post("/import/leads")
 async def import_leads_frontend(payload: ImportLeadsPayload, tenant_id: str = Depends(get_tenant_id)):
     try:
@@ -419,10 +431,11 @@ async def import_leads_frontend(payload: ImportLeadsPayload, tenant_id: str = De
         count = 0
         with db.session() as session:
             for l in payload.leads:
-                # Basic get or create logic manually so we can set extra fields efficiently
+                # Duplicate Shield: Check Name + Phone fingerprint
                 lead = session.query(LeadTable).filter(
                     LeadTable.tenant_id == tenant_id,
-                    LeadTable.name == l.name
+                    LeadTable.name == l.name,
+                    LeadTable.phone == (l.phone if l.phone else LeadTable.phone)
                 ).first()
                 
                 if not lead:

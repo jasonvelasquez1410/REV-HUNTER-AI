@@ -1479,6 +1479,24 @@ export default function AgentDashboard() {
             console.error(err);
         }
     };
+    
+    const handleClearLeads = async () => {
+        if (!window.confirm("⚠️ DANGER: This will permanently delete ALL leads in your current pipeline. This cannot be undone. Are you sure?")) return;
+        
+        try {
+            const res = await fetch(`${apiUrl}/leads/clear`, {
+                method: 'DELETE',
+                headers: { 'x-tenant-id': tenant?.id || 'filcan' }
+            });
+            if (res.ok) {
+                setLeads([]);
+                alert("🗑️ PIPELINE WIPED: Your database is now fresh and ready for a clean import.");
+                vibrate(150);
+            }
+        } catch (err) {
+            alert("Clear failed. Check connection.");
+        }
+    };
 
     const handleNudge = (leadId) => {
         setNudging(leadId);
@@ -2247,6 +2265,13 @@ export default function AgentDashboard() {
                                             </div>
                                         )}
                                     </div>
+
+                                    <button 
+                                        onClick={handleClearLeads}
+                                        style={{ width: '100%', padding: '15px', background: 'rgba(217,32,39,0.05)', border: '1px dashed #D92027', borderRadius: '16px', color: '#D92027', fontWeight: 'bold', fontSize: '0.7rem', cursor: 'pointer', marginTop: '10px' }}
+                                    >
+                                        🗑️ WIPE CURRENT PIPELINE
+                                    </button>
                                 </div>
                             </div>
 
