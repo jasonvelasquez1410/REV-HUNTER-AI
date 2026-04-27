@@ -871,7 +871,7 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
 }
 
 // ── ENGAGEMENT HISTORY MODAL ──────────────────────
-function EngagementHistoryModal({ lead, onClose, onDial, onOrganize }) {
+function EngagementHistoryModal({ lead, onClose, onDial, onOrganize, agent, inventory }) {
     const [callObjective, setCallObjective] = useState('discover');
     if (!lead) return null;
     let history = [];
@@ -2371,6 +2371,8 @@ export default function AgentDashboard() {
                         onClose={() => setSelectedDNA(null)}
                         onDial={handleAutoDial}
                         onOrganize={handleOrganize}
+                        agent={agent}
+                        inventory={inventory}
                     />
             )}
 
