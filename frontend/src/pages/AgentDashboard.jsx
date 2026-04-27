@@ -803,98 +803,32 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                             )}
                         </div>
 
-                        {/* STEP 2: INVENTORY SYNC (NOW BELOW FACEBOOK) */}
-                        {inventory.length === 0 ? (
-                            <div style={{ padding: '30px', background: 'linear-gradient(135deg, rgba(255, 171, 0, 0.1), rgba(255, 131, 0, 0.05))', borderRadius: '28px', border: '1px solid rgba(255, 171, 0, 0.2)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-                                    <div>
-                                        <div style={{ fontSize: '0.7rem', color: '#FFAB00', fontWeight: '900', letterSpacing: '2px' }}>ACTION REQUIRED</div>
-                                        <h3 style={{ margin: '5px 0', fontSize: '1.4rem', color: 'white', fontWeight: '900' }}>2. Load Your Inventory</h3>
-                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', lineHeight: '1.4' }}>Import your units from Excel or sync directly from your website URL.</p>
-                                    </div>
-                                    <div style={{ padding: '12px', background: 'rgba(255,171,0,0.1)', borderRadius: '15px', color: '#FFAB00' }}>
-                                        <Download size={24} />
-                                    </div>
-                                </div>
-                                <button 
-                                    onClick={() => { setActiveTab('marketing'); setMarketingSubView('inventory'); }}
-                                    style={{ width: '100%', padding: '20px', background: 'white', color: '#1B1B1B', border: 'none', borderRadius: '18px', fontWeight: '900', fontSize: '1rem', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }}
-                                >
-                                    OPEN SYNC ENGINE 📥
-                                </button>
-                            </div>
-                        ) : (
-                            <div 
-                                onClick={() => { setActiveTab('marketing'); setMarketingSubView('inventory'); }}
-                                style={{ padding: '20px 25px', background: 'rgba(0,184,148,0.08)', borderRadius: '24px', border: '1px solid rgba(0,184,148,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-                            >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#00b894', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                                        <CheckCircle size={18} />
-                                    </div>
-                                    <div>
-                                        <div style={{ fontSize: '0.9rem', fontWeight: '900', color: 'white' }}>Inventory Synchronized</div>
-                                        <div style={{ fontSize: '0.65rem', color: '#00b894', fontWeight: 'bold' }}>{inventory.length} units ready for Marketplace</div>
-                                    </div>
-                                </div>
-                                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>MANAGE 🔄</div>
-                            </div>
-                        )}
-
-                        {/* MISSION COMMAND - LEAD QUICK SELECT */}
+                        {/* MISSION COMMAND - LEAD QUICK SELECT (Integrated closely with Launcher) */}
                         <div style={{ padding: '30px', background: 'rgba(255,255,255,0.02)', borderRadius: '28px', border: '1px solid rgba(255,255,255,0.06)', marginTop: '20px' }}>
                             <div style={{ fontSize: '0.7rem', color: '#00b894', fontWeight: '900', letterSpacing: '2px', marginBottom: '15px' }}>MISSION COMMAND</div>
-                            <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem', color: 'white', fontWeight: '900' }}>Manual AI Call Trigger</h3>
-                            <p style={{ margin: '0 0 20px 0', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>Select a lead from your pipeline to have the AI call them immediately.</p>
-                            <div style={{ position: 'relative', marginBottom: '15px' }}>
-                                <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)' }} size={14} />
-                                <input 
-                                    type="text" 
-                                    placeholder="Quick search pipeline..."
-                                    style={{ width: '100%', padding: '10px 15px 10px 35px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: 'white', fontSize: '0.75rem', boxSizing: 'border-box' }}
-                                    onChange={(e) => {
-                                        const term = e.target.value.toLowerCase();
-                                        const items = document.querySelectorAll('.mission-lead-item');
-                                        items.forEach(item => {
-                                            const text = item.innerText.toLowerCase();
-                                            item.style.display = text.includes(term) ? 'flex' : 'none';
-                                        });
-                                    }}
-                                />
-                            </div>
+                            <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem', color: 'white', fontWeight: '900' }}>Active Launcher Pipeline</h3>
+                            <p style={{ margin: '0 0 20px 0', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>AI is monitoring these leads for Marketplace responses. Tap to trigger a manual check.</p>
                             
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '450px', overflowY: 'auto', paddingRight: '5px' }} className="custom-scroll">
-                                {leads.length > 0 ? leads.map(l => (
-                                    <div key={l.id} className="mission-lead-item" style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)', animation: 'slideUp 0.3s ease' }}>
-                                        <div onClick={() => { setSelectedDNA(l); vibrate(40); }} style={{ cursor: 'pointer', flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontWeight: '900', fontSize: '0.9rem', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.name || 'Anonymous Lead'}</div>
-                                            <div style={{ display: 'flex', gap: '10px', marginTop: '4px', alignItems: 'center' }}>
-                                                <div style={{ fontSize: '0.7rem', color: '#00b894', fontWeight: 'bold' }}>📞 {l.phone || 'No Contact'}</div>
-                                                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>🚗 {l.car || 'General Interest'}</div>
-                                            </div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
-                                                <div style={{ fontSize: '0.55rem', background: (l.quality_score || 0) >= 80 ? 'rgba(255, 75, 43, 0.1)' : 'rgba(255, 255, 255, 0.05)', color: (l.quality_score || 0) >= 80 ? '#FF4B2B' : 'rgba(255,255,255,0.4)', padding: '2px 8px', borderRadius: '6px', fontWeight: '900', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                    QLT: {l.quality_score || 0}%
-                                                </div>
-                                                <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.2)', fontWeight: '700' }}>#{l.id.toString().slice(-4)}</div>
-                                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }} className="custom-scroll">
+                                {leads.length > 0 ? leads.slice(0, 5).map(l => (
+                                    <div key={l.id} className="mission-lead-item" style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div onClick={() => { setSelectedDNA(l); vibrate(40); }} style={{ cursor: 'pointer', flex: 1 }}>
+                                            <div style={{ fontWeight: '900', fontSize: '0.85rem', color: '#fff' }}>{l.name}</div>
+                                            <div style={{ fontSize: '0.65rem', color: '#00b894', fontWeight: 'bold' }}>📡 SYNC ACTIVE</div>
                                         </div>
                                         <button 
                                             onClick={() => { handleAutoDial(l.id); vibrate(60); }}
-                                            style={{ background: 'linear-gradient(135deg, #00b894, #008f72)', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 15px', fontSize: '0.65rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', marginLeft: '15px', boxShadow: '0 5px 15px rgba(0,184,148,0.2)', flexShrink: 0 }}
+                                            style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: 'none', borderRadius: '10px', padding: '8px 12px', fontSize: '0.6rem', fontWeight: '900' }}
                                         >
-                                            AI CALL 📞
+                                            READY
                                         </button>
                                     </div>
                                 )) : (
-                                    <div style={{ padding: '60px 20px', textAlign: 'center', background: 'rgba(0,0,0,0.2)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                                        <div style={{ fontSize: '2rem', marginBottom: '15px', opacity: 0.3 }}>📡</div>
-                                        <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>No Leads in Active Pipeline</div>
-                                        <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)', marginTop: '5px' }}>Import a list or connect FB to start hunting.</div>
-                                    </div>
+                                    <div style={{ padding: '40px 20px', textAlign: 'center', opacity: 0.5 }}>No Active Syncs</div>
                                 )}
                             </div>
                         </div>
+
 
                         {/* GOOGLE SECTION */}
                         <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -1687,28 +1621,8 @@ export default function AgentDashboard() {
                 ))}
             </div>
 
-            {/* Tab Navigation */}
-            <div style={{ display: 'flex', gap: '5px', padding: '0 5%', marginBottom: '20px', overflowX: 'auto', paddingBottom: '5px' }}>
-                {[
-                    { id: 'leads', icon: '🎯', label: 'My Leads' },
-                    { id: 'marketing', icon: '🚀', label: 'Marketplace' },
-                    { id: 'studio', icon: '🎨', label: 'AI Identity' },
-                    { id: 'import', icon: '📥', label: 'Import' }
-                ].map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => { setActiveTab(tab.id); if(tab.id === 'import') fileInputRef.current?.click(); }}
-                        style={{
-                            padding: '10px 18px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap',
-                            background: activeTab === tab.id ? 'rgba(255, 75, 43, 0.2)' : 'rgba(255,255,255,0.03)',
-                            color: activeTab === tab.id ? '#FF4B2B' : 'rgba(255,255,255,0.4)',
-                            border: activeTab === tab.id ? '1px solid rgba(255, 75, 43, 0.3)' : '1px solid rgba(255,255,255,0.05)'
-                        }}
-                    >
-                        {tab.icon} {tab.label}
-                    </button>
-                ))}
-            </div>
+            {/* Tab Navigation REMOVED for Simplicity per User Request */}
+
 
             {/* Content Area */}
             <div style={{ padding: '0 5% 120px 5%' }}>
@@ -2064,26 +1978,75 @@ export default function AgentDashboard() {
                     </>
                 )}
 
-                {activeTab === 'marketing' && (
+                {activeTab === 'inventory' && (
                     <div style={{ animation: 'fadeIn 0.3s ease' }}>
-                         <div style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
-                            <div 
-                                onClick={() => setMarketingSubView('settings')}
-                                style={{ flex: 1, padding: '10px', background: fbSettings.fb_access_token ? 'rgba(0,184,148,0.1)' : 'rgba(255,107,107,0.1)', border: fbSettings.fb_access_token ? '1px solid #00b894' : '1px solid #ff6b6b', borderRadius: '15px', textAlign: 'center', cursor: 'pointer' }}>
-                                <div style={{ fontSize: '0.5rem', fontWeight: '900', color: fbSettings.fb_access_token ? '#00b894' : '#ff6b6b' }}>META AI</div>
-                                <div style={{ fontSize: '0.7rem', fontWeight: '900', color: 'white' }}>{fbSettings.fb_access_token ? "LIVE ✅" : "OFF ❌"}</div>
-                            </div>
-                            <div 
-                                onClick={() => setMarketingSubView('settings')}
-                                style={{ flex: 1, padding: '10px', background: fbSettings.google_sync ? 'rgba(66,133,244,0.1)' : 'rgba(255,255,255,0.03)', border: fbSettings.google_sync ? '1px solid #4285F4' : '1px solid rgba(255,255,255,0.1)', borderRadius: '15px', textAlign: 'center', cursor: 'pointer' }}>
-                                <div style={{ fontSize: '0.5rem', fontWeight: '900', color: fbSettings.google_sync ? '#4285F4' : 'rgba(255,255,255,0.3)' }}>GOOGLE AI</div>
-                                <div style={{ fontSize: '0.7rem', fontWeight: '900', color: 'white' }}>{fbSettings.google_sync ? "LIVE ✅" : "OFF ❌"}</div>
-                            </div>
-                            <div style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '15px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '0.5rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)' }}>PIPELINE</div>
-                                <div style={{ fontSize: '0.7rem', fontWeight: '900', color: 'white' }}>{leads.length} LEADS</div>
+                        <div style={{ background: 'rgba(255, 75, 43, 0.1)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(255, 75, 43, 0.2)', marginBottom: '20px' }}>
+                            <div style={{ fontWeight: '900', color: '#FF4B2B', fontSize: '0.8rem', letterSpacing: '2px', marginBottom: '15px' }}>INVENTORY COMMAND CENTRE</div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                                <button onClick={() => inventoryInputRef.current?.click()} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '15px 5px', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                    <FileSpreadsheet size={20} color="#FFAB00" />
+                                    <span style={{ fontSize: '0.55rem', fontWeight: '900' }}>WEB SYNC</span>
+                                </button>
+                                <button onClick={() => inventoryInputRef.current?.click()} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '15px 5px', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                    <Camera size={20} color="#00b894" />
+                                    <span style={{ fontSize: '0.55rem', fontWeight: '900' }}>PHOTO AD</span>
+                                </button>
+                                <button onClick={() => inventoryInputRef.current?.click()} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '15px 5px', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                    <Building2 size={20} color="#6366f1" />
+                                    <span style={{ fontSize: '0.55rem', fontWeight: '900' }}>DEALER SYNC</span>
+                                </button>
                             </div>
                         </div>
+
+                        {inventory.length === 0 ? (
+                            <div onClick={() => inventoryInputRef.current?.click()} style={{ padding: '60px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '32px', border: '1px dashed rgba(255,255,255,0.1)', cursor: 'pointer' }}>
+                                <div style={{ fontSize: '3rem', marginBottom: '20px' }}>📦</div>
+                                <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem', fontWeight: '900' }}>No Inventory Data</h3>
+                                <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '25px' }}>Tap here to import your stock from Excel/CSV</p>
+                                <button style={{ padding: '15px 30px', background: 'white', color: 'black', border: 'none', borderRadius: '16px', fontWeight: '900' }}>IMPORT NOW</button>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+                                {inventory.map(car => (
+                                    <div key={car.id} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '15px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                        <div style={{ width: '80px', height: '60px', background: '#000', borderRadius: '10px', overflow: 'hidden' }}>
+                                            <img src={car.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        </div>
+                                        <div>
+                                            <div style={{ fontWeight: '900', fontSize: '0.9rem' }}>{car.year} {car.make}</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{car.model} • ${car.price.toLocaleString()}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {activeTab === 'marketing' && (
+                    <div style={{ animation: 'fadeIn 0.3s ease' }}>
+                        <div style={{ background: 'rgba(24, 119, 242, 0.1)', padding: '25px', borderRadius: '28px', border: '1px solid rgba(24, 119, 242, 0.3)', marginBottom: '25px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                <div>
+                                    <div style={{ fontSize: '0.6rem', color: '#1877F2', fontWeight: '900', letterSpacing: '2px', marginBottom: '4px' }}>LAUNCH CENTRE</div>
+                                    <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'white' }}>Meta Cloud Sync</h2>
+                                </div>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(24,119,242,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1877F2' }}>
+                                    <Share2 size={20} />
+                                </div>
+                            </div>
+                            
+                            {!fbSettings.fb_access_token ? (
+                                <button onClick={() => setActiveTab('studio')} style={{ width: '100%', padding: '18px', background: '#1877F2', border: 'none', borderRadius: '16px', color: 'white', fontWeight: '900', cursor: 'pointer' }}>
+                                    CONNECT FB ACCOUNT 🚀
+                                </button>
+                            ) : (
+                                <div style={{ background: 'rgba(0,184,148,0.1)', padding: '15px', borderRadius: '12px', border: '1px solid #00b894', color: '#00b894', textAlign: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                    ✓ AI SYNC ENGINE LIVE
+                                </div>
+                            )}
+                        </div>
+
                         <MarketingHub 
                             agent={agent} 
                             inventory={inventory} 
@@ -2319,40 +2282,35 @@ export default function AgentDashboard() {
                     id="pipeline-btn"
                     style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === 'leads' ? '#D92027' : 'rgba(255,255,255,0.3)', transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' }}
                 >
-                    <LayoutDashboard size={24} color={activeTab === 'leads' ? '#D92027' : 'currentColor'} />
-                    <span style={{ fontSize: '0.65rem', fontWeight: '900', letterSpacing: '0.5px' }}>PIPELINE</span>
+                    <LayoutDashboard size={20} color={activeTab === 'leads' ? '#D92027' : 'currentColor'} />
+                    <span style={{ fontSize: '0.55rem', fontWeight: '900', letterSpacing: '0.5px' }}>PIPELINE</span>
                 </button>
                 <button 
-                    onClick={() => { vibrate(30); setActiveTab('roi'); }}
-                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === 'roi' ? '#D92027' : 'rgba(255,255,255,0.3)', transition: 'all 0.2s' }}
+                    onClick={() => { vibrate(30); setActiveTab('inventory'); }}
+                    style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === 'inventory' ? '#D92027' : 'rgba(255,255,255,0.3)', transition: 'all 0.2s' }}
                 >
-                    <TrendingUp size={24} color={activeTab === 'roi' ? '#D92027' : 'currentColor'} />
-                    <span style={{ fontSize: '0.65rem', fontWeight: '900', letterSpacing: '0.5px' }}>REVENUE</span>
+                    <Star size={20} color={activeTab === 'inventory' ? '#D92027' : 'currentColor'} />
+                    <span style={{ fontSize: '0.55rem', fontWeight: '900', letterSpacing: '0.5px' }}>INVENTORY</span>
                 </button>
                 <button 
                     onClick={() => { vibrate(100); setIsStrategistOpen(true); }}
-                    style={{ width: '68px', height: '68px', borderRadius: '50%', background: 'linear-gradient(135deg, #D92027, #a01820)', border: '4px solid #111', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '-45px', boxShadow: '0 12px 30px rgba(217,32,39,0.5)', cursor: 'pointer', transform: isStrategistOpen ? 'scale(0.9) rotate(5deg)' : 'scale(1)', transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
+                    style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', border: '4px solid #111', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '-30px', boxShadow: '0 8px 20px rgba(0,0,0,0.5)', cursor: 'pointer' }}
                 >
-                    <div style={{ position: 'relative' }}>
-                        <Mic size={28} />
-                        {activeTab === 'leads' && leads.some(l => l.status === 'Hot') && (
-                            <div style={{ position: 'absolute', top: -5, right: -5, width: '12px', height: '12px', background: '#00b894', borderRadius: '50%', border: '2px solid #D92027' }}></div>
-                        )}
-                    </div>
+                    <Mic size={24} />
                 </button>
                 <button 
                     onClick={() => { vibrate(30); setActiveTab('marketing'); }}
                     style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === 'marketing' ? '#D92027' : 'rgba(255,255,255,0.3)', transition: 'all 0.2s' }}
                 >
-                    <ImageIcon size={24} color={activeTab === 'marketing' ? '#D92027' : 'currentColor'} />
-                    <span style={{ fontSize: '0.65rem', fontWeight: '900', letterSpacing: '0.5px' }}>LISTER & ADS</span>
+                    <Share2 size={20} color={activeTab === 'marketing' ? '#D92027' : 'currentColor'} />
+                    <span style={{ fontSize: '0.55rem', fontWeight: '900', letterSpacing: '0.5px' }}>LAUNCHER</span>
                 </button>
                 <button 
                     onClick={() => { vibrate(30); setActiveTab('studio'); }}
                     style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', color: activeTab === 'studio' ? '#D92027' : 'rgba(255,255,255,0.3)', transition: 'all 0.2s' }}
                 >
-                    <Settings size={24} color={activeTab === 'studio' ? '#D92027' : 'currentColor'} />
-                    <span style={{ fontSize: '0.65rem', fontWeight: '900', letterSpacing: '0.5px' }}>SETUP</span>
+                    <Settings size={20} color={activeTab === 'studio' ? '#D92027' : 'currentColor'} />
+                    <span style={{ fontSize: '0.55rem', fontWeight: '900', letterSpacing: '0.5px' }}>SETUP</span>
                 </button>
             </div>
 
