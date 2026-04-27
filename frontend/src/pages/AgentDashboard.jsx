@@ -1184,26 +1184,39 @@ export default function AgentDashboard() {
                     } else {
                         // Positional Mapping (Optimized for Revenue Radar / DealerSocket exports)
                         // Based on: [ID, Full Name, First, Last, Source, Note, Year, Make, Model, ..., Email, ..., Phone]
-                        // SMART NAME DETECTION
-                        const rawName = row[1] || '';
-                        const isReportLabel = /finance|lease|payment|raise|lower|term|equity|minimum|current/i.test(rawName);
-                        
-                        if (isReportLabel || !rawName) {
-                            lead.name = (row[2] && row[3]) ? `${row[2]} ${row[3]}` : (row[2] || row[3] || '');
-                        } else {
-                            lead.name = rawName;
+                        // GREEDY SEARCH: If positional mapping fails, scan every cell for a phone number
+                        let foundName = row[1] || "";
+                        let foundPhone = String(row[18] || row[17] || row[11] || "");
+                        let foundEmail = row[14] || row[10] || "";
+                        let foundNote = row[5] || "";
+                        let foundCar = (row[6] && row[7]) ? `${row[6]} ${row[7]}` : (row[8] || "Browsing");
+
+                        // If phone is still missing, search the entire row for something that looks like a phone/mobile
+                        if (foundPhone.length < 7) {
+                            row.forEach(cell => {
+                                const sVal = String(cell || "");
+                                if (sVal.replace(/\D/g,'').length >= 10) {
+                                    foundPhone = sVal;
+                                }
+                            });
                         }
 
-                        lead.phone = String(row[18] || row[17] || '');
-                        lead.email = row[14] || '';
-                        lead.notes = row[5] || '';
-                        lead.car = (row[1] && isReportLabel) ? row[1] : ((row[6] && row[7] && row[8]) ? `${row[6]} ${row[7]} ${row[8]}` : (row[8] || 'Browsing'));
-                        lead.quality_score = 85;
-                        lead.assigned_agent = row[12] || agent.name;
+                        // If name is a report label, use Col 2/3
+                        const isReportLabel = /finance|lease|payment|raise|lower|term|equity|minimum|current/i.test(foundName);
+                        if (isReportLabel || !foundName) {
+                            foundName = (row[2] && row[3]) ? `${row[2]} ${row[3]}` : (row[2] || row[3] || foundName);
+                        }
+
+                        lead.name = foundName;
+                        lead.phone = foundPhone;
+                        lead.email = foundEmail;
+                        lead.notes = foundNote;
+                        lead.car = foundCar;
+                        lead.assigned_agent = agent.name;
                     }
 
-                    // SKIP BLANKS OR HEADERS
-                    if (!lead.phone || !lead.name || lead.name === 'Full Name' || lead.name === 'Customer') {
+                    // FINAL VALIDATION: We only need a Phone and a Name fragment
+                    if (!lead.phone || lead.phone.length < 7 || !lead.name || lead.name.length < 2 || lead.name.toLowerCase() === 'full name') {
                         return null; 
                     }
 
