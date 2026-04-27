@@ -19,6 +19,7 @@ class ErrorBoundary extends React.Component {
   }
   componentDidCatch(error, errorInfo) {
     console.error("Critical UI Error:", error, errorInfo);
+    this.setState({ errorInfo });
   }
   render() {
     if (this.state.hasError) {
@@ -28,13 +29,18 @@ class ErrorBoundary extends React.Component {
           <p style={{ fontSize: '1.2rem', color: '#888', maxWidth: '600px', marginBottom: '30px' }}>
             A temporary rendering issue occurred. This does not affect your lead data or AI follow-ups.
           </p>
-          <div style={{ background: '#000', padding: '20px', borderRadius: '10px', color: '#00ff00', fontFamily: 'monospace', marginBottom: '30px', textAlign: 'left', width: '100%', maxWidth: '800px', overflowX: 'auto' }}>
-            {this.state.error}
+          <div style={{ background: '#000', padding: '20px', borderRadius: '10px', color: '#00ff00', fontFamily: 'monospace', marginBottom: '30px', textAlign: 'left', width: '100%', maxWidth: '800px', maxHeight: '300px', overflow: 'auto', fontSize: '0.8rem' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#ff4d4d' }}>{this.state.error}</div>
+            <pre style={{ margin: 0 }}>{this.state.errorInfo?.componentStack || "Internal trace unavailable"}</pre>
           </div>
           <button 
-            onClick={() => {
+            onClick={async () => {
               localStorage.clear();
               sessionStorage.clear();
+              if ('serviceWorker' in navigator) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                for(let reg of regs) await reg.unregister();
+              }
               window.location.href = window.location.origin + '/agent?v=' + Date.now();
             }}
             style={{ padding: '15px 40px', background: '#ff4d4d', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 8px 15px rgba(255,77,77,0.3)' }}
