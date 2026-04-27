@@ -1204,7 +1204,7 @@ export default function AgentDashboard() {
 
                     // SKIP BLANKS OR HEADERS
                     if (!lead.phone || !lead.name || lead.name === 'Full Name' || lead.name === 'Customer') {
-                        continue; 
+                        return null; 
                     }
 
                     return {
@@ -1222,7 +1222,8 @@ export default function AgentDashboard() {
                     };
                 });
                 
-                setImportedLeads(mappedLeads);
+                const cleanedLeads = mappedLeads.filter(l => l !== null);
+                setImportedLeads(cleanedLeads);
                 setShowImportPreview(true);
             } catch (err) {
                 alert("Error parsing file. Please use a valid Excel or CSV file.");
