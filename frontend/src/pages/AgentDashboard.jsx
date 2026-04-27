@@ -1035,7 +1035,8 @@ function EngagementHistoryModal({ lead, onClose, onDial, onOrganize }) {
                         </div>
                     </div>
                 </div>
-            )}
+            )
+}
 export default function AgentDashboard() {
     const [revHunterSearch, setRevHunterSearch] = useState('');
     const { tenant } = useTenant();
