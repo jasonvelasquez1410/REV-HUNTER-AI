@@ -102,7 +102,7 @@ const ChatWidget = ({ defaultOpen = false, placeholder = "Type a message..." }) 
                                         alignItems: 'center',
                                         gap: '5px'
                                     }}>
-                                        🌟 Elliot (Digital Specialist)
+                                        🌟 AI Assistant
                                     </div>
                                 )}
                                 {msg.text}

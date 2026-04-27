@@ -32,10 +32,14 @@ class ErrorBoundary extends React.Component {
             {this.state.error}
           </div>
           <button 
-            onClick={() => window.location.reload()}
-            style={{ padding: '15px 40px', background: '#ff4d4d', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
+            onClick={() => {
+              localStorage.clear();
+              sessionStorage.clear();
+              window.location.href = window.location.origin + '/agent?v=' + Date.now();
+            }}
+            style={{ padding: '15px 40px', background: '#ff4d4d', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 8px 15px rgba(255,77,77,0.3)' }}
           >
-            REFRESH SYSTEM
+            NUCLEAR CACHE RESET & LOGIN 🏹
           </button>
         </div>
       );

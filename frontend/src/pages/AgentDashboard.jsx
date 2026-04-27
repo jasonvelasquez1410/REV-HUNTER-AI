@@ -1186,9 +1186,9 @@ export default function AgentDashboard() {
                     };
 
                     // 1. KEYWORD SEARCH (Scans every column header for matches)
-                    const getByHeader = (keywords) => {
-                        const idx = rows[0].findIndex(h => h && keywords.some(k => String(h).toLowerCase().includes(k.toLowerCase())));
-                        return (idx !== -1 && row[idx]) ? String(row[idx]) : null;
+                    const getByHeader = (searchKeywords) => {
+                        const columnIndex = rows[0].findIndex(headerCell => headerCell && searchKeywords.some(keyword => String(headerCell).toLowerCase().includes(keyword.toLowerCase())));
+                        return (columnIndex !== -1 && row[columnIndex]) ? String(row[columnIndex]) : null;
                     };
 
                     const firstName = getByHeader(['First Name', 'Firstname']);
@@ -1205,21 +1205,21 @@ export default function AgentDashboard() {
 
                     // 2. GREEDY FALLBACK (If keywords failed, scan every cell in this row)
                     if (lead.phone.length < 7 || lead.name.length < 2) {
-                        row.forEach((cell, idx) => {
-                            const val = String(cell || "").trim();
-                            if (!val) return;
+                        row.forEach((cellValue, cellIndex) => {
+                            const trimmedVal = String(cellValue || "").trim();
+                            if (!trimmedVal) return;
 
                             // If it looks like a phone and we don't have one
-                            if (lead.phone.length < 7 && val.replace(/\D/g,'').length >= 7) {
-                                lead.phone = val;
+                            if (lead.phone.length < 7 && trimmedVal.replace(/\D/g,'').length >= 7) {
+                                lead.phone = trimmedVal;
                             } 
                             // If it's a long text and we don't have a name
-                            else if (lead.name.length < 3 && val.length >= 3 && val.length < 40 && !val.includes('@') && !/finance|lease|payment|radar|dealership/i.test(val)) {
-                                lead.name = val;
+                            else if (lead.name.length < 3 && trimmedVal.length >= 3 && trimmedVal.length < 40 && !trimmedVal.includes('@') && !/finance|lease|payment|radar|dealership/i.test(trimmedVal)) {
+                                lead.name = trimmedVal;
                             }
                             // If it's an email
-                            else if (!lead.email && val.includes('@')) {
-                                lead.email = val;
+                            else if (!lead.email && trimmedVal.includes('@')) {
+                                lead.email = trimmedVal;
                             }
                         });
                     }
@@ -1242,8 +1242,8 @@ export default function AgentDashboard() {
                     };
                 });
                 
-                const cleanedLeads = mappedLeads.filter(l => l !== null);
-                setImportedLeads(cleanedLeads);
+                const cleanedLeadsList = mappedLeads.filter(leadItem => leadItem !== null);
+                setImportedLeads(cleanedLeadsList);
                 setShowImportPreview(true);
             } catch (err) {
                 alert("Error parsing file. Please use a valid Excel or CSV file.");
