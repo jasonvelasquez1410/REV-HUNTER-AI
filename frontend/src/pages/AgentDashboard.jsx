@@ -2006,20 +2006,47 @@ export default function AgentDashboard() {
                                 <button style={{ padding: '15px 30px', background: 'white', color: 'black', border: 'none', borderRadius: '16px', fontWeight: '900' }}>IMPORT NOW</button>
                             </div>
                         ) : (
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
                                 {inventory.map(car => (
-                                    <div key={car.id} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '15px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                        <div style={{ width: '80px', height: '60px', background: '#000', borderRadius: '10px', overflow: 'hidden' }}>
-                                            <img src={car.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <div key={car.id} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '15px', border: '1px solid rgba(255,255,255,0.06)', position: 'relative', animation: 'slideUp 0.3s ease' }}>
+                                        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                                            <div style={{ width: '100px', height: '80px', background: '#000', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 5px 15px rgba(0,0,0,0.3)', flexShrink: 0 }}>
+                                                {car.image ? <img src={car.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={24} style={{ margin: '28px 38px', opacity: 0.1 }} />}
+                                            </div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ fontWeight: '900', fontSize: '1rem', color: 'white' }}>{car.year} {car.make}</div>
+                                                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{car.model}</div>
+                                                <div style={{ fontSize: '0.9rem', color: '#00b894', fontWeight: '900', marginTop: '4px' }}>${car.price.toLocaleString()}</div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div style={{ fontWeight: '900', fontSize: '0.9rem' }}>{car.year} {car.make}</div>
-                                            <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{car.model} • ${car.price.toLocaleString()}</div>
+                                        
+                                        <div style={{ marginTop: '15px', padding: '15px', background: 'rgba(255, 75, 43, 0.05)', borderRadius: '18px', border: '1px dashed rgba(255, 75, 43, 0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div>
+                                                <div style={{ fontSize: '0.55rem', color: '#FF4B2B', fontWeight: '900', letterSpacing: '1px' }}>MARKET DEMAND</div>
+                                                <div style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>🔥 HIGH (92%)</div>
+                                            </div>
+                                            <button 
+                                                onClick={() => {
+                                                    setActiveTab('marketing');
+                                                    onOrganize(car);
+                                                    vibrate(60);
+                                                }}
+                                                style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #FF4B2B, #D92027)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '900', cursor: 'pointer', boxShadow: '0 5px 15px rgba(217,32,39,0.3)' }}
+                                            >
+                                                🚀 LIST TO MARKETPLACE
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
+                                <button 
+                                    onClick={() => inventoryInputRef.current?.click()}
+                                    style={{ marginTop: '10px', padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '24px', color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
+                                >
+                                    + ADD MORE UNITS
+                                </button>
                             </div>
                         )}
+
                     </div>
                 )}
 
