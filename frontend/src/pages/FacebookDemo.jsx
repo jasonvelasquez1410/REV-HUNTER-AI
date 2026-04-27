@@ -133,10 +133,10 @@ const FacebookDemo = () => {
                         } else {
                             // MOBILE/PWA OPTIMIZATION: Explicitly resume audio context on user gesture
                             if (typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
-                                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                                const context = new AudioCtx();
-                                if (context.state === 'suspended') {
-                                    await context.resume();
+                                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                                const audioCtx = new AudioContextClass();
+                                if (audioCtx.state === 'suspended') {
+                                    await audioCtx.resume();
                                 }
                             }
 

@@ -205,11 +205,11 @@ export default function Admin() {
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
-                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'C', 0, '✓'].map((num) => (
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'CLR', 0, '✓'].map((num) => (
                                 <button
                                     key={num}
                                     onClick={() => {
-                                        if (num === 'C') setPin('');
+                                        if (num === 'CLR') setPin('');
                                         else if (num === '✓') {
                                             if (pin === '1410') setIsAuthenticated(true);
                                             else {
@@ -433,13 +433,13 @@ export default function Admin() {
             
             // Execute commands if present
             if (data.command) {
-                const cmd = data.command;
-                if (cmd.type === 'calendar' && cmd.action === 'book') {
-                    setAuditLogs(prev => [{ id: `elliot-cal-${Date.now()}`, time: "Now", action: `ELLIOT: Booking appointment for Lead #${cmd.lead_id} at ${cmd.time}`, type: "AI" }, ...prev]);
-                    alert(`📅 ELLIOT CALENDAR SYNC:\n\nAppointment booked for Lead #${cmd.lead_id}\nTime: ${cmd.time}\nProvider: Google Calendar (Synced)`);
-                } else if (cmd.type === 'crm' && cmd.action === 'assign') {
-                    setLeads(prev => prev.map(l => l.id === cmd.lead_id ? { ...l, assigned_agent: cmd.agent } : l));
-                    setAuditLogs(prev => [{ id: `elliot-crm-${Date.now()}`, time: "Now", action: `ELLIOT: Assigned lead to ${cmd.agent}`, type: "System" }, ...prev]);
+                const elliotCommand = data.command;
+                if (elliotCommand.type === 'calendar' && elliotCommand.action === 'book') {
+                    setAuditLogs(prev => [{ id: `elliot-cal-${Date.now()}`, time: "Now", action: `ELLIOT: Booking appointment for Lead #${elliotCommand.lead_id} at ${elliotCommand.time}`, type: "AI" }, ...prev]);
+                    alert(`📅 ELLIOT CALENDAR SYNC:\n\nAppointment booked for Lead #${elliotCommand.lead_id}\nTime: ${elliotCommand.time}\nProvider: Google Calendar (Synced)`);
+                } else if (elliotCommand.type === 'crm' && elliotCommand.action === 'assign') {
+                    setLeads(prev => prev.map(l => l.id === elliotCommand.lead_id ? { ...l, assigned_agent: elliotCommand.agent } : l));
+                    setAuditLogs(prev => [{ id: `elliot-crm-${Date.now()}`, time: "Now", action: `ELLIOT: Assigned lead to ${elliotCommand.agent}`, type: "System" }, ...prev]);
                 }
             }
         } catch (err) {

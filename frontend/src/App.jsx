@@ -93,7 +93,7 @@ function AppContent() {
         setCurrentPage('facebook');
       } else if (activeRoute === '/revhunter' || activeRoute === 'revhunter') {
         setCurrentPage('revhunter');
-      } else if (activeRoute === '/agent' || activeRoute === 'agent') {
+      } else if (activeRoute.includes('/agent') || activeRoute === 'agent') {
         setCurrentPage('agent');
       } else {
         setCurrentPage('home');

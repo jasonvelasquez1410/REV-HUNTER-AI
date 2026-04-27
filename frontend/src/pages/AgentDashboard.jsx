@@ -4,7 +4,12 @@ import { useTenant } from '../context/TenantContext';
 import * as XLSX from 'xlsx';
 import ROIDashboard from '../components/ROIDashboard';
 
-// ── MOBILE HAPTICS & UTILITY ──────────────────────
+// ── MOCK DATA FALLBACKS ──────────────────────────
+const MOCK_AGENTS = [
+    { id: 1, name: 'R-Jay', avatar: 'RJ', color: '#FF4B2B' },
+    { id: 2, name: 'Assistant', avatar: 'AI', color: '#00b894' }
+];
+
 const vibrate = (pattern = 50) => {
     if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
         window.navigator.vibrate(pattern);
