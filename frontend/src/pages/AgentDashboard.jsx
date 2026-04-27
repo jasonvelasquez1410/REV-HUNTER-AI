@@ -1184,20 +1184,28 @@ export default function AgentDashboard() {
                     } else {
                         // Positional Mapping (Optimized for Revenue Radar / DealerSocket exports)
                         // Based on: [ID, Full Name, First, Last, Source, Note, Year, Make, Model, ..., Email, ..., Phone]
-                        lead.name = row[1] || (row[2] && row[3] ? `${row[2]} ${row[3]}` : '');
+                        // SMART NAME DETECTION
+                        const rawName = row[1] || '';
+                        const isReportLabel = /finance|lease|payment|raise|lower|term|equity|minimum|current/i.test(rawName);
+                        
+                        if (isReportLabel || !rawName) {
+                            lead.name = (row[2] && row[3]) ? `${row[2]} ${row[3]}` : (row[2] || row[3] || '');
+                        } else {
+                            lead.name = rawName;
+                        }
+
                         lead.phone = String(row[18] || row[17] || '');
                         lead.email = row[14] || '';
                         lead.notes = row[5] || '';
-                        lead.car = (row[6] && row[7] && row[8]) ? `${row[6]} ${row[7]} ${row[8]}` : (row[8] || 'Browsing');
+                        lead.car = (row[1] && isReportLabel) ? row[1] : ((row[6] && row[7] && row[8]) ? `${row[6]} ${row[7]} ${row[8]}` : (row[8] || 'Browsing'));
                         lead.quality_score = 85;
                         lead.assigned_agent = row[12] || agent.name;
                     }
 
-                    // SKIP HEADERS & BLANKS
-                    if (!lead.phone || lead.name.toLowerCase().includes('equity') || lead.name.toLowerCase().includes('minimum') || lead.name === 'Full Name' || lead.name === 'Customer') {
-                        return null; 
+                    // SKIP BLANKS OR HEADERS
+                    if (!lead.phone || !lead.name || lead.name === 'Full Name' || lead.name === 'Customer') {
+                        continue; 
                     }
-                    if (!lead.name) lead.name = "Prospect Lead";
 
                     return {
                         id: `imported-${Date.now()}-${index}`,
@@ -1760,9 +1768,9 @@ export default function AgentDashboard() {
                                     <div style={{ padding: '18px 25px', background: 'rgba(255, 255, 255, 0.05)', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', alignItems: 'center', gap: '15px' }}>
                                         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#FF4B2B', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '1.2rem', boxShadow: '0 0 15px rgba(255, 75, 43, 0.3)', flexShrink: 0 }}>✨</div>
                                         <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'white', lineHeight: '1.4' }}>
-                                            {leads.length === 0 ? "RevHunter AI: \"Boss, your pipeline is empty. Tap Step 1 to import your lead list from Excel/CSV!\"" : 
-                                             !fbSettings.fb_access_token ? "RevHunter AI: \"Leads are ready. Now go to Step 2 to sync your Facebook account so I can hunt Marketplace inquiries!\"" : 
-                                             "RevHunter AI: \"Systems are green! Everything is synced. Tap Step 3 to LAUNCH MISSION and start the hunt!\""}
+                                            {leads.length === 0 ? `${agent?.assistant_name || "AI"}: "Boss, your pipeline is empty. Tap Step 1 to import your lead list from Excel/CSV!"` : 
+                                             !fbSettings.fb_access_token ? `${agent?.assistant_name || "AI"}: "Leads are ready. Now go to Step 2 to sync your Facebook account so I can hunt Marketplace inquiries!"` : 
+                                             `${agent?.assistant_name || "AI"}: "Systems are green! Everything is synced. Tap Step 3 to LAUNCH MISSION and start the hunt!"`}
                                         </div>
                                     </div>
 
@@ -1874,7 +1882,7 @@ export default function AgentDashboard() {
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                                     <div style={{ fontWeight: '800', fontSize: '1.2rem', color: 'white', letterSpacing: '-0.5px' }}>{lead.name}</div>
                                                                     <span style={{ fontSize: '0.55rem', padding: '2px 6px', borderRadius: '4px', background: (lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? '#6c5ce7' : '#00b894', color: 'white', fontWeight: '900' }}>
-                                                                        {(lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? '📥 IMPORT' : '✨ ELLIOT'}
+                                                                        {(lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? '📥 IMPORT' : `✨ ${(agent?.assistant_name || "AI").toUpperCase()}`}
                                                                     </span>
                                                                 </div>
                                                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '4px' }}>
@@ -1936,7 +1944,7 @@ export default function AgentDashboard() {
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                                                     <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{lead.name}</div>
                                                                     <span style={{ fontSize: '0.45rem', padding: '1px 4px', borderRadius: '3px', background: (lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? 'rgba(108,92,231,0.2)' : 'rgba(0,184,148,0.2)', color: (lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? '#a29bfe' : '#00b894', fontWeight: '900' }}>
-                                                                        {(lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? 'IMPORT' : 'ELLIOT'}
+                                                                        {(lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? 'IMPORT' : (agent?.assistant_name || "AI").toUpperCase()}
                                                                     </span>
                                                                 </div>
                                                                 <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>
