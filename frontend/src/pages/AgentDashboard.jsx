@@ -936,7 +936,7 @@ function EngagementHistoryModal({ lead, onClose, onDial, onOrganize, agent, inve
                             <button 
                                 onClick={() => {
                                     const carName = lead.car || '';
-                                    const match = inventory.find(c => carName.toLowerCase().includes(c.model.toLowerCase()));
+                                    const match = inventory.find(invItem => carName.toLowerCase().includes(invItem.model.toLowerCase()));
                                     if(match) onOrganize(match);
                                     else alert(`No exact match in inventory for "${carName}", but you can post a regular listing!`);
                                 }}
@@ -2422,9 +2422,9 @@ export default function AgentDashboard() {
                                 onClick={() => {
                                     const n = document.getElementById('m-name').value;
                                     const p = document.getElementById('m-phone').value;
-                                    const c = document.getElementById('m-car').value;
+                                    const manCar = document.getElementById('m-car').value;
                                     if(!n || !p) return alert('Name and Phone required.');
-                                    const newLead = { id: Date.now(), name: n, phone: p, car: c || 'General Interest', quality_score: 85, status: 'Hot', source: 'Manual', last_action_time: 'Just Added', assigned_agent: agent.name };
+                                    const newLead = { id: Date.now(), name: n, phone: p, car: manCar || 'General Interest', quality_score: 85, status: 'Hot', source: 'Manual', last_action_time: 'Just Added', assigned_agent: agent.name };
                                     setLeads([newLead, ...leads]);
                                     setShowManualModal(false);
                                     alert(`Elite Move! ${n} added to pipeline. Trigger an AI call to start qualification.`);

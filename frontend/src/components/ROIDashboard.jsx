@@ -95,7 +95,7 @@ export default function ROIDashboard({ leads = [], inventory = [] }) {
             <div style={{ width: `${totalLeads > 0 ? (qualifiedLeads/totalLeads)*100 : 0}%`, height: '100%', background: '#00d1b2', borderRadius: '10px', boxShadow: '0 0 15px rgba(0,209,178,0.5)' }}></div>
         </div>
         <p style={{ fontSize: '0.65rem', marginTop: '15px', opacity: 0.7, lineHeight: '1.4' }}>
-            Elliot is currently maintaining an elite qualification percentage for your mission. Continue importing leads to scale the revenue engine.
+            Your AI Assistant is currently maintaining an elite qualification percentage for your mission. Continue importing leads to scale the revenue engine.
         </p>
       </div>
 
