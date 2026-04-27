@@ -428,14 +428,18 @@ async def clear_leads(tenant_id: str = Depends(get_tenant_id)):
 async def import_leads_frontend(payload: ImportLeadsPayload, tenant_id: str = Depends(get_tenant_id)):
     try:
         from .storage import LeadTable
-        count = 0
+        new_count = 0
+        updated_count = 0
         with db.session() as session:
             for l in payload.leads:
-                # Duplicate Shield: Check Name + Phone fingerprint
+                # Clean phone for smarter matching
+                clean_phone = "".join(filter(str.isdigit, l.phone)) if l.phone else ""
+                
+                # Duplicate Shield: Check Name or Phone-Fingerprint
                 lead = session.query(LeadTable).filter(
                     LeadTable.tenant_id == tenant_id,
-                    LeadTable.name == l.name,
-                    LeadTable.phone == (l.phone if l.phone else LeadTable.phone)
+                    (LeadTable.name == l.name) | 
+                    (LeadTable.phone.contains(clean_phone[-10:]) if len(clean_phone) >= 10 else False)
                 ).first()
                 
                 if not lead:
@@ -453,20 +457,17 @@ async def import_leads_frontend(payload: ImportLeadsPayload, tenant_id: str = De
                         last_action_time="Just Imported"
                     )
                     session.add(lead)
+                    new_count += 1
                 else:
-                    # Update existing imported leads
+                    # Update intelligence on existing lead
                     if l.phone: lead.phone = l.phone
                     if l.email: lead.email = l.email
-                    if l.assigned_agent: 
-                        lead.assigned_agent = l.assigned_agent
-                        lead.is_manual_assignment = True
                     if l.quality_score: lead.quality_score = l.quality_score
                     if l.notes or l.car:
-                        lead.conversation_summary = f"Mission Update: Interested in {l.car or 'General Inventory'}. Note: {l.notes or 'N/A'}"
-                    lead.source = l.source
-                count += 1
+                        lead.conversation_summary = f"Intelligence Update: {l.car or 'Inventory interest'}. {l.notes or ''}"
+                    updated_count += 1
             session.commit()
-        return {"status": "success", "imported": count}
+        return {"status": "success", "new": new_count, "updated": updated_count}
     except Exception as e:
         print(f"Import Leads Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

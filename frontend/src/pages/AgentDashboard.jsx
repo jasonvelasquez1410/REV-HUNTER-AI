@@ -1336,10 +1336,11 @@ export default function AgentDashboard() {
             });
 
             if (res.ok) {
+                const result = await res.json();
                 setLeads([...importedLeads, ...leads]);
                 setShowImportPreview(false);
                 setImportedLeads([]);
-                alert(`🎯 SUCCESS: ${importedLeads.length} leads successfully synced to the cloud and added to your active pipeline!`);
+                alert(`🎯 SMART SYNC COMPLETE\n\n✅ ${result.new || 0} New Leads Added\n🔄 ${result.updated || 0} Duplicates Updated\n\nYour pipeline is now optimized!`);
                 missionControlRef.current?.scrollIntoView({ behavior: 'smooth' });
                 fetchLeads(); // Refresh to get server IDs and confirmed state
             } else {
