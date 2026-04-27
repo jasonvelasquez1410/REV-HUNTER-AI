@@ -1173,62 +1173,59 @@ export default function AgentDashboard() {
                 const dataRows = isHeaderRow ? rows.slice(1) : rows;
                 const headers = isHeaderRow ? firstRow : [];
 
-                const mappedLeads = dataRows.map((row, index) => {
-                    let lead = {};
+                // BULLETPROOF IMPORTER v3.0
+                const mappedLeads = rows.map((row, index) => {
+                    if (!Array.isArray(row) || row.length < 2) return null;
                     
-                    if (isHeaderRow) {
-                        // Keyword-based mapping
-                        const getVal = (keys) => {
-                            const idx = headers.findIndex(h => h && keys.some(k => String(h).toLowerCase().includes(k.toLowerCase())));
-                            return idx !== -1 ? row[idx] : null;
-                        };
+                    let lead = {
+                        name: "",
+                        phone: "",
+                        email: "",
+                        car: "Browsing",
+                        notes: ""
+                    };
 
-                        const firstName = getVal(['First Name', 'firstname']) || '';
-                        const lastName = getVal(['Last Name', 'lastname']) || '';
-                        const fullName = getVal(['Name', 'Full Name', 'Customer', 'Lead Name']);
-                        
-                        lead.name = fullName || (firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || 'New Lead');
-                        lead.phone = String(getVal(['Phone', 'Mobile', 'Contact', 'Cell']) || '');
-                        lead.email = getVal(['Email', 'E-mail']) || '';
-                        lead.car = getVal(['Car', 'Vehicle', 'Model', 'Interested']) || 'Browsing';
-                        lead.quality_score = Number(getVal(['Score', 'Quality']) || 85);
-                        lead.notes = getVal(['Inquiry', 'Notes', 'Message', 'Comment']) || '';
-                    } else {
-                        // Positional Mapping (Optimized for Revenue Radar / DealerSocket exports)
-                        // Based on: [ID, Full Name, First, Last, Source, Note, Year, Make, Model, ..., Email, ..., Phone]
-                        // GREEDY SEARCH: If positional mapping fails, scan every cell for a phone number
-                        let foundName = row[1] || "";
-                        let foundPhone = String(row[18] || row[17] || row[11] || "");
-                        let foundEmail = row[14] || row[10] || "";
-                        let foundNote = row[5] || "";
-                        let foundCar = (row[6] && row[7]) ? `${row[6]} ${row[7]}` : (row[8] || "Browsing");
+                    // 1. KEYWORD SEARCH (Scans every column header for matches)
+                    const getByHeader = (keywords) => {
+                        const idx = rows[0].findIndex(h => h && keywords.some(k => String(h).toLowerCase().includes(k.toLowerCase())));
+                        return (idx !== -1 && row[idx]) ? String(row[idx]) : null;
+                    };
 
-                        // If phone is still missing, search the entire row for something that looks like a phone/mobile
-                        if (foundPhone.length < 7) {
-                            row.forEach(cell => {
-                                const sVal = String(cell || "");
-                                if (sVal.replace(/\D/g,'').length >= 10) {
-                                    foundPhone = sVal;
-                                }
-                            });
-                        }
+                    const firstName = getByHeader(['First Name', 'Firstname']);
+                    const lastName = getByHeader(['Last Name', 'Lastname']);
+                    const fullName = getByHeader(['Name', 'Full Name', 'Customer']);
+                    const mobileNum = getByHeader(['Mobile', 'Cell', 'Phone', 'Contact', 'Tel']);
+                    const carInt = getByHeader(['Car', 'Vehicle', 'Model', 'Year', 'Make']);
+                    const emailAddr = getByHeader(['Email', 'E-mail']);
 
-                        // If name is a report label, use Col 2/3
-                        const isReportLabel = /finance|lease|payment|raise|lower|term|equity|minimum|current/i.test(foundName);
-                        if (isReportLabel || !foundName) {
-                            foundName = (row[2] && row[3]) ? `${row[2]} ${row[3]}` : (row[2] || row[3] || foundName);
-                        }
+                    lead.name = fullName || (firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || "");
+                    lead.phone = mobileNum || "";
+                    lead.email = emailAddr || "";
+                    lead.car = carInt || "Browsing";
 
-                        lead.name = foundName;
-                        lead.phone = foundPhone;
-                        lead.email = foundEmail;
-                        lead.notes = foundNote;
-                        lead.car = foundCar;
-                        lead.assigned_agent = agent.name;
+                    // 2. GREEDY FALLBACK (If keywords failed, scan every cell in this row)
+                    if (lead.phone.length < 7 || lead.name.length < 2) {
+                        row.forEach((cell, idx) => {
+                            const val = String(cell || "").trim();
+                            if (!val) return;
+
+                            // If it looks like a phone and we don't have one
+                            if (lead.phone.length < 7 && val.replace(/\D/g,'').length >= 7) {
+                                lead.phone = val;
+                            } 
+                            // If it's a long text and we don't have a name
+                            else if (lead.name.length < 3 && val.length >= 3 && val.length < 40 && !val.includes('@') && !/finance|lease|payment|radar|dealership/i.test(val)) {
+                                lead.name = val;
+                            }
+                            // If it's an email
+                            else if (!lead.email && val.includes('@')) {
+                                lead.email = val;
+                            }
+                        });
                     }
 
-                    // FINAL VALIDATION: We only need a Phone and a Name fragment
-                    if (!lead.phone || lead.phone.length < 7 || !lead.name || lead.name.length < 2 || lead.name.toLowerCase() === 'full name') {
+                    // FINAL VALIDATION
+                    if (!lead.phone || lead.phone.length < 7 || !lead.name || lead.name.length < 2) {
                         return null; 
                     }
 
@@ -1238,12 +1235,10 @@ export default function AgentDashboard() {
                         phone: lead.phone,
                         email: lead.email,
                         car: lead.car,
-                        quality_score: lead.quality_score,
-                        status: lead.quality_score >= 80 ? 'Hot' : 'Warm',
-                        source: 'Imported',
-                        notes: lead.notes,
-                        last_action_time: 'Ready to Hunt',
-                        assigned_agent: lead.assigned_agent || agent.name
+                        source: 'Imported File',
+                        quality_score: 85,
+                        assigned_agent: agent.name,
+                        notes: lead.notes
                     };
                 });
                 
