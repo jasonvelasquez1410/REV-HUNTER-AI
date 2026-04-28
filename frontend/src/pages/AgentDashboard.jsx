@@ -1052,22 +1052,6 @@ export default function AgentDashboard() {
         return saved ? JSON.parse(saved) : null;
     });
 
-    // Global bridge for stability
-    useEffect(() => {
-        if (typeof window !== 'undefined') window.revHunterSearch = revHunterSearch;
-    }, [revHunterSearch]);
-
-    // SAFETY SHIELD: Never get stuck on loading screen longer than 6 seconds
-    useEffect(() => {
-        if (loading) {
-            const timer = setTimeout(() => {
-                console.warn("Loading safety shield activated - bypassing loading screen");
-                setLoading(false);
-            }, 6000);
-            return () => clearTimeout(timer);
-        }
-    }, [loading]);
-
     const [leads, setLeads] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeView, setActiveView] = useState('leads');
@@ -1150,6 +1134,22 @@ export default function AgentDashboard() {
     const inventoryInputRef = useRef(null);
     const missionControlRef = useRef(null);
     const leadsListRef = useRef(null);
+
+    // Global bridge for stability
+    useEffect(() => {
+        if (typeof window !== 'undefined') window.revHunterSearch = revHunterSearch;
+    }, [revHunterSearch]);
+
+    // SAFETY SHIELD: Never get stuck on loading screen longer than 6 seconds
+    useEffect(() => {
+        if (loading) {
+            const timer = setTimeout(() => {
+                console.warn("Loading safety shield activated - bypassing loading screen");
+                setLoading(false);
+            }, 6000);
+            return () => clearTimeout(timer);
+        }
+    }, [loading]);
 
     const isStandalone = agent?.edition === 'standalone';
 
