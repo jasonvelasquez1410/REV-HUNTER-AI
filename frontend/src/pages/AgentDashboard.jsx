@@ -997,6 +997,14 @@ function EngagementHistoryModal({ lead, onClose, onDial, onOrganize, agent, inve
                             <span style={{ fontSize: '0.55rem', opacity: 0.7, fontWeight: '700' }}>{(agent?.assistant_name || "AI")} will dial now</span>
                         </button>
                     </div>
+
+                    {/* Mission Summary (Latest AI Intelligence) */}
+                    {lead.conversation_summary && (
+                        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', borderLeft: '4px solid #FF4B2B' }}>
+                            <div style={{ fontSize: '0.6rem', color: '#FF4B2B', fontWeight: '900', letterSpacing: '1px', marginBottom: '5px' }}>MISSION SUMMARY (LATEST INTELLIGENCE)</div>
+                            <div style={{ fontSize: '0.8rem', color: 'white', lineHeight: '1.4', fontWeight: '600' }}>{lead.conversation_summary}</div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Timeline */}
@@ -1981,6 +1989,9 @@ export default function AgentDashboard() {
                                                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '4px' }}>
                                                                     <div style={{ fontSize: '0.85rem', color: '#00b894', fontWeight: 'bold' }}>📞 {lead.phone}</div>
                                                                     <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>🚗 {lead.car || 'Interested Purchaser'}</div>
+                                                                    <div style={{ fontSize: '0.65rem', background: 'rgba(0,184,148,0.1)', color: '#00b894', padding: '4px 8px', borderRadius: '6px', fontWeight: '900' }}>
+                                                                        🕒 {lead.last_action_time || 'Just Imported'}
+                                                                    </div>
                                                                     {lead.notes && (
                                                                         <div style={{ width: '100%', fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', marginTop: '8px', padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', borderLeft: '2px solid #00b894' }}>
                                                                             📝 "{lead.notes.length > 80 ? lead.notes.substring(0, 80) + '...' : lead.notes}"
@@ -2040,8 +2051,9 @@ export default function AgentDashboard() {
                                                                         {(lead.source?.toLowerCase().includes('import') || lead.source === 'File') ? 'IMPORT' : (agent?.assistant_name || "AI").toUpperCase()}
                                                                     </span>
                                                                 </div>
-                                                                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>
+                                                                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                                     <span style={{ color: '#00b894', fontWeight: 'bold' }}>📞 {lead.phone}</span> • 🚗 {lead.car || 'Browsing'}
+                                                                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.55rem' }}>• {lead.last_action_time || 'New'}</span>
                                                                 </div>
                                                                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
                                                                     <div style={{ fontSize: '0.55rem', background: 'rgba(253,203,110,0.1)', color: '#fdcb6e', padding: '2px 6px', borderRadius: '4px', fontWeight: '900' }}>
