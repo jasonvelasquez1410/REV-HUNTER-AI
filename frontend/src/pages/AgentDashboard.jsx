@@ -1079,12 +1079,25 @@ export default function AgentDashboard() {
     const [fbPageIdInput, setFbPageIdInput] = useState('');
     const [isFbConnecting, setIsFbConnecting] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
-    const [dialing, setDialing] = useState(null);
+    const [showPlaybook, setShowPlaybook] = useState(false);
+    const [leads, setLeads] = useState([]);
     const [selectedDNA, setSelectedDNA] = useState(null);
     const [isStrategistOpen, setIsStrategistOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('leads'); // 'leads' | 'marketing' | 'roi'
     const [hasGreeted, setHasGreeted] = useState(false);
     const [leadFilter, setLeadFilter] = useState('all');
+
+    const [loading, setLoading] = useState(true);
+    const [activeView, setActiveView] = useState('leads');
+    const [nudging, setNudging] = useState(null);
+    const [newLeadAlert, setNewLeadAlert] = useState(null);
+    const [importedLeads, setImportedLeads] = useState([]);
+    const [importStatus, setImportStatus] = useState(null); // null | 'preview' | 'importing' | 'done'
+    const [importFileName, setImportFileName] = useState('');
+    const [inventory, setInventory] = useState([]);
+
+    const [dialing, setDialing] = useState(null);
+
     const [showManualModal, setShowManualModal] = useState(false);
     const [marketingSubView, setMarketingSubView] = useState('inventory');
     const [showImportPreview, setShowImportPreview] = useState(false);
@@ -1682,6 +1695,47 @@ export default function AgentDashboard() {
                 </div>
             )}
 
+            {/* Field Manual / Playbook Modal */}
+            {showPlaybook && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 80000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(15px)' }}>
+                    <div style={{ width: '100%', maxWidth: '400px', background: '#111', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', animation: 'slideUp 0.4s ease' }}>
+                        <div style={{ padding: '25px', background: 'linear-gradient(135deg, #111, #222)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ background: '#FF4B2B', padding: '8px', borderRadius: '10px' }}><Star size={18} fill="white" /></div>
+                                <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '900', letterSpacing: '1px' }}>AGENT PLAYBOOK</h2>
+                            </div>
+                            <button onClick={() => setShowPlaybook(false)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', color: 'white', fontWeight: 'bold' }}>✕</button>
+                        </div>
+                        
+                        <div className="custom-scroll" style={{ padding: '25px', maxHeight: '70vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>Learn how to operate your RevHunter AI Sales Engine:</div>
+                            
+                            {[
+                                { title: 'DETAILS (VIEW DNA)', desc: 'Opens the full lead profile. See trade-in equity, credit, and past AI conversations.', color: 'white' },
+                                { title: 'AI CALL (ADAM DIALS)', desc: 'The AI will call the customer immediately to qualify them and book appointments.', color: '#00b894' },
+                                { title: 'NUDGE (MSG LEAD)', desc: 'Sends an AI-crafted SMS/follow-up to keep the customer engaged.', color: '#a29bfe' },
+                                { title: 'DIAL (MY PHONE)', desc: 'Bypass the AI and call the lead directly from your personal device.', color: 'rgba(255,255,255,0.4)' },
+                                { title: 'RED MIC (VOICE AGENT)', desc: 'Hands-free mode! Speak to the app like Siri to trigger calls or search leads.', color: '#D92027' }
+                            ].map((item, idx) => (
+                                <div key={idx} style={{ paddingLeft: '15px', borderLeft: `3px solid ${item.color}` }}>
+                                    <div style={{ fontWeight: '900', fontSize: '0.85rem', color: item.color, marginBottom: '5px' }}>{item.title}</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.4' }}>{item.desc}</div>
+                                </div>
+                            ))}
+                            
+                            <div style={{ background: 'rgba(255, 171, 0, 0.1)', padding: '15px', borderRadius: '15px', border: '1px solid rgba(255, 171, 0, 0.3)', marginTop: '10px' }}>
+                                <div style={{ fontWeight: '900', fontSize: '0.75rem', color: '#FFAB00', marginBottom: '5px' }}>💡 PRO TIP</div>
+                                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.4' }}>The AI updates the "MISSION SUMMARY" in real-time. Check the Details view after every AI call!</div>
+                            </div>
+                        </div>
+                        
+                        <div style={{ padding: '20px' }}>
+                            <button onClick={() => setShowPlaybook(false)} style={{ width: '100%', padding: '16px', background: 'white', color: 'black', border: 'none', borderRadius: '16px', fontWeight: '900', fontSize: '0.9rem' }}>GOT IT, BOSS!</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div style={{ padding: '30px 5%', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(0,0,0,0.2)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1700,6 +1754,12 @@ export default function AgentDashboard() {
                     </div>
                     
                     <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                        <button 
+                            onClick={() => setShowPlaybook(true)}
+                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', width: '40px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}
+                        >
+                            <HelpCircle size={18} />
+                        </button>
                         <button 
                             onClick={handleLogout}
                             style={{ background: 'rgba(217,32,39,0.1)', border: '1px solid rgba(217,32,39,0.2)', borderRadius: '12px', width: '40px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D92027', cursor: 'pointer' }}
@@ -2001,21 +2061,25 @@ export default function AgentDashboard() {
                                                             </div>
                                                         </div>
                                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }} onClick={e => e.stopPropagation()}>
-                                                            <button onClick={() => setSelectedDNA(lead)} style={{ background: 'white', color: '#000', border: 'none', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
-                                                                <MessageSquare size={20} />
+                                                            <button onClick={() => setSelectedDNA(lead)} style={{ background: 'white', color: '#000', border: 'none', borderRadius: '14px', padding: '12px 5px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', cursor: 'pointer' }}>
+                                                                <MessageSquare size={18} />
                                                                 <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>DETAILS</span>
+                                                                <span style={{ fontSize: '0.45rem', opacity: 0.5, fontWeight: 'bold' }}>VIEW DNA</span>
                                                             </button>
-                                                            <button onClick={() => handleAutoDial(lead.id)} style={{ background: 'rgba(0,184,148,0.1)', color: '#00b894', border: '1px solid #00b894', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
-                                                                <Phone size={20} />
+                                                            <button onClick={() => handleAutoDial(lead.id)} style={{ background: 'rgba(0,184,148,0.1)', color: '#00b894', border: '1px solid #00b894', borderRadius: '14px', padding: '12px 5px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', cursor: 'pointer' }}>
+                                                                <Phone size={18} />
                                                                 <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>AI CALL</span>
+                                                                <span style={{ fontSize: '0.45rem', opacity: 0.7, fontWeight: 'bold' }}>ADAM DIALS</span>
                                                             </button>
-                                                            <button onClick={() => handleNudge(lead.id)} style={{ background: 'rgba(108,92,231,0.1)', color: '#a29bfe', border: '1px solid #a29bfe', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
-                                                                <Zap size={20} />
+                                                            <button onClick={() => handleNudge(lead.id)} style={{ background: 'rgba(108,92,231,0.1)', color: '#a29bfe', border: '1px solid #a29bfe', borderRadius: '14px', padding: '12px 5px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', cursor: 'pointer' }}>
+                                                                <Zap size={18} />
                                                                 <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>NUDGE</span>
+                                                                <span style={{ fontSize: '0.45rem', opacity: 0.7, fontWeight: 'bold' }}>MSG LEAD</span>
                                                             </button>
-                                                            <a href={`tel:${lead.phone}`} style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: 'none', borderRadius: '14px', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', textDecoration: 'none' }}>
-                                                                <Phone size={20} />
+                                                            <a href={`tel:${lead.phone}`} style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: 'none', borderRadius: '14px', padding: '12px 5px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', textDecoration: 'none' }}>
+                                                                <Phone size={18} />
                                                                 <span style={{ fontSize: '0.65rem', fontWeight: '900' }}>DIAL</span>
+                                                                <span style={{ fontSize: '0.45rem', opacity: 0.5, fontWeight: 'bold' }}>MY PHONE</span>
                                                             </a>
                                                         </div>
                                                     </div>
