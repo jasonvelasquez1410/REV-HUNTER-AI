@@ -1080,24 +1080,12 @@ export default function AgentDashboard() {
     const [isFbConnecting, setIsFbConnecting] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
     const [showPlaybook, setShowPlaybook] = useState(false);
-    const [leads, setLeads] = useState([]);
     const [selectedDNA, setSelectedDNA] = useState(null);
     const [isStrategistOpen, setIsStrategistOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('leads'); // 'leads' | 'marketing' | 'roi'
     const [hasGreeted, setHasGreeted] = useState(false);
     const [leadFilter, setLeadFilter] = useState('all');
-
-    const [loading, setLoading] = useState(true);
-    const [activeView, setActiveView] = useState('leads');
-    const [nudging, setNudging] = useState(null);
-    const [newLeadAlert, setNewLeadAlert] = useState(null);
-    const [importedLeads, setImportedLeads] = useState([]);
-    const [importStatus, setImportStatus] = useState(null); // null | 'preview' | 'importing' | 'done'
-    const [importFileName, setImportFileName] = useState('');
-    const [inventory, setInventory] = useState([]);
-
     const [dialing, setDialing] = useState(null);
-
     const [showManualModal, setShowManualModal] = useState(false);
     const [marketingSubView, setMarketingSubView] = useState('inventory');
     const [showImportPreview, setShowImportPreview] = useState(false);
