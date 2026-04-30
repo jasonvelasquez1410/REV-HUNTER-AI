@@ -62,6 +62,8 @@ def init_db():
             try:
                 with engine.connect() as conn:
                     conn.execute(text("ALTER TABLE agents ADD COLUMN IF NOT EXISTS edition VARCHAR DEFAULT 'enterprise'"))
+                    conn.execute(text("ALTER TABLE leads ADD COLUMN IF NOT EXISTS current_payment FLOAT"))
+                    conn.execute(text("ALTER TABLE leads ADD COLUMN IF NOT EXISTS equity FLOAT"))
                     conn.commit()
             except: pass
             
@@ -126,6 +128,8 @@ class LeadTable(Base):
     is_manual_assignment = Column(Boolean, default=False)
     interaction_history = Column(Text, default="[]") 
     vapi_recording_url = Column(String, nullable=True)
+    current_payment = Column(Float, nullable=True)
+    equity = Column(Float, nullable=True)
 
 class AgentTable(Base):
     __tablename__ = "agents"

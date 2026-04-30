@@ -43,6 +43,8 @@ class Lead(BaseModel):
     is_manual_assignment: bool = False
     interaction_history: str = "[]"
     vapi_recording_url: Optional[str] = None
+    current_payment: Optional[float] = None
+    equity: Optional[float] = None
     conversation_state: Optional[str] = "{}"
     conversation_summary: Optional[str] = "New Lead"
     id: Optional[int] = None

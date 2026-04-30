@@ -408,6 +408,10 @@ class ImportedLead(BaseModel):
     notes: Optional[str] = None
     quality_score: Optional[int] = 85
     source: Optional[str] = "CRM Import"
+    current_payment: Optional[float] = None
+    equity: Optional[float] = None
+    trade_in_details: Optional[str] = None
+    credit_score: Optional[int] = None
 
 class ImportLeadsPayload(BaseModel):
     leads: List[ImportedLead]
@@ -454,7 +458,11 @@ async def import_leads_frontend(payload: ImportLeadsPayload, tenant_id: str = De
                         assigned_agent=l.assigned_agent,
                         quality_score=l.quality_score or 85,
                         conversation_summary=f"Mission Intelligence: Interested in {l.car or 'General Inventory'}. Note: {l.notes or 'None provided.'}",
-                        last_action_time="Just Imported"
+                        last_action_time="Just Imported",
+                        current_payment=l.current_payment,
+                        equity=l.equity,
+                        trade_in_details=l.trade_in_details,
+                        credit_score=l.credit_score
                     )
                     session.add(lead)
                     new_count += 1
@@ -465,6 +473,10 @@ async def import_leads_frontend(payload: ImportLeadsPayload, tenant_id: str = De
                     if l.quality_score: lead.quality_score = l.quality_score
                     if l.notes or l.car:
                         lead.conversation_summary = f"Intelligence Update: {l.car or 'Inventory interest'}. {l.notes or ''}"
+                    if l.current_payment: lead.current_payment = l.current_payment
+                    if l.equity: lead.equity = l.equity
+                    if l.trade_in_details: lead.trade_in_details = l.trade_in_details
+                    if l.credit_score: lead.credit_score = l.credit_score
                     updated_count += 1
             session.commit()
         return {"status": "success", "new": new_count, "updated": updated_count}

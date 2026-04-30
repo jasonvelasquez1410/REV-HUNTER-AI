@@ -470,11 +470,20 @@ function MarketingHub({ agent, inventory, setInventory, fbSettings, onUpdateSett
                         color: subView === 'settings' ? 'white' : (fbSettings.fb_access_token ? 'rgba(255,255,255,0.4)' : '#D92027'), 
                         border: subView === 'settings' ? '2px solid #FF4B2B' : (fbSettings.fb_access_token ? '1px solid rgba(255,255,255,0.1)' : '2px solid #D92027'), 
                         fontWeight: '900', fontSize: '0.8rem', letterSpacing: '1px',
-                        animation: !fbSettings.fb_access_token ? 'pulse 2s infinite' : 'none'
+                        animation: !fbSettings.fb_access_token ? 'pulse 2s infinite' : 'none',
+                        position: 'relative'
                     }}
                 >
                     {fbSettings.fb_access_token ? '✅ CLOUD ACTIVE' : '⚠️ SYNC SETTINGS'}
                 </button>
+                {fbSettings.fb_access_token && (
+                    <button 
+                        onClick={() => { if(confirm('Disconnect Facebook Account?')) onUpdateSettings({ fb_access_token: null, fb_page_id: null }); }}
+                        style={{ padding: '0 15px', borderRadius: '16px', background: 'rgba(217,32,39,0.1)', color: '#D92027', border: '1px solid rgba(217,32,39,0.2)', fontWeight: '900', fontSize: '0.6rem' }}
+                    >
+                        DISCONNECT
+                    </button>
+                )}
             </div>
 
             {!fbSettings.fb_access_token && (
@@ -906,6 +915,14 @@ function EngagementHistoryModal({ lead, onClose, onDial, onOrganize, agent, inve
                         <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>BUDGET</div>
                         <div style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>${lead.monthly_budget || '0'}/mo</div>
                     </div>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>CURR. PMT</div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#81ecec' }}>${lead.current_payment || '0'}</div>
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', fontWeight: 'bold' }}>EQUITY</div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: lead.equity >= 0 ? '#00b894' : '#ff7675' }}>${lead.equity || '0'}</div>
+                    </div>
                 </div>
 
                 {/* Next Steps / Controls */}
@@ -1175,7 +1192,11 @@ export default function AgentDashboard() {
                         phone: "",
                         email: "",
                         car: "Browsing",
-                        notes: ""
+                        notes: "",
+                        payment: null,
+                        equity: null,
+                        credit: null,
+                        trade: null
                     };
 
                     // 1. KEYWORD SEARCH (Scans every column header for matches)
@@ -1195,6 +1216,18 @@ export default function AgentDashboard() {
                     lead.phone = mobileNum || "";
                     lead.email = emailAddr || "";
                     lead.car = carInt || "Browsing";
+
+                    // 1.1 REVENUE RADAR SPECIALIZED DETECTION (Index-based if headers look like Revenue Radar)
+                    if (row.length > 20 && !fullName && String(row[1]).includes(' ')) {
+                        // This likely matches the R-Jay Revenue Radar format
+                        lead.name = row[1]; // Jan Marc Largoza
+                        lead.phone = row[17] || row[16] || row[15]; // Mobile indices
+                        lead.email = row[13];
+                        lead.car = `${row[6] || ''} ${row[7] || ''} ${row[8] || ''}`.trim() || lead.car;
+                        lead.payment = parseFloat(String(row[20]).replace(/[$,]/g, '')) || null;
+                        lead.equity = parseFloat(String(row[27]).replace(/[$,]/g, '')) || null;
+                        lead.notes = `Campaign: ${row[5] || 'None'}`;
+                    }
 
                     // 2. GREEDY FALLBACK (If keywords failed, scan every cell in this row)
                     if (lead.phone.length < 7 || lead.name.length < 2) {
@@ -1231,7 +1264,11 @@ export default function AgentDashboard() {
                         source: 'Imported File',
                         quality_score: 85,
                         assigned_agent: agent.name,
-                        notes: lead.notes
+                        notes: lead.notes,
+                        current_payment: lead.payment,
+                        equity: lead.equity,
+                        credit_score: lead.credit,
+                        trade_in_details: lead.trade
                     };
                 });
                 
@@ -1288,7 +1325,11 @@ export default function AgentDashboard() {
                     assigned_agent: agent.name,
                     source: 'Imported File',
                     quality_score: l.quality_score || 85,
-                    notes: l.notes || ''
+                    notes: l.notes || '',
+                    current_payment: l.current_payment,
+                    equity: l.equity,
+                    trade_in_details: l.trade_in_details,
+                    credit_score: l.credit_score
                 }))
             };
 
@@ -1822,8 +1863,18 @@ export default function AgentDashboard() {
                                                     <div style={{ fontSize: '0.7rem', opacity: 0.5 }}>{fbSettings.fb_access_token ? "Account linked successfully" : "Enable Marketplace integration"}</div>
                                                 </div>
                                             </div>
-                                            <div style={{ fontSize: '0.65rem', fontWeight: '900', color: fbSettings.fb_access_token ? '#00b894' : 'rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '8px', background: fbSettings.fb_access_token ? 'rgba(0,184,148,0.1)' : 'rgba(255,255,255,0.05)' }}>
-                                                {fbSettings.fb_access_token ? 'COMPLETED' : 'PENDING'}
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-end' }}>
+                                                <div style={{ fontSize: '0.65rem', fontWeight: '900', color: fbSettings.fb_access_token ? '#00b894' : 'rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '8px', background: fbSettings.fb_access_token ? 'rgba(0,184,148,0.1)' : 'rgba(255,255,255,0.05)' }}>
+                                                    {fbSettings.fb_access_token ? 'COMPLETED' : 'PENDING'}
+                                                </div>
+                                                {fbSettings.fb_access_token && (
+                                                    <div 
+                                                        onClick={(e) => { e.stopPropagation(); if(confirm('Disconnect Facebook?')) handleUpdateSettings({ fb_access_token: null, fb_page_id: null }); }}
+                                                        style={{ fontSize: '0.55rem', color: '#D92027', fontWeight: 'bold', textDecoration: 'underline' }}
+                                                    >
+                                                        Disconnect
+                                                    </div>
+                                                )}
                                             </div>
                                         </button>
 
@@ -2282,10 +2333,10 @@ export default function AgentDashboard() {
                                                 <div style={{ fontWeight: '900', color: '#00b894', marginBottom: '8px' }}>✓ SYNC ACTIVE</div>
                                                 <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>Pushing inventory to Marketplace is enabled.</div>
                                                 <button 
-                                                    onClick={() => handleUpdateSettings({ fb_access_token: '', fb_page_id: '' })}
-                                                    style={{ marginTop: '15px', background: 'none', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.4)', padding: '8px 15px', borderRadius: '10px', fontSize: '0.7rem' }}
+                                                    onClick={() => handleUpdateSettings({ fb_access_token: null, fb_page_id: null })}
+                                                    style={{ marginTop: '15px', background: 'rgba(217,32,39,0.1)', border: '1px solid #D92027', color: '#D92027', padding: '10px 20px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '900' }}
                                                 >
-                                                    Disconnect
+                                                    DISCONNECT FACEBOOK
                                                 </button>
                                             </div>
                                         )}
