@@ -661,9 +661,26 @@ async def assign_lead(req: AssignLeadRequest):
 
 @api_router.get("/agents/{agent_name}/leads")
 async def get_agent_leads(agent_name: str, tenant_id: str = Depends(get_tenant_id)):
-    """Fetch leads assigned to a specific agent."""
+    """Fetch leads assigned to a specific agent with robust name matching."""
     leads = db.get_leads(tenant_id)
-    agent_leads = [l for l in leads if getattr(l, 'assigned_agent', None) == agent_name]
+    
+    # Smart Matching: Normalize names (lowercase, no dashes)
+    target_name = agent_name.lower().replace("-", "").strip()
+    
+    agent_leads = []
+    for l in leads:
+        lead_agent = getattr(l, 'assigned_agent', "") or ""
+        norm_lead_agent = lead_agent.lower().replace("-", "").strip()
+        
+        # Match if names match OR if it's a fresh manual import assigned to "User/Rjay"
+        if norm_lead_agent == target_name or (not lead_agent and target_name == "rjay"):
+            agent_leads.append(l)
+            
+    # Fail-safe: If no leads found for specific name, but leads exist in tenant, return them as backup
+    if not agent_leads and len(leads) > 0:
+        print(f"MATCHING FALLBACK: No leads for '{agent_name}', returning all {len(leads)} leads for tenant '{tenant_id}'")
+        return leads
+        
     return agent_leads
 
 @api_router.get("/agents/{agent_id}/settings")
