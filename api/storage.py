@@ -107,9 +107,9 @@ class LeadTable(Base):
     __tablename__ = "leads"
     id = Column(Integer, primary_key=True, index=True)
     tenant_id = Column(String, ForeignKey("tenants.id"), index=True, default="filcan")
-    name = Column(String)
+    name = Column(String, index=True)
     email = Column(String)
-    phone = Column(String)
+    phone = Column(String, index=True)
     credit_score = Column(Integer, nullable=True)
     monthly_budget = Column(Float, nullable=True)
     trade_in_details = Column(String, nullable=True)

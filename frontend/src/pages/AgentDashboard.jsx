@@ -1070,6 +1070,7 @@ export default function AgentDashboard() {
     const [fbAccessTokenInput, setFbAccessTokenInput] = useState('');
     const [fbPageIdInput, setFbPageIdInput] = useState('');
     const [isFbConnecting, setIsFbConnecting] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
     const [dialing, setDialing] = useState(null);
     const [selectedDNA, setSelectedDNA] = useState(null);
     const [isStrategistOpen, setIsStrategistOpen] = useState(false);
@@ -1316,46 +1317,60 @@ export default function AgentDashboard() {
 
     const finalizeImport = async () => {
         try {
-            const payload = {
-                leads: importedLeads.map(l => ({
-                    name: l.name,
-                    phone: l.phone,
-                    email: l.email || '',
-                    car: l.car,
-                    assigned_agent: agent.name,
-                    source: 'Imported File',
-                    quality_score: l.quality_score || 85,
-                    notes: l.notes || '',
-                    current_payment: l.current_payment,
-                    equity: l.equity,
-                    trade_in_details: l.trade_in_details,
-                    credit_score: l.credit_score
-                }))
-            };
+            setIsImporting(true);
+            const CHUNK_SIZE = 50;
+            let totalNew = 0;
+            let totalUpdated = 0;
 
-            const res = await fetch(`${apiUrl}/import/leads`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'x-tenant-id': tenant?.id || 'filcan'
-                },
-                body: JSON.stringify(payload)
-            });
+            // Split into chunks to prevent Vercel Timeout (10s limit)
+            for (let i = 0; i < importedLeads.length; i += CHUNK_SIZE) {
+                const chunk = importedLeads.slice(i, i + CHUNK_SIZE);
+                const payload = {
+                    leads: chunk.map(l => ({
+                        name: l.name,
+                        phone: l.phone,
+                        email: l.email || '',
+                        car: l.car,
+                        assigned_agent: agent.name,
+                        source: 'Imported File',
+                        quality_score: l.quality_score || 85,
+                        notes: l.notes || '',
+                        current_payment: l.current_payment,
+                        equity: l.equity,
+                        trade_in_details: l.trade_in_details,
+                        credit_score: l.credit_score
+                    }))
+                };
 
-            if (res.ok) {
-                const result = await res.json();
-                setLeads([...importedLeads, ...leads]);
-                setShowImportPreview(false);
-                setImportedLeads([]);
-                alert(`🎯 SMART SYNC COMPLETE\n\n✅ ${result.new || 0} New Leads Added\n🔄 ${result.updated || 0} Duplicates Updated\n\nYour pipeline is now optimized!`);
-                missionControlRef.current?.scrollIntoView({ behavior: 'smooth' });
-                fetchLeads(); // Refresh to get server IDs and confirmed state
-            } else {
-                const error = await res.json();
-                alert(`⚠️ Import Failed: ${error.detail || 'Server Error'}`);
+                const res = await fetch(`${apiUrl}/import/leads`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-tenant-id': tenant?.id || 'filcan'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    const result = await res.json();
+                    totalNew += (result.new || 0);
+                    totalUpdated += (result.updated || 0);
+                } else {
+                    const error = await res.json();
+                    throw new Error(error.detail || 'Server Error during batch');
+                }
             }
+
+            setLeads([...importedLeads, ...leads]);
+            setShowImportPreview(false);
+            setImportedLeads([]);
+            alert(`🎯 SMART SYNC COMPLETE\n\n✅ ${totalNew} New Leads Added\n🔄 ${totalUpdated} Duplicates Updated\n\nYour pipeline is now optimized!`);
+            missionControlRef.current?.scrollIntoView({ behavior: 'smooth' });
+            fetchLeads();
         } catch (err) {
-            alert(`⚠️ Network Error: Could not reach the server to save your leads.`);
+            alert(`⚠️ Import Failed: ${err.message || 'Network Error'}`);
+        } finally {
+            setIsImporting(false);
         }
     };
 
@@ -1640,7 +1655,20 @@ export default function AgentDashboard() {
                         </div>
                         <div style={{ padding: '25px', display: 'flex', gap: '10px' }}>
                             <button onClick={() => setShowImportPreview(false)} style={{ flex: 1, padding: '15px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '14px', color: 'white', fontWeight: 'bold' }}>Cancel</button>
-                            <button onClick={finalizeImport} style={{ flex: 1, padding: '15px', background: '#FF4B2B', border: 'none', borderRadius: '14px', color: 'white', fontWeight: '900' }}>Finalize Import</button>
+                            <button 
+                                onClick={finalizeImport}
+                                disabled={isImporting}
+                                style={{ 
+                                    flex: 1, padding: '15px', background: '#FF4B2B', border: 'none', borderRadius: '14px', color: 'white', fontWeight: '900', cursor: isImporting ? 'wait' : 'pointer', opacity: isImporting ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+                                }}
+                            >
+                                {isImporting ? (
+                                    <>
+                                        <div style={{ width: '16px', height: '16px', border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                                        SYNCING...
+                                    </>
+                                ) : 'Finalize Import'}
+                            </button>
                         </div>
                     </div>
                 </div>
